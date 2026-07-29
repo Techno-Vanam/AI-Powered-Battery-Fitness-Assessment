@@ -117,16 +117,21 @@ body { background: var(--bg); color: var(--text); transition: background 0.3s, c
   background: var(--input-bg);
   border: 1.5px solid var(--input-border);
   border-radius: 14px;
-  color: var(--input-text);
+  color: var(--input-text) !important;
+  -webkit-text-fill-color: var(--input-text) !important;
   caret-color: #a78bfa;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, color 0.2s;
 }
 .otp-box:focus {
   outline: none;
   border-color: rgba(124,58,237,0.9);
   box-shadow: 0 0 0 3px rgba(124,58,237,0.25), 0 0 16px rgba(124,58,237,0.15);
   background: var(--surface-hov);
+  color: var(--input-text) !important;
+  -webkit-text-fill-color: var(--input-text) !important;
 }
+[data-theme="dark"]  .otp-box { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+[data-theme="light"] .otp-box { color: #1a1040 !important; -webkit-text-fill-color: #1a1040 !important; }
 
 /* ── Tabs ─────────────────────────────────────────────────── */
 .tab-inactive { color: var(--tab-inactive); }

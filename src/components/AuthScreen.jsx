@@ -16,7 +16,7 @@ function FloatingOrbs() {
 }
 
 function Toast({ message, desc, onHide }) {
-  useEffect(() => { const t = setTimeout(onHide, 3500); return () => clearTimeout(t) }, [onHide])
+  useEffect(() => { const t = setTimeout(onHide, 5000); return () => clearTimeout(t) }, [onHide])
   return (
     <div className="toast-in fixed top-5 left-1/2 -translate-x-1/2 z-[99999] flex items-start gap-3 px-4 py-3 rounded-2xl shadow-2xl max-w-xs w-full"
       style={{ background: 'var(--surface)', border: '1px solid rgba(139,92,246,0.4)', backdropFilter: 'blur(20px)' }}>
@@ -33,23 +33,35 @@ function Toast({ message, desc, onHide }) {
   )
 }
 
-function OtpInput({ value, onChange, error, tr }) {
+function OtpInput({ value = '', onChange, error, tr }) {
   const inputs = useRef([])
-  const digits = value.split('')
+  const digits = Array.from({ length: 6 }, (_, idx) => value[idx] || '')
 
   const handleKey = (i, e) => {
     if (e.key === 'Backspace') {
-      if (digits[i]) { onChange(digits.map((d, idx) => idx === i ? '' : d).join('')) }
-      else if (i > 0) { inputs.current[i - 1]?.focus(); onChange(digits.map((d, idx) => idx === i - 1 ? '' : d).join('')) }
+      if (digits[i]) {
+        const next = [...digits]
+        next[i] = ''
+        onChange(next.join(''))
+      } else if (i > 0) {
+        inputs.current[i - 1]?.focus()
+        const next = [...digits]
+        next[i - 1] = ''
+        onChange(next.join(''))
+      }
     }
   }
+
   const handleChange = (i, e) => {
     const val = e.target.value.replace(/\D/g, '').slice(-1)
-    const next = digits.map((d, idx) => idx === i ? val : d)
-    while (next.length < 6) next.push('')
+    const next = [...digits]
+    next[i] = val
     onChange(next.join(''))
-    if (val && i < 5) inputs.current[i + 1]?.focus()
+    if (val && i < 5) {
+      inputs.current[i + 1]?.focus()
+    }
   }
+
   const handlePaste = (e) => {
     const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
     onChange(pasted.padEnd(6, '').slice(0, 6))
@@ -59,12 +71,49 @@ function OtpInput({ value, onChange, error, tr }) {
 
   return (
     <div>
-      <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>{tr.otpLabel}</p>
+      <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>{tr.otpLabel}</p>
       <div className="flex gap-2 justify-between">
         {Array.from({ length: 6 }).map((_, i) => (
-          <input key={i} ref={el => inputs.current[i] = el} className="otp-box"
-            type="text" inputMode="numeric" maxLength={1} value={digits[i] || ''}
-            onChange={e => handleChange(i, e)} onKeyDown={e => handleKey(i, e)} onPaste={handlePaste} />
+          <input
+            key={i}
+            ref={el => inputs.current[i] = el}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={1}
+            value={digits[i]}
+            onChange={e => handleChange(i, e)}
+            onKeyDown={e => handleKey(i, e)}
+            onPaste={handlePaste}
+            className="otp-box"
+            style={{
+              width: 44,
+              height: 52,
+              borderRadius: 14,
+              border: digits[i] ? '2px solid #7c3aed' : '1.5px solid var(--input-border)',
+              background: digits[i] ? 'rgba(124,58,237,0.15)' : 'var(--input-bg)',
+              color: 'var(--input-text)',
+              WebkitTextFillColor: 'var(--input-text)',
+              fontSize: '1.4rem',
+              fontWeight: 800,
+              textAlign: 'center',
+              outline: 'none',
+              caretColor: '#a78bfa',
+              boxShadow: digits[i] ? '0 0 0 3px rgba(124,58,237,0.25)' : 'none',
+              transition: 'border 0.15s, background 0.15s, box-shadow 0.15s',
+              cursor: 'text',
+            }}
+            onFocus={e => {
+              e.target.style.border = '2px solid #7c3aed'
+              e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.3)'
+              e.target.style.background = 'rgba(124,58,237,0.12)'
+            }}
+            onBlur={e => {
+              e.target.style.border = digits[i] ? '2px solid #7c3aed' : '1.5px solid var(--input-border)'
+              e.target.style.boxShadow = digits[i] ? '0 0 0 3px rgba(124,58,237,0.25)' : 'none'
+              e.target.style.background = digits[i] ? 'rgba(124,58,237,0.15)' : 'var(--input-bg)'
+            }}
+          />
         ))}
       </div>
       {error && <p className={errCls}>{error}</p>}
