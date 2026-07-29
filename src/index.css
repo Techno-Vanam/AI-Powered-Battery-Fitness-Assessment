@@ -2,54 +2,167 @@
 @tailwind components;
 @tailwind utilities;
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ── Theme tokens ─────────────────────────────────────────── */
+:root, [data-theme="dark"] {
+  --bg:           #0a0a1a;
+  --bg2:          #0f0c29;
+  --surface:      rgba(255,255,255,0.06);
+  --surface-hov:  rgba(255,255,255,0.10);
+  --border:       rgba(255,255,255,0.12);
+  --text:         #ffffff;
+  --text-muted:   rgba(255,255,255,0.40);
+  --text-faint:   rgba(255,255,255,0.25);
+  --input-bg:     rgba(255,255,255,0.07);
+  --input-border: rgba(255,255,255,0.15);
+  --input-text:   #ffffff;
+  --input-ph:     rgba(255,255,255,0.35);
+  --tab-bg:       rgba(255,255,255,0.05);
+  --tab-inactive: rgba(255,255,255,0.40);
+  --divider:      rgba(255,255,255,0.10);
+  --social-bg:    rgba(255,255,255,0.07);
+  --social-bdr:   rgba(255,255,255,0.12);
+  --social-hov:   rgba(255,255,255,0.13);
+  --orb1:         rgba(139,92,246,0.30);
+  --orb2:         rgba(37,99,235,0.25);
+  --orb3:         rgba(6,182,212,0.15);
+  --card-shadow:  0 8px 40px rgba(0,0,0,0.5);
+  --resend-dis:   rgba(255,255,255,0.20);
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.8s ease forwards;
+[data-theme="light"] {
+  --bg:           #f1f0fb;
+  --bg2:          #e8e6f8;
+  --surface:      rgba(255,255,255,0.88);
+  --surface-hov:  rgba(255,255,255,1);
+  --border:       rgba(0,0,0,0.08);
+  --text:         #1a1040;
+  --text-muted:   rgba(0,0,0,0.50);
+  --text-faint:   rgba(0,0,0,0.30);
+  --input-bg:     rgba(0,0,0,0.04);
+  --input-border: rgba(0,0,0,0.12);
+  --input-text:   #1a1040;
+  --input-ph:     rgba(0,0,0,0.35);
+  --tab-bg:       rgba(0,0,0,0.05);
+  --tab-inactive: rgba(0,0,0,0.40);
+  --divider:      rgba(0,0,0,0.10);
+  --social-bg:    rgba(0,0,0,0.04);
+  --social-bdr:   rgba(0,0,0,0.10);
+  --social-hov:   rgba(0,0,0,0.07);
+  --orb1:         rgba(167,139,250,0.25);
+  --orb2:         rgba(147,197,253,0.35);
+  --orb3:         rgba(103,232,249,0.20);
+  --card-shadow:  0 8px 40px rgba(0,0,0,0.10);
+  --resend-dis:   rgba(0,0,0,0.20);
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+/* ── Base ─────────────────────────────────────────────────── */
+body { background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
+
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes fadeIn    { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes spin      { to{transform:rotate(360deg)} }
+@keyframes slideUp   { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
+@keyframes orb1      { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(40px,-30px) scale(1.1)} 66%{transform:translate(-20px,20px) scale(0.95)} }
+@keyframes orb2      { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-50px,20px) scale(0.9)} 66%{transform:translate(30px,-40px) scale(1.1)} }
+@keyframes orb3      { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(20px,40px) scale(1.08)} }
+@keyframes checkPop  { 0%{transform:scale(0) rotate(-10deg);opacity:0} 60%{transform:scale(1.2) rotate(5deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:1} }
+@keyframes marquee   { 0%{transform:translateX(100%)} 100%{transform:translateX(-100%)} }
+@keyframes toastIn   { from{opacity:0;transform:translateY(-20px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes slideInRight { from{opacity:0;transform:translateX(60px)} to{opacity:1;transform:translateX(0)} }
+@keyframes popIn     { 0%{transform:scale(0.7);opacity:0} 70%{transform:scale(1.05);opacity:1} 100%{transform:scale(1);opacity:1} }
+
+.animate-fadeIn   { animation: fadeIn 0.8s ease forwards; }
+.animate-spin-slow{ animation: spin 1s linear infinite; }
+.card-enter-0     { animation: slideUp 0.6s ease 0.1s both; }
+.card-enter-1     { animation: slideUp 0.6s ease 0.3s both; }
+.card-enter-2     { animation: slideUp 0.6s ease 0.5s both; }
+.slide-in         { animation: slideInRight 0.45s cubic-bezier(0.4,0,0.2,1) both; }
+.icon-pop         { animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both; }
+.check-pop        { animation: checkPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.marquee-track    { animation: marquee 18s linear infinite; white-space: nowrap; }
+.toast-in         { animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.orb1 { animation: orb1 8s ease-in-out infinite; }
+.orb2 { animation: orb2 10s ease-in-out infinite; }
+.orb3 { animation: orb3 12s ease-in-out infinite; }
+
+/* ── Glass card ───────────────────────────────────────────── */
+.glass-card {
+  background: var(--surface);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+  transition: background 0.3s, border 0.3s, box-shadow 0.3s;
 }
 
-.animate-spin-slow {
-  animation: spin 1s linear infinite;
+/* ── Inputs ───────────────────────────────────────────────── */
+.input-glow {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.input-glow::placeholder { color: var(--input-ph); }
+.input-glow:focus {
+  outline: none;
+  border-color: rgba(124,58,237,0.8);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.2), 0 0 20px rgba(124,58,237,0.12);
+  background: var(--surface-hov);
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ── OTP boxes ────────────────────────────────────────────── */
+.otp-box {
+  width: 44px; height: 52px;
+  text-align: center; font-size: 1.25rem; font-weight: 700;
+  background: var(--input-bg);
+  border: 1.5px solid var(--input-border);
+  border-radius: 14px;
+  color: var(--input-text);
+  caret-color: #a78bfa;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.otp-box:focus {
+  outline: none;
+  border-color: rgba(124,58,237,0.9);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.25), 0 0 16px rgba(124,58,237,0.15);
+  background: var(--surface-hov);
 }
 
-.card-enter-0 { animation: slideUp 0.6s ease 0.1s both; }
-.card-enter-1 { animation: slideUp 0.6s ease 0.3s both; }
-.card-enter-2 { animation: slideUp 0.6s ease 0.5s both; }
-
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(60px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes slideOutLeft {
-  from { opacity: 1; transform: translateX(0); }
-  to   { opacity: 0; transform: translateX(-60px); }
-}
-@keyframes popIn {
-  0%   { transform: scale(0.7); opacity: 0; }
-  70%  { transform: scale(1.05); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-@keyframes pulse-ring {
-  0%   { transform: scale(1);   opacity: 0.6; }
-  100% { transform: scale(1.6); opacity: 0; }
+/* ── Tabs ─────────────────────────────────────────────────── */
+.tab-inactive { color: var(--tab-inactive); }
+.tab-active {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  box-shadow: 0 4px 15px rgba(124,58,237,0.4);
+  color: white;
 }
 
-.slide-in  { animation: slideInRight 0.45s cubic-bezier(0.4,0,0.2,1) both; }
-.icon-pop  { animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both; }
-.pulse-ring { animation: pulse-ring 1.8s ease-out infinite; }
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #0ea5e9 100%);
+  background-size: 200% 200%;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.45);
+  transition: background-position 0.4s ease, transform 0.15s, box-shadow 0.3s;
+}
+.btn-primary:hover  { background-position: right center; box-shadow: 0 6px 28px rgba(124,58,237,0.6); }
+.btn-primary:active { transform: scale(0.97); }
 
+.social-btn {
+  background: var(--social-bg);
+  border: 1px solid var(--social-bdr);
+  color: var(--text-muted);
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.social-btn:hover  { background: var(--social-hov); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+.social-btn:active { transform: scale(0.96); }
+
+/* ── ID progress bar ──────────────────────────────────────── */
+.id-progress {
+  height: 3px; border-radius: 2px;
+  background: linear-gradient(90deg, #6366f1, #a78bfa);
+  transition: width 0.2s ease;
+}
+
+/* ── Onboard (splash) ─────────────────────────────────────── */
 .onboard-btn {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
   background-size: 200% 200%;
@@ -58,81 +171,5 @@
 }
 .onboard-btn:hover  { background-position: right center; box-shadow: 0 10px 40px rgba(99,102,241,0.6); }
 .onboard-btn:active { transform: scale(0.97); }
-
-.skip-btn {
-  color: rgba(255,255,255,0.35);
-  transition: color 0.2s;
-}
+.skip-btn { color: rgba(255,255,255,0.35); transition: color 0.2s; }
 .skip-btn:hover { color: rgba(255,255,255,0.7); }
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50%       { transform: translateY(-30px) scale(1.05); }
-}
-@keyframes floatReverse {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50%       { transform: translateY(30px) scale(0.95); }
-}
-@keyframes orb1 { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(40px,-30px) scale(1.1);} 66%{transform:translate(-20px,20px) scale(0.95);} }
-@keyframes orb2 { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(-50px,20px) scale(0.9);} 66%{transform:translate(30px,-40px) scale(1.1);} }
-@keyframes orb3 { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(20px,40px) scale(1.08);} }
-
-.orb1 { animation: orb1 8s ease-in-out infinite; }
-.orb2 { animation: orb2 10s ease-in-out infinite; }
-.orb3 { animation: orb3 12s ease-in-out infinite; }
-
-.glass-card {
-  background: rgba(255,255,255,0.06);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255,255,255,0.12);
-}
-
-.input-glow {
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.15);
-  color: white;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-}
-.input-glow::placeholder { color: rgba(255,255,255,0.35); }
-.input-glow:focus {
-  outline: none;
-  border-color: rgba(139,92,246,0.8);
-  box-shadow: 0 0 0 3px rgba(139,92,246,0.2), 0 0 20px rgba(139,92,246,0.15);
-  background: rgba(255,255,255,0.1);
-}
-
-.tab-active {
-  background: linear-gradient(135deg, #7c3aed, #4f46e5);
-  box-shadow: 0 4px 15px rgba(124,58,237,0.4);
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #0ea5e9 100%);
-  background-size: 200% 200%;
-  transition: background-position 0.4s ease, transform 0.15s, box-shadow 0.3s;
-  box-shadow: 0 4px 20px rgba(124,58,237,0.45);
-}
-.btn-primary:hover {
-  background-position: right center;
-  box-shadow: 0 6px 28px rgba(124,58,237,0.6);
-}
-.btn-primary:active { transform: scale(0.97); }
-
-.social-btn {
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.12);
-  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-}
-.social-btn:hover {
-  background: rgba(255,255,255,0.13);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-}
-.social-btn:active { transform: scale(0.96); }
-
-@keyframes checkPop {
-  0%   { transform: scale(0) rotate(-10deg); opacity: 0; }
-  60%  { transform: scale(1.2) rotate(5deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-.check-pop { animation: checkPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }

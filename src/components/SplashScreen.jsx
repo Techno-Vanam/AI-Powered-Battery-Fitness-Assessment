@@ -106,7 +106,7 @@ export default function SplashScreen({ onDone, lang, setLang }) {
           </div>
           {/* Language selector — stop click propagation so it doesn't trigger onDone */}
           <div className="absolute right-4 top-8" onClick={e => e.stopPropagation()}>
-            <LanguageSelector lang={lang} setLang={setLang} />
+            <LanguageSelector lang={lang} setLang={setLang} theme="dark" />
           </div>
         </div>
       )}
