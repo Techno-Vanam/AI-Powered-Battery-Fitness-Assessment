@@ -26,7 +26,7 @@ const AthleteHomeScreen = ({ navigation, route }: any) => {
 
         <TouchableOpacity
           style={styles.logoutBtn}
-          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'SelectMode' }] })}
+          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'RoleSelect' }] })}
         >
           <LogOut size={18} color="#EF4444" />
           <Text style={styles.logoutText}>Log Out</Text>

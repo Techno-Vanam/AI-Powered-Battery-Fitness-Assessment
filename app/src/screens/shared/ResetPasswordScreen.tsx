@@ -88,7 +88,7 @@ const ResetPasswordScreen = ({ navigation, route }: any) => {
           </Text>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => navigation.navigate('SelectMode')}
+            onPress={() => navigation.navigate('RoleSelect')}
           >
             <Text style={styles.buttonText}>Go to Login</Text>
           </TouchableOpacity>

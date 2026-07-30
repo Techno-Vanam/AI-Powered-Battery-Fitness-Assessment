@@ -1,9 +1,12 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {
+  createNativeStackNavigator,
+  NativeStackScreenProps,
+} from '@react-navigation/native-stack';
 
 import { OnboardingFlow } from '../components/OnboardingFlow';
-import SelectModeScreen from '../screens/shared/SelectModeScreen';
+import RoleSelectScreen from '../screens/shared/RoleSelectScreen';
 import AthleteLoginScreen from '../screens/athlete/AthleteLoginScreen';
 import AthleteRegisterScreen from '../screens/athlete/AthleteRegisterScreen';
 import AthleteOtpVerifyScreen from '../screens/athlete/AthleteOtpVerifyScreen';
@@ -19,7 +22,7 @@ import TermsAndConditionsScreen from '../screens/shared/TermsAndConditionsScreen
 
 export type RootStackParamList = {
   Onboarding: undefined;
-  SelectMode: undefined;
+  RoleSelect: undefined;
   AthleteLogin: undefined;
   AthleteRegister: undefined;
   AthleteOtpVerify: { local_id: string; otp: string };
@@ -36,10 +39,14 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-function OnboardingScreen({ navigation }: { navigation: any }) {
-  return (
-    <OnboardingFlow onComplete={() => navigation.replace('SelectMode')} />
-  );
+type OnboardingProps = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
+
+function OnboardingScreen({ navigation }: OnboardingProps) {
+  const goToRoleSelect = () => {
+    navigation.replace('RoleSelect');
+  };
+
+  return <OnboardingFlow onComplete={goToRoleSelect} />;
 }
 
 export function AppNavigator() {
@@ -47,10 +54,14 @@ export function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Onboarding"
-        screenOptions={{ headerShown: false }}
+        screenOptions={{ headerShown: false, animation: 'fade' }}
       >
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-        <Stack.Screen name="SelectMode" component={SelectModeScreen} />
+        <Stack.Screen
+          name="RoleSelect"
+          component={RoleSelectScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
         <Stack.Screen name="AthleteLogin" component={AthleteLoginScreen} />
         <Stack.Screen name="AthleteRegister" component={AthleteRegisterScreen} />
         <Stack.Screen name="AthleteOtpVerify" component={AthleteOtpVerifyScreen} />

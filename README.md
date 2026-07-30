@@ -67,7 +67,7 @@ npm run backend:dev
 ## App Flow
 
 1. **Onboarding** — splash / intro slides
-2. **Select Mode** — choose Athlete or Coach portal
+2. **Role Select** — choose Athlete or Coach
 3. **Login / Register** — OTP verification and password setup
 4. **Home** — role-specific dashboard
 

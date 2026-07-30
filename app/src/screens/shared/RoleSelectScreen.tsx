@@ -1,20 +1,18 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Activity, ClipboardList, ChevronRight } from 'lucide-react-native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
 
-const { width } = Dimensions.get('window');
+type Props = NativeStackScreenProps<RootStackParamList, 'RoleSelect'>;
 
-interface SelectModeScreenProps {
-  navigation: any;
-}
-
-const SelectModeScreen: React.FC<SelectModeScreenProps> = ({ navigation }) => {
+const RoleSelectScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Select your portal to continue</Text>
+          <Text style={styles.title}>Choose Your Role</Text>
+          <Text style={styles.subtitle}>Select Athlete or Coach to continue</Text>
         </View>
 
         <View style={styles.cardsContainer}>
@@ -27,9 +25,9 @@ const SelectModeScreen: React.FC<SelectModeScreenProps> = ({ navigation }) => {
               <Activity size={32} color="#4F46E5" />
             </View>
             <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>Athlete Portal</Text>
+              <Text style={styles.cardTitle}>Athlete</Text>
               <Text style={styles.cardDescription}>
-                Track fitness assessments and view progress.
+                Track fitness assessments and view your progress.
               </Text>
             </View>
             <ChevronRight size={24} color="#CBD5E1" />
@@ -44,7 +42,7 @@ const SelectModeScreen: React.FC<SelectModeScreenProps> = ({ navigation }) => {
               <ClipboardList size={32} color="#059669" />
             </View>
             <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>Coach Portal</Text>
+              <Text style={styles.cardTitle}>Coach</Text>
               <Text style={styles.cardDescription}>
                 Manage athletes and record assessments.
               </Text>
@@ -52,16 +50,16 @@ const SelectModeScreen: React.FC<SelectModeScreenProps> = ({ navigation }) => {
             <ChevronRight size={24} color="#CBD5E1" />
           </TouchableOpacity>
         </View>
-        
+
         <View style={styles.footerContainer}>
-          <Text style={styles.footerText}>Need to register?</Text>
+          <Text style={styles.footerText}>New here?</Text>
           <View style={styles.registerLinks}>
             <TouchableOpacity onPress={() => navigation.navigate('AthleteRegister')}>
-              <Text style={styles.linkText}>New Athlete</Text>
+              <Text style={styles.linkText}>Register as Athlete</Text>
             </TouchableOpacity>
             <Text style={styles.footerText}> | </Text>
             <TouchableOpacity onPress={() => navigation.navigate('CoachRegister')}>
-              <Text style={styles.linkText}>New Coach</Text>
+              <Text style={styles.linkText}>Register as Coach</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -73,7 +71,7 @@ const SelectModeScreen: React.FC<SelectModeScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8FAFC', // slate 50
+    backgroundColor: '#F8FAFC',
   },
   container: {
     flex: 1,
@@ -86,13 +84,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#0F172A', // slate 900
+    color: '#0F172A',
     marginBottom: 8,
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#64748B', // slate 500
+    color: '#64748B',
     fontWeight: '500',
   },
   cardsContainer: {
@@ -121,10 +119,10 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   athleteIconBg: {
-    backgroundColor: '#EEF2FF', // indigo 50
+    backgroundColor: '#EEF2FF',
   },
   coachIconBg: {
-    backgroundColor: '#ECFDF5', // emerald 50
+    backgroundColor: '#ECFDF5',
   },
   cardContent: {
     flex: 1,
@@ -132,12 +130,12 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1E293B', // slate 800
+    color: '#1E293B',
     marginBottom: 4,
   },
   cardDescription: {
     fontSize: 14,
-    color: '#64748B', // slate 500
+    color: '#64748B',
     lineHeight: 20,
   },
   footerContainer: {
@@ -152,12 +150,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 12,
     alignItems: 'center',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
   },
   linkText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#4F46E5', // indigo 600
+    color: '#4F46E5',
   },
 });
 
-export default SelectModeScreen;
+export default RoleSelectScreen;
