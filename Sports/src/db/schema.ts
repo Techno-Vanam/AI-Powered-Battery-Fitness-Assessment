@@ -14,7 +14,7 @@ export const getDBConnection = (): OPSQLiteConnection => {
 export const createTables = (): void => {
   const db = getDBConnection();
 
-  db.execute(`
+  db.executeSync(`
     CREATE TABLE IF NOT EXISTS users (
       local_id TEXT PRIMARY KEY,
       server_id TEXT,
@@ -39,7 +39,7 @@ export const createTables = (): void => {
     );
   `);
 
-  db.execute(`
+  db.executeSync(`
     CREATE TABLE IF NOT EXISTS sync_queue (
       queue_id INTEGER PRIMARY KEY AUTOINCREMENT,
       entity_type TEXT NOT NULL,
@@ -51,7 +51,7 @@ export const createTables = (): void => {
     );
   `);
 
-  db.execute(`
+  db.executeSync(`
     CREATE TABLE IF NOT EXISTS otp_verifications (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_local_id TEXT NOT NULL,

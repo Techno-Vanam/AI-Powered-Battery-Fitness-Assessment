@@ -80,7 +80,7 @@ const ForgotPasswordScreen = ({ navigation }: any) => {
     setNotFound(false);
     try {
       // 1. Check local SQLite first
-      const user = await getUserByIdentifier(data.idType, data.idNumber);
+      const user = await getUserByIdentifier(data.idType ?? 'NSRS', data.idNumber ?? '');
       if (user) {
         navigation.navigate('ResetPassword', { local_id: user.local_id });
         return;

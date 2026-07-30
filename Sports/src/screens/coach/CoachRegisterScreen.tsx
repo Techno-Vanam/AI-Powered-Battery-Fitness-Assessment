@@ -28,7 +28,7 @@ const schema = yup.object({
   organizationName: yup.string().min(2, 'Please enter your organization name').required('Please enter your organization name'),
   designation: yup
     .string()
-    .oneOf(['Coach', 'PE Teacher', 'TIDC', 'TIZC'], 'Please select a designation')
+    .oneOf(['coach', 'pe_teacher', 'tidc', 'tizc'], 'Please select a designation')
     .required('Please select a designation'),
   gender: yup.string().required('Please select a gender'),
   phone: yup
@@ -45,7 +45,12 @@ const schema = yup.object({
 
 type FormData = yup.InferType<typeof schema>;
 
-const DESIGNATIONS = ['Coach', 'PE Teacher', 'TIDC', 'TIZC'];
+const DESIGNATIONS = [
+  { label: 'Coach', value: 'coach' },
+  { label: 'PE Teacher', value: 'pe_teacher' },
+  { label: 'TIDC', value: 'tidc' },
+  { label: 'TIZC', value: 'tizc' },
+];
 
 const PickerModal = ({ visible, title, items, selected, onSelect, onClose }: any) => (
   <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -80,10 +85,12 @@ const CoachRegisterScreen = ({ navigation }: any) => {
   const [loading, setLoading] = useState(false);
   const [pickerVisible, setPickerVisible] = useState<string | null>(null);
 
-  const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
+  const { control, handleSubmit, watch, setValue, trigger, formState: { errors, isValid } } = useForm<FormData>({
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     resolver: yupResolver(schema) as any,
     defaultValues: {
-      coachName: '', organizationName: '', designation: '', gender: '',
+      coachName: '', organizationName: '', designation: undefined as any, gender: '',
       phone: '', idType: 'NSRS', idNumber: '', consent: false,
     },
   });
@@ -92,11 +99,39 @@ const CoachRegisterScreen = ({ navigation }: any) => {
   const consent = watch('consent');
   const gender = watch('gender');
   const designation = watch('designation');
+  const selectedDesignationLabel = DESIGNATIONS.find(item => item.value === designation)?.label || 'Select designation';
 
   const getIdPlaceholder = () => {
     if (idType === 'APAAR') return '12-digit APAAR ID';
     if (idType === 'AADHAR') return '12-digit Aadhar Number';
     return 'NSRS Number (digits only)';
+  };
+
+  const validateField = (field: keyof FormData, value: string) => {
+    const normalized = value.trim();
+
+    if (field === 'coachName' || field === 'organizationName') {
+      if (normalized.length === 0 || normalized.length >= 2) {
+        void trigger(field as any);
+      }
+      return;
+    }
+
+    if (field === 'phone') {
+      if (normalized.length === 0 || normalized.length >= 10) {
+        void trigger(field as any);
+      }
+      return;
+    }
+
+    if (field === 'idNumber') {
+      if (normalized.length === 0 || normalized.length >= 4) {
+        void trigger(field as any);
+      }
+      return;
+    }
+
+    void trigger(field as any);
   };
 
   const onSubmit = useCallback(async (data: FormData) => {
@@ -108,9 +143,9 @@ const CoachRegisterScreen = ({ navigation }: any) => {
         gender: data.gender,
         phone: data.phone || undefined,
         id_type: data.idType,
-        id_number: data.idNumber,
+        id_number: String(data.idNumber ?? ''),
         school_or_org: data.organizationName,
-        designation: data.designation,
+        designation: data.designation ?? 'coach',
         consent_given: data.consent ? 1 : 0,
       });
       navigation.navigate('CoachOtpVerify', { local_id, otp });
@@ -145,7 +180,10 @@ const CoachRegisterScreen = ({ navigation }: any) => {
                       placeholder="e.g. Rajesh Kumar"
                       placeholderTextColor="#94A3B8"
                       value={value}
-                      onChangeText={onChange}
+                      onChangeText={text => {
+                        onChange(text);
+                        validateField('coachName', text);
+                      }}
                       autoCapitalize="words"
                     />
                   </View>
@@ -168,7 +206,10 @@ const CoachRegisterScreen = ({ navigation }: any) => {
                       placeholder="e.g. Sports Authority of India"
                       placeholderTextColor="#94A3B8"
                       value={value}
-                      onChangeText={onChange}
+                      onChangeText={text => {
+                        onChange(text);
+                        validateField('organizationName', text);
+                      }}
                     />
                   </View>
                 )}
@@ -179,18 +220,16 @@ const CoachRegisterScreen = ({ navigation }: any) => {
             {/* Designation */}
             <View style={styles.group}>
               <Text style={styles.label}>Designation</Text>
-              <View style={styles.designationGrid}>
-                {DESIGNATIONS.map(d => (
-                  <TouchableOpacity
-                    key={d}
-                    style={[styles.designationBtn, designation === d && styles.designationBtnActive]}
-                    onPress={() => setValue('designation', d as any)}
-                  >
-                    <Briefcase size={14} color={designation === d ? '#FFFFFF' : '#64748B'} />
-                    <Text style={[styles.designationText, designation === d && styles.designationTextActive]}>{d}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              <TouchableOpacity
+                style={[styles.inputRow, errors.designation && styles.inputError]}
+                onPress={() => setPickerVisible('designation')}
+              >
+                <Briefcase size={18} color="#94A3B8" />
+                <Text style={[styles.input, { paddingVertical: 0, color: '#0F172A', fontWeight: '600' }]}>
+                  {selectedDesignationLabel}
+                </Text>
+                <ChevronDown size={18} color="#94A3B8" />
+              </TouchableOpacity>
               <FieldError message={errors.designation?.message} />
             </View>
 
@@ -202,7 +241,10 @@ const CoachRegisterScreen = ({ navigation }: any) => {
                   <TouchableOpacity
                     key={g.value}
                     style={[styles.segment, gender === g.value && styles.segmentActive]}
-                    onPress={() => setValue('gender', g.value)}
+                    onPress={() => {
+                      setValue('gender', g.value, { shouldValidate: true, shouldDirty: true });
+                      void trigger('gender');
+                    }}
                   >
                     <Text style={[styles.segmentText, gender === g.value && styles.segmentTextActive]}>{g.label}</Text>
                   </TouchableOpacity>
@@ -228,7 +270,10 @@ const CoachRegisterScreen = ({ navigation }: any) => {
                       keyboardType="number-pad"
                       maxLength={10}
                       value={value}
-                      onChangeText={onChange}
+                      onChangeText={text => {
+                        onChange(text);
+                        validateField('phone', text);
+                      }}
                     />
                   </View>
                 )}
@@ -266,7 +311,10 @@ const CoachRegisterScreen = ({ navigation }: any) => {
                       keyboardType="number-pad"
                       maxLength={idType === 'NSRS' ? 20 : 12}
                       value={value}
-                      onChangeText={onChange}
+                      onChangeText={text => {
+                        onChange(text);
+                        validateField('idNumber', text);
+                      }}
                     />
                   </View>
                 )}
@@ -277,14 +325,22 @@ const CoachRegisterScreen = ({ navigation }: any) => {
             {/* Consent */}
             <View style={styles.group}>
               <View style={styles.consentRow}>
-                <TouchableOpacity onPress={() => setValue('consent', !consent)}>
+                <TouchableOpacity onPress={() => {
+                  setValue('consent', !consent, { shouldValidate: true, shouldDirty: true });
+                  void trigger('consent');
+                }}>
                   {consent
                     ? <CheckSquare size={24} color="#4F46E5" />
                     : <Square size={24} color="#CBD5E1" />}
                 </TouchableOpacity>
                 <Text style={styles.consentText}>
                   I agree to the{' '}
-                  <Text style={styles.consentLink} onPress={() => navigation.navigate('TermsAndConditions')}>
+                  <Text
+                    style={styles.consentLink}
+                    onPress={() => navigation.navigate('TermsAndConditions', {
+                      onAccept: () => setValue('consent', true, { shouldValidate: true }),
+                    })}
+                  >
                     Terms & Conditions
                   </Text>
                 </Text>
@@ -293,9 +349,9 @@ const CoachRegisterScreen = ({ navigation }: any) => {
             </View>
 
             <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleSubmit(onSubmit)}
-              disabled={loading}
+              style={[styles.button, (loading || !isValid) && styles.buttonDisabled]}
+              onPress={handleSubmit(onSubmit as any)}
+              disabled={loading || !isValid}
             >
               {loading
                 ? <ActivityIndicator color="#fff" />
@@ -321,7 +377,23 @@ const CoachRegisterScreen = ({ navigation }: any) => {
           { label: 'AADHAR (Aadhar)', value: 'AADHAR' },
         ]}
         selected={idType}
-        onSelect={(val: string) => { setValue('idType', val as any); setValue('idNumber', ''); }}
+        onSelect={(val: string) => {
+          setValue('idType', val as any, { shouldValidate: true, shouldDirty: true });
+          setValue('idNumber', '');
+          void trigger('idType');
+        }}
+        onClose={() => setPickerVisible(null)}
+      />
+
+      <PickerModal
+        visible={pickerVisible === 'designation'}
+        title="Select Designation"
+        items={DESIGNATIONS}
+        selected={designation}
+        onSelect={(val: string) => {
+          setValue('designation', val as any, { shouldValidate: true, shouldDirty: true });
+          void trigger('designation');
+        }}
         onClose={() => setPickerVisible(null)}
       />
     </SafeAreaView>

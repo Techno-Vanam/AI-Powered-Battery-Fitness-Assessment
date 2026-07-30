@@ -1,3 +1,5 @@
+npx react-native run-android
+
 mode:
 individual athlete/coach
 

@@ -1,28 +1,44 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput,
-  Animated, Alert, ActivityIndicator
+  Animated, Alert, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform
 } from 'react-native';
 import { ShieldCheck, RefreshCw } from 'lucide-react-native';
-import { verifyOTP, generateMockOTP } from '../../db/otpService';
+import { verifyOTP, generateMockOTP, getLatestOTP } from '../../db/otpService';
 import { markUserVerified } from '../../db/userRepository';
 
 const OTP_LENGTH = 6;
 const OTP_EXPIRY_SECONDS = 300; // 5 minutes
 
 const AthleteOtpVerifyScreen = ({ navigation, route }: any) => {
-  const { local_id, otp: initialOtp } = route.params ?? {};
+  const { local_id } = route.params ?? {};
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
-  const [currentOtp, setCurrentOtp] = useState<string>(initialOtp || '');
+  const [generatedOtp, setGeneratedOtp] = useState<string>('');
   const [timeLeft, setTimeLeft] = useState(OTP_EXPIRY_SECONDS);
+  const [isExpired, setIsExpired] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const inputRefs = useRef<Array<TextInput | null>>(Array(OTP_LENGTH).fill(null));
   const shakeAnim = useRef(new Animated.Value(0)).current;
 
-  // Countdown timer
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    const storedOtp = getLatestOTP(local_id);
+    const initialValue = storedOtp ?? generateMockOTP(local_id);
+
+    console.log(`[AthleteOtp] mount -> local_id=${local_id} storedOtp=${JSON.stringify(storedOtp)} generatedOtp=${JSON.stringify(initialValue)} ts=${new Date().toISOString()}`);
+    setGeneratedOtp(initialValue || '');
+    setOtp(Array(OTP_LENGTH).fill(''));
+    setError('');
+    setTimeLeft(OTP_EXPIRY_SECONDS);
+    setIsExpired(false);
+  }, []);
+
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      setIsExpired(true);
+      return;
+    }
+
     const interval = setInterval(() => setTimeLeft(t => t - 1), 1000);
     return () => clearInterval(interval);
   }, [timeLeft]);
@@ -59,12 +75,15 @@ const AthleteOtpVerifyScreen = ({ navigation, route }: any) => {
     }
   };
 
-  const handleResend = async () => {
+  const handleResend = () => {
     try {
-      const newOtp = await generateMockOTP(local_id);
-      setCurrentOtp(newOtp);
+      const newOtp = generateMockOTP(local_id);
+      console.log(`[AthleteOtp] resend -> local_id=${local_id} previous=${JSON.stringify(generatedOtp)} next=${JSON.stringify(newOtp)} ts=${new Date().toISOString()}`);
+      setGeneratedOtp(String(newOtp).trim());
       setTimeLeft(OTP_EXPIRY_SECONDS);
+      setIsExpired(false);
       setOtp(Array(OTP_LENGTH).fill(''));
+      setError('');
       inputRefs.current[0]?.focus();
     } catch {
       Alert.alert('Error', 'Could not regenerate OTP.');
@@ -72,8 +91,26 @@ const AthleteOtpVerifyScreen = ({ navigation, route }: any) => {
   };
 
   const handleVerify = async () => {
-    const entered = otp.join('');
+    const entered = String(otp.join('')).trim();
+    const expected = String(getLatestOTP(local_id) ?? generatedOtp).trim();
+
+    console.log(`[AthleteOtp] compare -> entered=${JSON.stringify(entered)} expected=${JSON.stringify(expected)} joined=${JSON.stringify(otp.join(''))}`);
+    if (isExpired) {
+      setError('OTP expired, please resend.');
+      triggerShake();
+      setOtp(Array(OTP_LENGTH).fill(''));
+      inputRefs.current[0]?.focus();
+      return;
+    }
+
     if (entered.length < OTP_LENGTH) return;
+    if (entered !== expected) {
+      setError('Incorrect OTP, please check the code shown above.');
+      triggerShake();
+      setOtp(Array(OTP_LENGTH).fill(''));
+      inputRefs.current[0]?.focus();
+      return;
+    }
 
     setLoading(true);
     setError('');
@@ -99,83 +136,83 @@ const AthleteOtpVerifyScreen = ({ navigation, route }: any) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.iconCircle}>
-            <ShieldCheck size={32} color="#4F46E5" />
-          </View>
-          <Text style={styles.title}>Verify Your ID</Text>
-          <Text style={styles.subtitle}>
-            A one-time code has been generated for your NSRS/APAAR/Aadhar verification.
-          </Text>
-        </View>
-
-        {/* Mock OTP Banner */}
-        <View style={styles.otpBanner}>
-          <Text style={styles.bannerLabel}>🔐 Demo OTP (Read & Re-enter Below)</Text>
-          <View style={styles.otpDisplay}>
-            {currentOtp.split('').map((digit, i) => (
-              <View key={i} style={styles.otpDisplayBox}>
-                <Text style={styles.otpDisplayDigit}>{digit}</Text>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex}>
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          <View style={styles.container}>
+            <View style={styles.header}>
+              <View style={styles.iconCircle}>
+                <ShieldCheck size={32} color="#4F46E5" />
               </View>
-            ))}
-          </View>
-          <Text style={styles.bannerNote}>This OTP is displayed on-screen for offline/demo use only.</Text>
-        </View>
+              <Text style={styles.title}>Verify Your ID</Text>
+              <Text style={styles.subtitle}>
+                A one-time code has been generated for your NSRS/APAAR/Aadhar verification.
+              </Text>
+            </View>
 
-        {/* OTP Input */}
-        <Animated.View style={[styles.inputRow, { transform: [{ translateX: shakeAnim }] }]}>
-          {otp.map((digit, i) => (
-            <TextInput
-              key={i}
-              ref={ref => { inputRefs.current[i] = ref; }}
-              style={[styles.otpBox, digit && styles.otpBoxFilled, error && styles.otpBoxError]}
-              value={digit}
-              onChangeText={text => handleChange(text.slice(-1), i)}
-              onKeyPress={e => handleKeyPress(e, i)}
-              keyboardType="number-pad"
-              maxLength={1}
-              textAlign="center"
-              autoFocus={i === 0}
-              selectTextOnFocus
-            />
-          ))}
-        </Animated.View>
+            <View style={styles.otpBanner}>
+              <Text style={styles.bannerLabel}>🔐 Demo OTP (Read & Re-enter Below)</Text>
+              <View style={styles.otpDisplay}>
+                {String(generatedOtp).split('').map((digit, i) => (
+                  <View key={i} style={styles.otpDisplayBox}>
+                    <Text style={styles.otpDisplayDigit}>{digit}</Text>
+                  </View>
+                ))}
+              </View>
+              <Text style={styles.bannerNote}>This OTP is displayed on-screen for offline/demo use only.</Text>
+            </View>
 
-        {/* Error */}
-        {!!error && <Text style={styles.errorText}>{error}</Text>}
+            <Animated.View style={[styles.inputRow, { transform: [{ translateX: shakeAnim }] }]}>
+              {otp.map((digit, i) => (
+                <TextInput
+                  key={i}
+                  ref={ref => { inputRefs.current[i] = ref; }}
+                  style={[styles.otpBox, digit && styles.otpBoxFilled, error && styles.otpBoxError]}
+                  value={digit}
+                  onChangeText={text => handleChange(text.slice(-1), i)}
+                  onKeyPress={e => handleKeyPress(e, i)}
+                  keyboardType="number-pad"
+                  maxLength={1}
+                  textAlign="center"
+                  autoFocus={i === 0}
+                  selectTextOnFocus
+                />
+              ))}
+            </Animated.View>
 
-        {/* Timer / Resend */}
-        <View style={styles.timerRow}>
-          {timeLeft > 0 ? (
-            <Text style={styles.timerText}>Code expires in <Text style={styles.timerBold}>{formatTime(timeLeft)}</Text></Text>
-          ) : (
-            <TouchableOpacity style={styles.resendBtn} onPress={handleResend}>
-              <RefreshCw size={14} color="#4F46E5" />
-              <Text style={styles.resendText}>Resend OTP</Text>
+            {!!error && <Text style={styles.errorText}>{error}</Text>}
+
+            <View style={styles.timerRow}>
+              {!isExpired ? (
+                <Text style={styles.timerText}>Code expires in <Text style={styles.timerBold}>{formatTime(timeLeft)}</Text></Text>
+              ) : (
+                <TouchableOpacity style={styles.resendBtn} onPress={handleResend}>
+                  <RefreshCw size={14} color="#4F46E5" />
+                  <Text style={styles.resendText}>Resend OTP</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, (!enteredFull || loading || isExpired) && styles.buttonDisabled]}
+              onPress={handleVerify}
+              disabled={!enteredFull || loading || isExpired}
+            >
+              {loading
+                ? <ActivityIndicator color="#fff" />
+                : <Text style={styles.buttonText}>Verify & Continue</Text>}
             </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Verify Button */}
-        <TouchableOpacity
-          style={[styles.button, (!enteredFull || loading) && styles.buttonDisabled]}
-          onPress={handleVerify}
-          disabled={!enteredFull || loading}
-        >
-          {loading
-            ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.buttonText}>Verify & Continue</Text>}
-        </TouchableOpacity>
-      </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
-  container: { flex: 1, padding: 24, alignItems: 'center', justifyContent: 'center', gap: 24 },
+  flex: { flex: 1 },
+  scrollContent: { flexGrow: 1, justifyContent: 'center', padding: 24, paddingBottom: 40 },
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 24 },
   header: { alignItems: 'center', gap: 12, marginBottom: 4 },
   iconCircle: {
     width: 72, height: 72, borderRadius: 36, backgroundColor: '#EEF2FF',

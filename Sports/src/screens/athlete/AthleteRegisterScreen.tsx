@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
   User, Calendar, Phone, CreditCard, Building2, CheckSquare, Square,
-  ChevronDown, AlertCircle, Check
+  ChevronDown, AlertCircle, Check, Shield
 } from 'lucide-react-native';
 import { registerUser } from '../../services/authService';
 
@@ -131,7 +131,9 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
   const [loading, setLoading] = useState(false);
   const [pickerVisible, setPickerVisible] = useState<string | null>(null);
 
-  const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
+  const { control, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm<FormData>({
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     resolver: yupResolver(schema) as any,
     defaultValues: {
       fullName: '', dobDay: '', dobMonth: '', dobYear: '', gender: '',
@@ -158,6 +160,33 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
     return 'NSRS Number (digits only)';
   };
 
+  const validateField = (field: keyof FormData, value: string) => {
+    const normalized = value.trim();
+
+    if (field === 'fullName' || field === 'guardianName' || field === 'school') {
+      if (normalized.length === 0 || normalized.length >= 2) {
+        void trigger(field as any);
+      }
+      return;
+    }
+
+    if (field === 'phone') {
+      if (normalized.length === 0 || normalized.length >= 10) {
+        void trigger(field as any);
+      }
+      return;
+    }
+
+    if (field === 'idNumber') {
+      if (normalized.length === 0 || normalized.length >= 4) {
+        void trigger(field as any);
+      }
+      return;
+    }
+
+    void trigger(field as any);
+  };
+
   const onSubmit = useCallback(async (data: FormData) => {
     const ageCheck = calcAge(data.dobDay, data.dobMonth, data.dobYear);
     if (ageCheck === null) {
@@ -175,7 +204,7 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
         gender: data.gender,
         phone: data.phone || undefined,
         id_type: data.idType,
-        id_number: data.idNumber,
+        id_number: String(data.idNumber ?? ''),
         school_or_org: data.school,
         consent_given: data.consent ? 1 : 0,
         guardian_name: isMinor ? data.guardianName : undefined,
@@ -214,7 +243,10 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
                       placeholder="e.g. Arjun Sharma"
                       placeholderTextColor="#94A3B8"
                       value={value}
-                      onChangeText={onChange}
+                      onChangeText={text => {
+                        onChange(text);
+                        validateField('fullName', text);
+                      }}
                       autoCapitalize="words"
                     />
                   </View>
@@ -266,7 +298,10 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
             {/* Guardian Block */}
             {isMinor && (
               <View style={styles.guardianBlock}>
-                <Text style={styles.guardianTitle}>👤 Guardian Details (Under 18)</Text>
+                <View style={styles.guardianTitleRow}>
+                  <Shield size={16} color="#9A2C2C" />
+                  <Text style={styles.guardianTitle}>Guardian Details (Under 18)</Text>
+                </View>
                 <View style={styles.group}>
                   <Text style={styles.label}>Guardian Name</Text>
                   <Controller
@@ -280,7 +315,10 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
                           placeholder="Guardian Full Name"
                           placeholderTextColor="#94A3B8"
                           value={value}
-                          onChangeText={onChange}
+                          onChangeText={text => {
+                            onChange(text);
+                            validateField('guardianName', text);
+                          }}
                         />
                       </View>
                     )}
@@ -314,7 +352,10 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
                   <TouchableOpacity
                     key={g.value}
                     style={[styles.segment, gender === g.value && styles.segmentActive]}
-                    onPress={() => setValue('gender', g.value)}
+                    onPress={() => {
+                      setValue('gender', g.value, { shouldValidate: true, shouldDirty: true });
+                      void trigger('gender');
+                    }}
                   >
                     <Text style={[styles.segmentText, gender === g.value && styles.segmentTextActive]}>{g.label}</Text>
                   </TouchableOpacity>
@@ -340,7 +381,10 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
                       keyboardType="number-pad"
                       maxLength={10}
                       value={value}
-                      onChangeText={onChange}
+                      onChangeText={text => {
+                        onChange(text);
+                        validateField('phone', text);
+                      }}
                     />
                   </View>
                 )}
@@ -378,7 +422,10 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
                       keyboardType="number-pad"
                       maxLength={idType === 'NSRS' ? 20 : 12}
                       value={value}
-                      onChangeText={onChange}
+                      onChangeText={text => {
+                        onChange(text);
+                        validateField('idNumber', text);
+                      }}
                     />
                   </View>
                 )}
@@ -400,7 +447,10 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
                       placeholder="Enter your school name"
                       placeholderTextColor="#94A3B8"
                       value={value}
-                      onChangeText={onChange}
+                      onChangeText={text => {
+                        onChange(text);
+                        validateField('school', text);
+                      }}
                     />
                   </View>
                 )}
@@ -411,7 +461,10 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
             {/* Consent */}
             <View style={styles.group}>
               <View style={styles.consentRow}>
-                <TouchableOpacity onPress={() => setValue('consent', !consent)}>
+                <TouchableOpacity onPress={() => {
+                  setValue('consent', !consent, { shouldValidate: true, shouldDirty: true });
+                  void trigger('consent');
+                }}>
                   {consent
                     ? <CheckSquare size={24} color="#4F46E5" />
                     : <Square size={24} color="#CBD5E1" />}
@@ -420,7 +473,9 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
                   I agree to the{' '}
                   <Text
                     style={styles.consentLink}
-                    onPress={() => navigation.navigate('TermsAndConditions')}
+                    onPress={() => navigation.navigate('TermsAndConditions', {
+                      onAccept: () => setValue('consent', true, { shouldValidate: true }),
+                    })}
                   >
                     Terms & Conditions
                   </Text>
@@ -502,7 +557,11 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
           { label: 'AADHAR (Aadhar)', value: 'AADHAR' },
         ]}
         selected={idType}
-        onSelect={val => { setValue('idType', val as any); setValue('idNumber', ''); }}
+        onSelect={val => {
+          setValue('idType', val as any, { shouldValidate: true, shouldDirty: true });
+          setValue('idNumber', '');
+          void trigger('idType');
+        }}
         onClose={() => setPickerVisible(null)}
       />
     </SafeAreaView>
@@ -548,6 +607,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF7ED', borderWidth: 1, borderColor: '#FDBA74',
     borderRadius: 14, padding: 16, gap: 14,
   },
+  guardianTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   guardianTitle: { fontSize: 13, fontWeight: '700', color: '#9A3412' },
   segmented: {
     flexDirection: 'row', backgroundColor: '#F1F5F9', borderRadius: 12,

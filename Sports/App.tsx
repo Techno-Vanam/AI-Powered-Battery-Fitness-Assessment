@@ -24,6 +24,8 @@ import SetPasswordScreen from './src/screens/shared/SetPasswordScreen';
 import ForgotPasswordScreen from './src/screens/shared/ForgotPasswordScreen';
 import ResetPasswordScreen from './src/screens/shared/ResetPasswordScreen';
 import TermsAndConditionsScreen from './src/screens/shared/TermsAndConditionsScreen';
+import AthleteHomeScreen from './src/screens/athlete/AthleteHomeScreen';
+import CoachHomeScreen from './src/screens/coach/CoachHomeScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -114,6 +116,16 @@ function App() {
           <Stack.Screen
             name="TermsAndConditions"
             component={TermsAndConditionsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AthleteHome"
+            component={AthleteHomeScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="CoachHome"
+            component={CoachHomeScreen}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>

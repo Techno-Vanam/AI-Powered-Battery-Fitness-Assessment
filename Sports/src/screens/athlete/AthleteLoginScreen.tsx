@@ -91,7 +91,7 @@ const AthleteLoginScreen = ({ navigation }: any) => {
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     try {
-      await loginUser(data.idType, data.idNumber, data.password, 'athlete');
+      await loginUser(data.idType ?? 'NSRS', data.idNumber ?? '', data.password, 'athlete');
       navigation.reset({ index: 0, routes: [{ name: 'AthleteHome' }] });
     } catch (e: any) {
       Alert.alert('Login Failed', e.message || 'Invalid ID or password.');

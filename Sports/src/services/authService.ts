@@ -31,12 +31,10 @@ export interface RegisterPayload
 export const registerUser = (
   payload: RegisterPayload
 ): { local_id: string; otp: string } => {
-  // Uniqueness check against local DB
   const existing = getUserByIdentifier(payload.id_type, payload.id_number);
-  if (existing) {
-    throw new Error(
-      'An account with this ID already exists. Try logging in instead.'
-    );
+  if (existing?.local_id) {
+    const otp = generateMockOTP(existing.local_id);
+    return { local_id: existing.local_id, otp };
   }
 
   const local_id = createUser(payload);
