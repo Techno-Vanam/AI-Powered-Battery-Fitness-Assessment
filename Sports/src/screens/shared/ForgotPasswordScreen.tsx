@@ -1,120 +1,247 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Fingerprint, CreditCard, UserCircle } from 'lucide-react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput,
+  ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator, Modal
+} from 'react-native';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { CreditCard, Search, ChevronDown, AlertCircle, Check, Info } from 'lucide-react-native';
+import { getUserByIdentifier } from '../../db/userRepository';
 
-interface ForgotPasswordScreenProps {
-  navigation: any;
-}
+const ID_TYPES = [
+  { label: 'NSRS', value: 'NSRS' },
+  { label: 'APAAR (12-digit)', value: 'APAAR' },
+  { label: 'Aadhar (12-digit)', value: 'AADHAR' },
+];
 
-const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation }) => {
-  const [idType, setIdType] = useState('NSRS');
-  const [idNumber, setIdNumber] = useState('');
+const idNumberSchema = (idType: string | undefined) => {
+  if (idType === 'APAAR') return yup.string().matches(/^\d{12}$/, 'Enter a valid 12-digit APAAR ID').required('ID Number is required');
+  if (idType === 'AADHAR') return yup.string().matches(/^\d{12}$/, 'Enter a valid 12-digit Aadhar number').required('ID Number is required');
+  return yup.string().matches(/^\d{4,20}$/, 'Enter a valid NSRS number (digits only)').required('ID Number is required');
+};
 
-  const handleCheckAndReset = () => {
-    // In a real app, query local/remote DB. If found, proceed to ResetPassword.
-    // Since we're mocking, we'll just navigate to ResetPassword.
-    if (idNumber.length > 3) {
-      navigation.navigate('ResetPassword');
+const schema = yup.object({
+  idType: yup.string().oneOf(['NSRS', 'APAAR', 'AADHAR']).required('Please select an ID type'),
+  idNumber: yup.string().when('idType', ([idType], schema) => idNumberSchema(idType)),
+});
+
+type FormData = yup.InferType<typeof schema>;
+
+const PickerModal = ({ visible, items, selected, onSelect, onClose }: any) => (
+  <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <View style={styles.modalOverlay}>
+      <View style={styles.modalSheet}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Select ID Type</Text>
+          <TouchableOpacity onPress={onClose}><Text style={styles.modalClose}>Done</Text></TouchableOpacity>
+        </View>
+        <ScrollView>
+          {items.map((item: any) => (
+            <TouchableOpacity key={item.value} style={styles.modalItem} onPress={() => { onSelect(item.value); onClose(); }}>
+              <Text style={[styles.modalItemText, selected === item.value && styles.modalItemSelected]}>{item.label}</Text>
+              {selected === item.value && <Check size={18} color="#4F46E5" />}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    </View>
+  </Modal>
+);
+
+const FieldError: React.FC<{ message?: string }> = ({ message }) =>
+  message ? (
+    <View style={styles.errorRow}>
+      <AlertCircle size={12} color="#EF4444" />
+      <Text style={styles.errorText}>{message}</Text>
+    </View>
+  ) : null;
+
+const ForgotPasswordScreen = ({ navigation }: any) => {
+  const [loading, setLoading] = useState(false);
+  const [notFound, setNotFound] = useState(false);
+  const [pickerVisible, setPickerVisible] = useState(false);
+
+  const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
+    resolver: yupResolver(schema) as any,
+    defaultValues: { idType: 'NSRS', idNumber: '' },
+  });
+
+  const idType = watch('idType');
+
+  const getIdPlaceholder = () => {
+    if (idType === 'APAAR') return '12-digit APAAR ID';
+    if (idType === 'AADHAR') return '12-digit Aadhar Number';
+    return 'NSRS Number (digits only)';
+  };
+
+  const onSubmit = async (data: FormData) => {
+    setLoading(true);
+    setNotFound(false);
+    try {
+      // 1. Check local SQLite first
+      const user = await getUserByIdentifier(data.idType, data.idNumber);
+      if (user) {
+        navigation.navigate('ResetPassword', { local_id: user.local_id });
+        return;
+      }
+
+      // 2. If not found locally and device might be online, could check remote here
+      //    For now, surface as not-found since we're offline-first
+      setNotFound(true);
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Something went wrong.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex}>
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
+            <View style={styles.iconCircle}>
+              <Search size={28} color="#4F46E5" />
+            </View>
             <Text style={styles.title}>Forgot Password?</Text>
-            <Text style={styles.subtitle}>Enter your registered ID to reset your password. No OTP required.</Text>
+            <Text style={styles.subtitle}>
+              Enter the ID you used during registration. If we find your account, you can reset your password immediately — no OTP needed.
+            </Text>
           </View>
 
-          <View style={styles.formContainer}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Select ID Type</Text>
-              <View style={styles.idTypeContainer}>
-                {['NSRS', 'APAAR', 'Aadhar'].map((type) => (
-                  <TouchableOpacity
-                    key={type}
-                    style={[styles.idTypeButton, idType === type && styles.idTypeButtonActive]}
-                    onPress={() => setIdType(type)}
-                  >
-                    <Text style={[styles.idTypeText, idType === type && styles.idTypeTextActive]}>{type}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+          <View style={styles.infoBox}>
+            <Info size={16} color="#3B82F6" />
+            <Text style={styles.infoText}>
+              No SMS is sent. If your ID is found in the database, you'll be taken directly to a password reset screen.
+            </Text>
+          </View>
+
+          <View style={styles.form}>
+            <View style={styles.group}>
+              <Text style={styles.label}>ID Type</Text>
+              <TouchableOpacity
+                style={[styles.inputRow, errors.idType && styles.inputError]}
+                onPress={() => setPickerVisible(true)}
+              >
+                <CreditCard size={18} color="#94A3B8" />
+                <Text style={[styles.input, { paddingVertical: 0, color: '#0F172A', fontWeight: '600' }]}>
+                  {ID_TYPES.find(t => t.value === idType)?.label || 'Select ID Type'}
+                </Text>
+                <ChevronDown size={18} color="#94A3B8" />
+              </TouchableOpacity>
+              <FieldError message={errors.idType?.message} />
             </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>{idType} Number</Text>
-              <View style={styles.inputWrapper}>
-                {idType === 'NSRS' && <UserCircle size={20} color="#94A3B8" style={styles.inputIcon} />}
-                {idType === 'APAAR' && <CreditCard size={20} color="#94A3B8" style={styles.inputIcon} />}
-                {idType === 'Aadhar' && <Fingerprint size={20} color="#94A3B8" style={styles.inputIcon} />}
-                
-                <TextInput
-                  style={styles.input}
-                  placeholder={`Enter your ${idType} number`}
-                  value={idNumber}
-                  onChangeText={setIdNumber}
-                  placeholderTextColor="#94A3B8"
-                  keyboardType={idType === 'Aadhar' ? 'number-pad' : 'default'}
-                />
-              </View>
+            <View style={styles.group}>
+              <Text style={styles.label}>ID Number</Text>
+              <Controller
+                control={control}
+                name="idNumber"
+                render={({ field: { onChange, value } }) => (
+                  <View style={[styles.inputRow, (errors.idNumber || notFound) && styles.inputError]}>
+                    <CreditCard size={18} color="#94A3B8" />
+                    <TextInput
+                      style={styles.input}
+                      placeholder={getIdPlaceholder()}
+                      placeholderTextColor="#94A3B8"
+                      keyboardType="number-pad"
+                      maxLength={idType === 'NSRS' ? 20 : 12}
+                      value={value}
+                      onChangeText={v => { onChange(v); setNotFound(false); }}
+                    />
+                  </View>
+                )}
+              />
+              <FieldError message={errors.idNumber?.message} />
+              {notFound && (
+                <View style={styles.errorRow}>
+                  <AlertCircle size={12} color="#EF4444" />
+                  <Text style={styles.errorText}>No account found with this ID.</Text>
+                </View>
+              )}
             </View>
 
-            <TouchableOpacity 
-              style={[styles.button, idNumber.length < 4 && styles.buttonDisabled]} 
-              onPress={handleCheckAndReset}
-              disabled={idNumber.length < 4}
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleSubmit(onSubmit)}
+              disabled={loading}
             >
-              <Text style={styles.buttonText}>Check & Reset</Text>
+              {loading
+                ? <ActivityIndicator color="#fff" />
+                : <Text style={styles.buttonText}>Check & Reset Password</Text>}
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.backRow} onPress={() => navigation.goBack()}>
+              <Text style={styles.backText}>Back to Login</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <PickerModal
+        visible={pickerVisible}
+        items={ID_TYPES}
+        selected={idType}
+        onSelect={(val: string) => { setValue('idType', val as any); setValue('idNumber', ''); setNotFound(false); }}
+        onClose={() => setPickerVisible(false)}
+      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
-  keyboardView: { flex: 1 },
-  scrollContent: { flexGrow: 1, padding: 24, justifyContent: 'center' },
-  header: { marginBottom: 32 },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#0F172A', marginBottom: 8 },
-  subtitle: { fontSize: 16, color: '#64748B', lineHeight: 24 },
-  formContainer: { gap: 24 },
-  inputGroup: { gap: 8 },
-  label: { fontSize: 14, fontWeight: '600', color: '#334155' },
-  idTypeContainer: { flexDirection: 'row', gap: 8 },
-  idTypeButton: { flex: 1, paddingVertical: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, alignItems: 'center' },
-  idTypeButtonActive: { backgroundColor: '#EEF2FF', borderColor: '#4F46E5' },
-  idTypeText: { fontSize: 14, fontWeight: '600', color: '#64748B' },
-  idTypeTextActive: { color: '#4F46E5' },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    height: 56,
+  flex: { flex: 1 },
+  scrollContent: { flexGrow: 1, padding: 24, paddingBottom: 40, justifyContent: 'center' },
+  header: { alignItems: 'center', marginBottom: 24, gap: 12 },
+  iconCircle: {
+    width: 68, height: 68, borderRadius: 34, backgroundColor: '#EEF2FF',
+    alignItems: 'center', justifyContent: 'center',
   },
-  inputIcon: { marginRight: 12 },
-  input: { flex: 1, fontSize: 16, color: '#0F172A' },
+  title: { fontSize: 24, fontWeight: '800', color: '#0F172A', textAlign: 'center' },
+  subtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 22, paddingHorizontal: 8 },
+  infoBox: {
+    flexDirection: 'row', gap: 10, alignItems: 'flex-start',
+    backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE',
+    borderRadius: 14, padding: 14, marginBottom: 24,
+  },
+  infoText: { flex: 1, fontSize: 13, color: '#1D4ED8', lineHeight: 20 },
+  form: { gap: 18 },
+  group: { gap: 6 },
+  label: { fontSize: 13, fontWeight: '700', color: '#334155', letterSpacing: 0.3 },
+  inputRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: '#E2E8F0',
+    borderRadius: 14, paddingHorizontal: 14, height: 52,
+  },
+  inputError: { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' },
+  input: { flex: 1, fontSize: 15, color: '#0F172A', paddingVertical: 0 },
   button: {
-    backgroundColor: '#4F46E5',
-    borderRadius: 12,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 16,
+    height: 56, borderRadius: 14, backgroundColor: '#4F46E5',
+    justifyContent: 'center', alignItems: 'center', marginTop: 4,
+    shadowColor: '#4F46E5', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
   },
-  buttonDisabled: { backgroundColor: '#A5B4FC' },
-  buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+  buttonDisabled: { opacity: 0.5 },
+  buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  backRow: { alignItems: 'center', marginTop: 8 },
+  backText: { fontSize: 14, color: '#64748B' },
+  errorRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  errorText: { fontSize: 12, color: '#EF4444', fontWeight: '500' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalSheet: { backgroundColor: '#FFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '50%', paddingBottom: 32 },
+  modalHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    padding: 18, borderBottomWidth: 1, borderColor: '#E2E8F0',
+  },
+  modalTitle: { fontSize: 16, fontWeight: '700', color: '#0F172A' },
+  modalClose: { fontSize: 15, color: '#4F46E5', fontWeight: '700' },
+  modalItem: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingVertical: 14, paddingHorizontal: 20, borderBottomWidth: 1, borderColor: '#F1F5F9',
+  },
+  modalItemText: { fontSize: 15, color: '#334155' },
+  modalItemSelected: { color: '#4F46E5', fontWeight: '700' },
 });
 
 export default ForgotPasswordScreen;
