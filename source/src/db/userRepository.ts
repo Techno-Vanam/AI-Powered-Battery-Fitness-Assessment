@@ -117,9 +117,18 @@ export const markUserVerified = (local_id: string): void => {
   const db = getDBConnection();
   const now = new Date().toISOString();
   db.executeSync(
-    `UPDATE users SET is_verified = 1, updated_at = ? WHERE local_id = ?`,
+    `UPDATE users SET is_verified = 1, updated_at = ?, sync_status = 'pending' WHERE local_id = ?`,
     [now, local_id]
   );
+
+  const user = getUserByLocalId(local_id);
+  if (user) {
+    db.executeSync(
+      `INSERT INTO sync_queue (entity_type, entity_local_id, operation, payload, created_at)
+         VALUES (?, ?, ?, ?, ?)`,
+      ['users', local_id, 'UPDATE', JSON.stringify(user), now]
+    );
+  }
 };
 
 export const updateUserPassword = (local_id: string, password_hash: string): void => {

@@ -1,73 +1,89 @@
-import Database from 'better-sqlite3';
+import { createClient } from '@libsql/client';
 import { mkdirSync, existsSync } from 'fs';
 import { dirname } from 'path';
 import env from '../config/env.js';
 import { migrations } from './migrations.js';
 
-let _db = null;
+/** @type {import('@libsql/client').Client | null} */
+let _client = null;
 
-/**
- * Returns the singleton database connection.
- * Throws if called before initialise().
- */
-export function getDB() {
-  if (!_db) {
+export function getClient() {
+  if (!_client) {
     throw new Error('Database has not been initialised. Call initialiseDB() first.');
   }
-  return _db;
+  return _client;
 }
 
-/**
- * Opens the SQLite database, enables WAL mode, enforces foreign keys,
- * and runs all DDL migrations.  Safe to call multiple times — idempotent.
- */
-export function initialiseDB() {
-  if (_db) return _db;
+/** @deprecated Use getClient() — kept for gradual migration */
+export function getDB() {
+  return getClient();
+}
 
-  // Ensure the data directory exists
-  const dir = dirname(env.DB_PATH);
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
+export async function initialiseDB() {
+  if (_client) return _client;
+
+  if (env.TURSO_DATABASE_URL && env.TURSO_AUTH_TOKEN) {
+    _client = createClient({
+      url: env.TURSO_DATABASE_URL,
+      authToken: env.TURSO_AUTH_TOKEN,
+    });
+    console.log('[DB] Connected to Turso (libSQL cloud)');
+  } else {
+    const dir = dirname(env.DB_PATH);
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true });
+    }
+    _client = createClient({ url: `file:${env.DB_PATH}` });
+    console.log(`[DB] Using local SQLite file → ${env.DB_PATH}`);
   }
 
-  _db = new Database(env.DB_PATH, {
-    // verbose: env.IS_DEVELOPMENT ? console.log : undefined,
-  });
+  for (const sql of migrations) {
+    await _client.execute(sql);
+  }
 
-  // Performance and integrity pragmas
-  _db.pragma('journal_mode = WAL');
-  _db.pragma('foreign_keys = ON');
-  _db.pragma('synchronous = NORMAL');
-  _db.pragma('temp_store = MEMORY');
-  _db.pragma('mmap_size = 268435456'); // 256 MB
-
-  runMigrations(_db);
-
-  console.log(`[DB] Initialised → ${env.DB_PATH}`);
-  return _db;
-}
-
-/**
- * Executes every migration statement inside a single transaction.
- * Uses CREATE TABLE/INDEX IF NOT EXISTS so re-running is safe.
- */
-function runMigrations(db) {
-  const run = db.transaction(() => {
-    for (const sql of migrations) {
-      db.prepare(sql).run();
-    }
-  });
-  run();
   console.log(`[DB] Migrations complete (${migrations.length} statements)`);
+  return _client;
 }
 
-/**
- * Gracefully closes the database.  Called on process shutdown.
- */
+export async function dbExecute(sql, args = []) {
+  return getClient().execute({ sql, args });
+}
+
+export async function dbGet(sql, args = []) {
+  const result = await dbExecute(sql, args);
+  return result.rows[0] ?? undefined;
+}
+
+export async function dbRun(sql, args = []) {
+  const result = await dbExecute(sql, args);
+  return { changes: result.rowsAffected ?? 0 };
+}
+
+export async function withTransaction(fn) {
+  const tx = await getClient().transaction('write');
+  try {
+    await fn({
+      execute: (sql, args = []) => tx.execute({ sql, args }),
+      get: async (sql, args = []) => {
+        const result = await tx.execute({ sql, args });
+        return result.rows[0] ?? undefined;
+      },
+      run: async (sql, args = []) => {
+        const result = await tx.execute({ sql, args });
+        return { changes: result.rowsAffected ?? 0 };
+      },
+    });
+    await tx.commit();
+  } catch (err) {
+    await tx.rollback();
+    throw err;
+  }
+}
+
 export function closeDB() {
-  if (_db) {
-    _db.close();
-    _db = null;
+  if (_client) {
+    _client.close();
+    _client = null;
     console.log('[DB] Connection closed');
   }
 }

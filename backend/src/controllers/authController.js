@@ -34,10 +34,10 @@ export async function registerCoach(req, res, next) {
 }
 
 // ── POST /api/auth/otp/verify ─────────────────────────────────────────────────
-export function verifyOtp(req, res, next) {
+export async function verifyOtp(req, res, next) {
   try {
     const { local_id, otp_code } = req.body;
-    const { user } = authService.verifyOtp(local_id, otp_code);
+    const { user } = await authService.verifyOtp(local_id, otp_code);
     return sendSuccess(res, 'OTP verified successfully.', { user });
   } catch (err) {
     next(err);
@@ -84,10 +84,10 @@ export async function login(req, res, next) {
 }
 
 // ── POST /api/auth/password/forgot ────────────────────────────────────────────
-export function forgotPassword(req, res, next) {
+export async function forgotPassword(req, res, next) {
   try {
     const { id_type, id_number, role } = req.body;
-    const result = authService.forgotPassword(id_type, id_number, role);
+    const result = await authService.forgotPassword(id_type, id_number, role);
     return sendSuccess(res, 'Account found. You may now reset your password.', result);
   } catch (err) {
     next(err);
@@ -106,13 +106,13 @@ export async function resetPassword(req, res, next) {
 }
 
 // ── GET /api/auth/users/:local_id ─────────────────────────────────────────────
-export function getUser(req, res, next) {
+export async function getUser(req, res, next) {
   try {
     const { local_id } = req.params;
     if (!local_id || typeof local_id !== 'string') {
       return sendError(res, 'local_id param is required.', HTTP.BAD_REQUEST);
     }
-    const { user } = authService.getUserByLocalId(local_id);
+    const { user } = await authService.getUserByLocalId(local_id);
     return sendSuccess(res, 'User retrieved successfully.', { user });
   } catch (err) {
     next(err);

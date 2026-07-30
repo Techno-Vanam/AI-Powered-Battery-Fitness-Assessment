@@ -1,201 +1,113 @@
-import { getDB } from '../database/db.js';
+import { dbGet, dbRun, withTransaction } from '../database/db.js';
 
-// ── Queries (prepared lazily per connection) ──────────────────────────────────
-
-function db() {
-  return getDB();
-}
-
-/**
- * Insert a new user row.
- * @param {object} user
- * @returns {object} the created row
- */
-export function insertUser(user) {
-  const stmt = db().prepare(`
-    INSERT INTO users (
+export async function insertUser(user) {
+  await dbRun(
+    `INSERT INTO users (
       local_id, server_id, role, full_name, dob, gender, phone,
       id_type, id_number, school_or_org, designation,
       guardian_name, guardian_relation,
       password_hash, is_verified, consent_given,
       created_at, updated_at, sync_status
-    ) VALUES (
-      @local_id, @server_id, @role, @full_name, @dob, @gender, @phone,
-      @id_type, @id_number, @school_or_org, @designation,
-      @guardian_name, @guardian_relation,
-      @password_hash, @is_verified, @consent_given,
-      @created_at, @updated_at, @sync_status
-    )
-  `);
-  stmt.run(user);
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      user.local_id, user.server_id, user.role, user.full_name, user.dob, user.gender,
+      user.phone, user.id_type, user.id_number, user.school_or_org, user.designation,
+      user.guardian_name, user.guardian_relation, user.password_hash, user.is_verified,
+      user.consent_given, user.created_at, user.updated_at, user.sync_status,
+    ]
+  );
   return findByLocalId(user.local_id);
 }
 
-/**
- * Find a user by their primary key.
- * @param {string} local_id
- * @returns {object|undefined}
- */
-export function findByLocalId(local_id) {
-  return db()
-    .prepare(`SELECT * FROM users WHERE local_id = ?`)
-    .get(local_id);
+export async function findByLocalId(local_id) {
+  return dbGet(`SELECT * FROM users WHERE local_id = ?`, [local_id]);
 }
 
-/**
- * Find a user by id_type + id_number (+ optional role).
- * @param {string} id_type
- * @param {string} id_number
- * @param {string|null} role
- * @returns {object|undefined}
- */
-export function findByIdentifier(id_type, id_number, role = null) {
+export async function findByIdentifier(id_type, id_number, role = null) {
   if (role) {
-    return db()
-      .prepare(
-        `SELECT * FROM users
-         WHERE id_type = ? AND id_number = ? AND role = ?
-         LIMIT 1`
-      )
-      .get(id_type, id_number, role);
+    return dbGet(
+      `SELECT * FROM users WHERE id_type = ? AND id_number = ? AND role = ? LIMIT 1`,
+      [id_type, id_number, role]
+    );
   }
-  return db()
-    .prepare(
-      `SELECT * FROM users
-       WHERE id_type = ? AND id_number = ?
-       LIMIT 1`
-    )
-    .get(id_type, id_number);
+  return dbGet(
+    `SELECT * FROM users WHERE id_type = ? AND id_number = ? LIMIT 1`,
+    [id_type, id_number]
+  );
 }
 
-/**
- * Mark a user as OTP-verified.
- * @param {string} local_id
- * @param {string} updated_at  ISO timestamp
- */
-export function markVerified(local_id, updated_at) {
-  db()
-    .prepare(
-      `UPDATE users SET is_verified = 1, updated_at = ? WHERE local_id = ?`
-    )
-    .run(updated_at, local_id);
+export async function markVerified(local_id, updated_at) {
+  await dbRun(
+    `UPDATE users SET is_verified = 1, updated_at = ? WHERE local_id = ?`,
+    [updated_at, local_id]
+  );
 }
 
-/**
- * Save a bcrypt password hash for the user.
- * @param {string} local_id
- * @param {string} password_hash
- * @param {string} updated_at  ISO timestamp
- */
-export function updatePassword(local_id, password_hash, updated_at) {
-  db()
-    .prepare(
-      `UPDATE users
-       SET password_hash = ?, updated_at = ?, sync_status = 'pending'
-       WHERE local_id = ?`
-    )
-    .run(password_hash, updated_at, local_id);
+export async function updatePassword(local_id, password_hash, updated_at) {
+  await dbRun(
+    `UPDATE users SET password_hash = ?, updated_at = ?, sync_status = 'pending' WHERE local_id = ?`,
+    [password_hash, updated_at, local_id]
+  );
 }
 
-/**
- * Mark a user as synced and attach the server-assigned ID.
- * @param {string} local_id
- * @param {string} server_id
- * @param {string} updated_at
- */
-export function markSynced(local_id, server_id, updated_at) {
-  db()
-    .prepare(
-      `UPDATE users
-       SET server_id = ?, sync_status = 'synced', updated_at = ?
-       WHERE local_id = ?`
-    )
-    .run(server_id, updated_at, local_id);
+export async function markSynced(local_id, server_id, updated_at) {
+  await dbRun(
+    `UPDATE users SET server_id = ?, sync_status = 'synced', updated_at = ? WHERE local_id = ?`,
+    [server_id, updated_at, local_id]
+  );
 }
 
-/**
- * Mark a user record as conflicted.
- * @param {string} local_id
- * @param {string} updated_at
- */
-export function markConflict(local_id, updated_at) {
-  db()
-    .prepare(
-      `UPDATE users
-       SET sync_status = 'conflict', updated_at = ?
-       WHERE local_id = ?`
-    )
-    .run(updated_at, local_id);
+export async function markConflict(local_id, updated_at) {
+  await dbRun(
+    `UPDATE users SET sync_status = 'conflict', updated_at = ? WHERE local_id = ?`,
+    [updated_at, local_id]
+  );
 }
 
-/**
- * Upsert a user record that arrives via the sync endpoint.
- * If local_id already exists — update all mutable fields.
- * If it does not — insert fresh.
- *
- * Uses a single INSERT OR REPLACE wrapped in a transaction so callers
- * can batch multiple calls inside their own outer transaction.
- *
- * @param {object} user
- */
-export function upsertUser(user) {
-  db()
-    .prepare(
-      `INSERT INTO users (
-        local_id, server_id, role, full_name, dob, gender, phone,
-        id_type, id_number, school_or_org, designation,
-        guardian_name, guardian_relation,
-        password_hash, is_verified, consent_given,
-        created_at, updated_at, sync_status
-      ) VALUES (
-        @local_id, @server_id, @role, @full_name, @dob, @gender, @phone,
-        @id_type, @id_number, @school_or_org, @designation,
-        @guardian_name, @guardian_relation,
-        @password_hash, @is_verified, @consent_given,
-        @created_at, @updated_at, @sync_status
-      )
-      ON CONFLICT (local_id) DO UPDATE SET
-        server_id         = excluded.server_id,
-        full_name         = excluded.full_name,
-        dob               = excluded.dob,
-        gender            = excluded.gender,
-        phone             = excluded.phone,
-        school_or_org     = excluded.school_or_org,
-        designation       = excluded.designation,
-        guardian_name     = excluded.guardian_name,
-        guardian_relation = excluded.guardian_relation,
-        password_hash     = excluded.password_hash,
-        is_verified       = excluded.is_verified,
-        consent_given     = excluded.consent_given,
-        updated_at        = excluded.updated_at,
-        sync_status       = excluded.sync_status`
-    )
-    .run(user);
+export async function upsertUser(user) {
+  await dbRun(
+    `INSERT INTO users (
+      local_id, server_id, role, full_name, dob, gender, phone,
+      id_type, id_number, school_or_org, designation,
+      guardian_name, guardian_relation,
+      password_hash, is_verified, consent_given,
+      created_at, updated_at, sync_status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT (local_id) DO UPDATE SET
+      server_id = excluded.server_id,
+      full_name = excluded.full_name,
+      dob = excluded.dob,
+      gender = excluded.gender,
+      phone = excluded.phone,
+      school_or_org = excluded.school_or_org,
+      designation = excluded.designation,
+      guardian_name = excluded.guardian_name,
+      guardian_relation = excluded.guardian_relation,
+      password_hash = excluded.password_hash,
+      is_verified = excluded.is_verified,
+      consent_given = excluded.consent_given,
+      updated_at = excluded.updated_at,
+      sync_status = excluded.sync_status`,
+    [
+      user.local_id, user.server_id, user.role, user.full_name, user.dob, user.gender,
+      user.phone, user.id_type, user.id_number, user.school_or_org, user.designation,
+      user.guardian_name, user.guardian_relation, user.password_hash, user.is_verified,
+      user.consent_given, user.created_at, user.updated_at, user.sync_status,
+    ]
+  );
 }
 
-/**
- * Check whether a given id_type + id_number pair already exists
- * (optionally excluding a specific local_id — useful during updates).
- * @param {string} id_type
- * @param {string} id_number
- * @param {string|null} excludeLocalId
- * @returns {boolean}
- */
-export function identifierExists(id_type, id_number, excludeLocalId = null) {
+export async function identifierExists(id_type, id_number, excludeLocalId = null) {
   if (excludeLocalId) {
-    const row = db()
-      .prepare(
-        `SELECT 1 FROM users
-         WHERE id_type = ? AND id_number = ? AND local_id != ?
-         LIMIT 1`
-      )
-      .get(id_type, id_number, excludeLocalId);
+    const row = await dbGet(
+      `SELECT 1 AS ok FROM users WHERE id_type = ? AND id_number = ? AND local_id != ? LIMIT 1`,
+      [id_type, id_number, excludeLocalId]
+    );
     return !!row;
   }
-  const row = db()
-    .prepare(
-      `SELECT 1 FROM users WHERE id_type = ? AND id_number = ? LIMIT 1`
-    )
-    .get(id_type, id_number);
+  const row = await dbGet(
+    `SELECT 1 AS ok FROM users WHERE id_type = ? AND id_number = ? LIMIT 1`,
+    [id_type, id_number]
+  );
   return !!row;
 }

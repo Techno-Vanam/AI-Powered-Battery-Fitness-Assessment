@@ -24,7 +24,7 @@ export const getAllPendingSync = (): SyncQueueItem[] => {
 
 export const incrementAttempts = (queue_id: number): void => {
   const db = getDBConnection();
-  db.execute(
+  db.executeSync(
     `UPDATE sync_queue SET attempts = attempts + 1 WHERE queue_id = ?`,
     [queue_id]
   );
@@ -33,6 +33,22 @@ export const incrementAttempts = (queue_id: number): void => {
 export const removeSyncItem = (queue_id: number): void => {
   const db = getDBConnection();
   db.executeSync(`DELETE FROM sync_queue WHERE queue_id = ?`, [queue_id]);
+};
+
+export const markUserConflict = (local_id: string): void => {
+  const db = getDBConnection();
+  const now = new Date().toISOString();
+  db.executeSync(
+    `UPDATE users SET sync_status = 'conflict', updated_at = ? WHERE local_id = ?`,
+    [now, local_id]
+  );
+};
+
+/** Remove local user + OTP rows after successful cloud sync */
+export const deleteLocalUserAfterSync = (local_id: string): void => {
+  const db = getDBConnection();
+  db.executeSync(`DELETE FROM otp_verifications WHERE user_local_id = ?`, [local_id]);
+  db.executeSync(`DELETE FROM users WHERE local_id = ?`, [local_id]);
 };
 
 export const markUserSynced = (local_id: string, server_id: string): void => {

@@ -1,11 +1,10 @@
 import * as syncService from '../services/syncService.js';
 import { sendSuccess } from '../utils/response.js';
 
-// ── POST /api/sync/users ──────────────────────────────────────────────────────
-export function bulkSyncUsers(req, res, next) {
+export async function bulkSyncUsers(req, res, next) {
   try {
     const { users } = req.body;
-    const result = syncService.bulkSyncUsers(users);
+    const result = await syncService.bulkSyncUsers(users);
 
     const message =
       `Sync complete. ` +

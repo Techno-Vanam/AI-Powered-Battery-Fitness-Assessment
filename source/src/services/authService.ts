@@ -1,4 +1,6 @@
 import bcrypt from 'bcryptjs';
+import NetInfo from '@react-native-community/netinfo';
+import { API_BASE_URL } from '../config/api';
 import {
   createUser,
   getUserByIdentifier,
@@ -6,6 +8,7 @@ import {
   User,
 } from '../db/userRepository';
 import { generateMockOTP } from '../db/otpService';
+import { runSyncJob } from './syncService';
 
 const SALT_ROUNDS = 10;
 
@@ -40,11 +43,12 @@ export const registerUser = (
   const local_id = createUser(payload);
   const otp = generateMockOTP(local_id);
 
+  void runSyncJob();
   return { local_id, otp };
 };
 
 /**
- * Local-first login — always checks SQLite first; works fully offline.
+ * Local-first login — checks SQLite first; falls back to cloud API when online.
  */
 export const loginUser = async (
   id_type: string,
@@ -54,22 +58,43 @@ export const loginUser = async (
 ): Promise<User> => {
   const user = getUserByIdentifier(id_type, id_number, role);
 
-  if (!user) {
+  if (user) {
+    if (!user.password_hash) {
+      throw new Error(
+        'Account setup incomplete. Please complete registration first.'
+      );
+    }
+
+    const isMatch = await comparePassword(password, user.password_hash);
+    if (!isMatch) {
+      throw new Error('Invalid ID or password.');
+    }
+
+    return user;
+  }
+
+  const net = await NetInfo.fetch();
+  if (!net.isConnected || net.isInternetReachable === false) {
     throw new Error('Invalid ID or password.');
   }
 
-  if (!user.password_hash) {
-    throw new Error(
-      'Account setup incomplete. Please complete registration first.'
-    );
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id_type, id_number, password, role }),
+  });
+
+  const body = (await response.json()) as {
+    success?: boolean;
+    message?: string;
+    data?: { user: User };
+  };
+
+  if (!response.ok || !body.data?.user) {
+    throw new Error(body.message ?? 'Invalid ID or password.');
   }
 
-  const isMatch = await comparePassword(password, user.password_hash);
-  if (!isMatch) {
-    throw new Error('Invalid ID or password.');
-  }
-
-  return user;
+  return body.data.user;
 };
 
 /**
@@ -81,4 +106,5 @@ export const setUserPassword = async (
 ): Promise<void> => {
   const passwordHash = await hashPassword(newPassword);
   updateUserPassword(local_id, passwordHash);
+  void runSyncJob();
 };

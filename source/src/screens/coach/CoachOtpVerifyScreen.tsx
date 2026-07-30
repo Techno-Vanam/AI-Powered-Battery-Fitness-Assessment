@@ -6,6 +6,7 @@ import {
 import { ShieldCheck, RefreshCw } from 'lucide-react-native';
 import { verifyOTP, generateMockOTP, getLatestOTP } from '../../db/otpService';
 import { markUserVerified } from '../../db/userRepository';
+import { runSyncJob } from '../../services/syncService';
 
 const OTP_LENGTH = 6;
 const OTP_EXPIRY_SECONDS = 300; // 5 minutes
@@ -118,6 +119,7 @@ const CoachOtpVerifyScreen = ({ navigation, route }: any) => {
       const isValid = await verifyOTP(local_id, entered);
       if (isValid) {
         await markUserVerified(local_id);
+        void runSyncJob();
         navigation.navigate('SetPassword', { local_id, role: 'coach' });
       } else {
         setError('Incorrect OTP, please check the code shown above.');
