@@ -1,14 +1,22 @@
 # AI-Powered Battery Fitness Assessment
 
-Monorepo for the Battery Fitness Assessment platform.
+Monorepo for the Battery Fitness Assessment platform (National Hackathon — NeGD / MYAS, July 2026).
 
 ## Project Structure
 
 ```
-├── app/       # React Native mobile app (onboarding, auth, athlete/coach flows)
-├── backend/   # Node.js API server (auth, sync)
+├── app/         # React Native mobile app (onboarding, auth, athlete/coach flows)
+├── backend/     # Node.js API server (auth, sync)
+├── submission/  # Hackathon final submission package (folder skeleton + placeholders)
 └── README.md
 ```
+
+### Hackathon submission
+
+The [`submission/`](submission/) folder follows the **mandatory Final Submission Requirements** structure (Section 12).  
+Populate APK, docs, demo video, and compliance artifacts there before creating `TeamName_Submission.zip`.
+
+See [`submission/CHECKLIST.md`](submission/CHECKLIST.md) for the full artifact checklist.
 
 ## Prerequisites
 
