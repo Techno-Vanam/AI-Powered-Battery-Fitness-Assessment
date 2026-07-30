@@ -150,7 +150,11 @@ const SLIDES = [
   },
 ];
 
-export const OnboardingFlow = () => {
+interface OnboardingFlowProps {
+  onComplete?: () => void;
+}
+
+export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   const [activeSlide, setActiveSlide] = useState(0);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -173,12 +177,12 @@ export const OnboardingFlow = () => {
     if (activeSlide < SLIDES.length - 1) {
       setActiveSlide(activeSlide + 1);
     } else {
-      setActiveSlide(0);
+      onComplete?.();
     }
   };
 
   const handleSkip = () => {
-    setActiveSlide(2);
+    onComplete?.();
   };
 
   // Helper to render Lucide badge icons
