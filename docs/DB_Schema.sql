@@ -5,7 +5,7 @@
 -- LOCAL (SQLite / SQLCipher on device)
 -- ============================================================
 
--- Users (athletes and coaches) — see app/src/db/schema.ts for current implementation
+-- Users (athletes and coaches) — see source/src/db/schema.ts for current implementation
 -- CREATE TABLE users (...);
 
 -- Sync queue — offline operations pending upload

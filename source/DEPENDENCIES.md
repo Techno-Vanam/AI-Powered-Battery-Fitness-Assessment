@@ -2,7 +2,7 @@
 
 Complete list of third-party libraries, frameworks, models, and tools with versions and licences.
 
-## Mobile App (`app/`)
+## Mobile App (`source/`)
 
 | Package | Version | Licence | Purpose |
 |---------|---------|---------|---------|
@@ -30,4 +30,4 @@ Complete list of third-party libraries, frameworks, models, and tools with versi
 
 ---
 
-_Generate full list with: `npm list --depth=0` in `app/` and `backend/` before submission._
+_Generate full list with: `npm list --depth=0` in `source/` and `backend/` before submission._

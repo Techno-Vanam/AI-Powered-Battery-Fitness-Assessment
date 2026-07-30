@@ -114,3 +114,15 @@ src/
     ├── otp.js                OTP generation + expiry
     └── date.js               ISO timestamp helpers
 ```
+
+---
+
+## Deployment (Submission)
+
+- [ ] Add `Dockerfile` to this folder
+- [ ] See [`../docs/API_Spec.yaml`](../docs/API_Spec.yaml) for OpenAPI specification
+
+```bash
+# docker build -t battery-fitness-api .
+# docker run -p 3000:3000 battery-fitness-api
+```

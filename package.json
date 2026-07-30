@@ -2,16 +2,16 @@
   "name": "ai-powered-battery-fitness-assessment",
   "private": true,
   "version": "1.0.0",
-  "description": "AI-Powered Battery Fitness Assessment monorepo",
+  "description": "AI-Powered Battery Fitness Assessment — National Hackathon (NeGD / MYAS, July 2026)",
   "scripts": {
-    "app:start": "npm --prefix app start",
-    "app:android": "npm --prefix app run android",
-    "app:ios": "npm --prefix app run ios",
-    "app:test": "npm --prefix app test",
-    "app:lint": "npm --prefix app run lint",
+    "source:start": "npm --prefix source start",
+    "source:android": "npm --prefix source run android",
+    "source:ios": "npm --prefix source run ios",
+    "source:test": "npm --prefix source test",
+    "source:lint": "npm --prefix source run lint",
     "backend:start": "npm --prefix backend start",
     "backend:dev": "npm --prefix backend run dev",
-    "install:all": "npm --prefix app install && npm --prefix backend install"
+    "install:all": "npm --prefix source install && npm --prefix backend install"
   },
   "engines": {
     "node": ">= 22.11.0"

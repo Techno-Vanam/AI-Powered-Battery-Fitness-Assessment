@@ -22,7 +22,7 @@ Steps to reproduce the submitted release APK from source.
 
 ```bash
 # 1. Install dependencies
-cd app
+cd source
 npm install
 
 # 2. [Android release build commands — to be completed]
@@ -30,7 +30,8 @@ cd android
 ./gradlew assembleRelease
 
 # 3. Output APK location
-# app/android/app/build/outputs/apk/release/
+# source/android/app/build/outputs/apk/release/
+# Copy APK to ../app/ for submission
 ```
 
 ## Expected Build Time

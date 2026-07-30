@@ -1,82 +1,61 @@
 # AI-Powered Battery Fitness Assessment
 
-Monorepo for the Battery Fitness Assessment platform (National Hackathon — NeGD / MYAS, July 2026).
+National Hackathon submission project — NeGD / MYAS, July 2026.
 
-## Project Structure
+## Repository Structure
 
 ```
-├── app/         # React Native mobile app (onboarding, auth, athlete/coach flows)
-├── backend/     # Node.js API server (auth, sync)
-├── submission/  # Hackathon final submission package (folder skeleton + placeholders)
+├── app/            # Release APK, installation instructions, test credentials
+├── source/         # React Native mobile app source + BUILD.md, DEPENDENCIES.md
+├── backend/        # Node.js API server (auth, sync)
+├── models/         # AI model files (TFLite, ONNX, etc.)
+├── docs/           # HLD, LLD, model cards, validation report, user guide, API spec
+├── demo/           # Demo video (8–12 min)
+├── presentation/   # Slide deck
+├── compliance/     # Data protection declaration, consent forms
+├── CHECKLIST.md    # Final submission checklist
 └── README.md
 ```
 
-### Hackathon submission
+## Team Information
 
-The [`submission/`](submission/) folder follows the **mandatory Final Submission Requirements** structure (Section 12).  
-Populate APK, docs, demo video, and compliance artifacts there before creating `TeamName_Submission.zip`.
+| Field | Value |
+|-------|-------|
+| Team Name | _[To be filled]_ |
+| Team Members | _[Names, roles, emails]_ |
+| App Version | _[e.g. v1.0]_ |
 
-See [`submission/CHECKLIST.md`](submission/CHECKLIST.md) for the full artifact checklist.
-
-## Prerequisites
-
-- Node.js >= 22.11.0
-- React Native environment ([setup guide](https://reactnative.dev/docs/set-up-your-environment))
-
-## Install Dependencies
-
-From the repository root:
+## Quick Start (Development)
 
 ```sh
 npm run install:all
-```
 
-Or install each package separately:
+# Mobile app (from source/)
+npm run source:start
+npm run source:android
 
-```sh
-cd app && npm install
-cd ../backend && npm install
-```
-
-## Mobile App (`app/`)
-
-```sh
-# Start Metro bundler
-npm run app:start
-
-# Run on Android
-npm run app:android
-
-# Run on iOS (macOS only, after pod install in app/ios)
-npm run app:ios
-```
-
-All React Native commands can also be run directly from the `app/` folder:
-
-```sh
-cd app
-npm start
-npm run android
-```
-
-## Backend (`backend/`)
-
-```sh
-# Copy env template and configure
-cp backend/.env.example backend/.env
-
-# Start API server
+# Backend
 npm run backend:start
-
-# Dev mode with auto-reload
-npm run backend:dev
 ```
 
 ## App Flow
 
-1. **Onboarding** — splash / intro slides
-2. **Role Select** — choose Athlete or Coach
-3. **Login / Register** — OTP verification and password setup
-4. **Home** — role-specific dashboard
+1. **Onboarding** — splash / intro slides  
+2. **Role Select** — choose Athlete or Coach  
+3. **Login / Register** — OTP verification and password setup  
+4. **Home** — role-specific dashboard  
 
-See `auth-flow-documentation.md` for full authentication flow details.
+## Submission
+
+- [Final Submission Checklist](CHECKLIST.md)
+- [Build Instructions](source/BUILD.md)
+- [Known Issues](docs/Known_Issues.md)
+
+Before deadline, populate all folders and create: `TeamName_Submission.zip`
+
+```powershell
+# Archive root folders (exclude node_modules, .git)
+Compress-Archive -Path app,source,backend,models,docs,demo,presentation,compliance,README.md,CHECKLIST.md -DestinationPath TeamName_Submission.zip
+```
+
+See `auth-flow-documentation.md` for authentication flow details.
