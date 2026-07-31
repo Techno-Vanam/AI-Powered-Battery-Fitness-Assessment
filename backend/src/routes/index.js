@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import authRoutes from './authRoutes.js';
 import syncRoutes from './syncRoutes.js';
+import dashboardRoutes from './dashboardRoutes.js';
 
 const router = Router();
 
@@ -11,5 +12,6 @@ router.get('/health', (_req, res) => {
 
 router.use('/auth', authRoutes);
 router.use('/sync', syncRoutes);
+router.use('/coach', dashboardRoutes);
 
 export default router;

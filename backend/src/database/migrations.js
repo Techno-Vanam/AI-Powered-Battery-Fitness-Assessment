@@ -71,4 +71,66 @@ export const migrations = [
 
   `CREATE INDEX IF NOT EXISTS idx_sync_queue_created_at
     ON sync_queue (created_at)`,
+
+  // ── assessments ───────────────────────────────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS assessments (
+    id                TEXT PRIMARY KEY,
+    coach_id          TEXT NOT NULL,
+    title             TEXT NOT NULL,
+    class_name        TEXT NOT NULL,
+    student_count     INTEGER NOT NULL DEFAULT 0,
+    completed_count   INTEGER NOT NULL DEFAULT 0,
+    status            TEXT NOT NULL DEFAULT 'in_progress' CHECK (status IN ('not_started', 'in_progress', 'completed')),
+    created_at        TEXT NOT NULL,
+    updated_at        TEXT NOT NULL
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_assessments_coach_id ON assessments (coach_id)`,
+
+  // ── assessment_tests ──────────────────────────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS assessment_tests (
+    id                TEXT PRIMARY KEY,
+    assessment_id     TEXT NOT NULL REFERENCES assessments (id) ON DELETE CASCADE,
+    test_key          TEXT NOT NULL CHECK (test_key IN (
+                        'height', 'weight', 'sit_reach', 'vertical_jump',
+                        'broad_jump', 'med_ball_throw', 'sprint_30m',
+                        'shuttle_4x10', 'sit_ups', 'endurance_run'
+                      )),
+    test_name         TEXT NOT NULL,
+    status            TEXT NOT NULL DEFAULT 'not_started' CHECK (status IN ('not_started', 'in_progress', 'complete')),
+    completed_count   INTEGER NOT NULL DEFAULT 0,
+    total_students    INTEGER NOT NULL DEFAULT 0,
+    best_value        REAL,
+    unit              TEXT,
+    updated_at        TEXT NOT NULL
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_assessment_tests_assessment ON assessment_tests (assessment_id)`,
+
+  // ── activity_logs ─────────────────────────────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS activity_logs (
+    id          TEXT PRIMARY KEY,
+    coach_id    TEXT NOT NULL,
+    type        TEXT NOT NULL CHECK (type IN ('test_completed', 'report_generated', 'sync_completed', 'athlete_added')),
+    title       TEXT NOT NULL,
+    description TEXT NOT NULL,
+    timestamp   TEXT NOT NULL
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_activity_logs_coach ON activity_logs (coach_id, timestamp DESC)`,
+
+  // ── pending_tasks ─────────────────────────────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS pending_tasks (
+    id          TEXT PRIMARY KEY,
+    coach_id    TEXT NOT NULL,
+    type        TEXT NOT NULL CHECK (type IN ('pending_sync', 'incomplete_assessment', 'generate_report')),
+    title       TEXT NOT NULL,
+    subtitle    TEXT NOT NULL,
+    action_type TEXT NOT NULL,
+    action_target TEXT,
+    created_at  TEXT NOT NULL
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_pending_tasks_coach ON pending_tasks (coach_id)`
 ];
+
