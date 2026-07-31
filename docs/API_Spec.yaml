@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: Battery Fitness Assessment API
+  description: Sync and auth endpoints for AI Powered Battery Fitness Assessment
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Local development
+
+paths:
+  /auth/login:
+    post:
+      summary: Login (athlete or coach)
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                idType:
+                  type: string
+                  enum: [NSRS, APAAR, AADHAR]
+                idNumber:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+                  enum: [athlete, coach]
+      responses:
+        '200':
+          description: Login successful
+        '401':
+          description: Invalid credentials
+
+  /sync/push:
+    post:
+      summary: Push offline sync queue to server
+      tags: [Sync]
+      responses:
+        '200':
+          description: Sync accepted
+
+# TODO: Complete all endpoints with request/response schemas, auth method, error codes, rate limiting
