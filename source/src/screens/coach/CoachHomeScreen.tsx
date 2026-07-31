@@ -1,67 +1,75 @@
 import React from 'react';
-import {
-  View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView,
-} from 'react-native';
-import { Briefcase, Users, LogOut } from 'lucide-react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { User, ClipboardList, LogOut } from 'lucide-react-native';
+import Screen from '../../components/ui/Screen';
+import AppText from '../../components/ui/AppText';
+import { createAuthStyles, createScreenStyles } from '../../styles/screenStyles';
+import { colors, layout, roleColors } from '../../theme';
+
+const authStyles = createAuthStyles('coach');
+const screenStyles = createScreenStyles();
+const accent = roleColors('coach');
 
 const CoachHomeScreen = ({ navigation }: any) => {
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <View style={styles.avatarCircle}>
-            <Briefcase size={36} color="#7C3AED" />
-          </View>
-          <Text style={styles.welcome}>Welcome, Coach!</Text>
-          <Text style={styles.subtitle}>Your coaching dashboard is coming soon.</Text>
+    <Screen scroll contentStyle={screenStyles.centeredContent}>
+      <View style={styles.header}>
+        <View style={[screenStyles.avatar, { backgroundColor: accent.light }]}>
+          <User size={layout.iconLg + 4} color={accent.primary} />
         </View>
+        <AppText variant="h1" style={styles.welcome}>
+          Welcome, Coach!
+        </AppText>
+        <AppText variant="subtitle" color={colors.textSecondary} style={styles.centered}>
+          Your athlete management dashboard is coming soon.
+        </AppText>
+      </View>
 
-        <View style={styles.card}>
-          <Users size={24} color="#7C3AED" />
-          <Text style={styles.cardTitle}>Athlete Management</Text>
-          <Text style={styles.cardBody}>
-            Manage your athletes and review their battery fitness assessments here.
-          </Text>
-        </View>
+      <View style={authStyles.card}>
+        <ClipboardList size={layout.iconMd} color={accent.primary} />
+        <AppText variant="h3">Athlete Assessments</AppText>
+        <AppText variant="bodySm" color={colors.textSecondary} style={styles.centered}>
+          Record and review battery fitness assessments for your athletes.
+        </AppText>
+      </View>
 
-        <TouchableOpacity
-          style={styles.logoutBtn}
-          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'RoleSelect' }] })}
-        >
-          <LogOut size={18} color="#EF4444" />
-          <Text style={styles.logoutText}>Log Out</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+      <TouchableOpacity
+        style={styles.logoutBtn}
+        onPress={() => navigation.reset({ index: 0, routes: [{ name: 'RoleSelect' }] })}
+        activeOpacity={0.85}
+      >
+        <LogOut size={layout.iconSm} color={colors.error} />
+        <AppText variant="body" color={colors.error}>
+          Log Out
+        </AppText>
+      </TouchableOpacity>
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
-  content: { flexGrow: 1, padding: 24, alignItems: 'center', gap: 24, paddingTop: 48 },
-  header: { alignItems: 'center', gap: 10 },
-  avatarCircle: {
-    width: 80, height: 80, borderRadius: 40,
-    backgroundColor: '#F5F3FF', alignItems: 'center', justifyContent: 'center',
-  },
-  welcome: { fontSize: 26, fontWeight: '800', color: '#0F172A' },
-  subtitle: { fontSize: 15, color: '#64748B', textAlign: 'center' },
-  card: {
-    width: '100%', backgroundColor: '#FFFFFF', borderRadius: 16,
-    borderWidth: 1.5, borderColor: '#E2E8F0', padding: 20, gap: 10,
+  header: {
     alignItems: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+    gap: layout.fieldGap + 2,
   },
-  cardTitle: { fontSize: 17, fontWeight: '700', color: '#0F172A' },
-  cardBody: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 20 },
+  welcome: {
+    fontSize: layout.inputHeight * 0.5,
+  },
+  centered: {
+    textAlign: 'center',
+  },
   logoutBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingVertical: 12, paddingHorizontal: 24,
-    borderRadius: 12, borderWidth: 1.5, borderColor: '#FCA5A5',
-    backgroundColor: '#FFF5F5', marginTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: layout.fieldGap,
+    paddingVertical: layout.fieldGap + 4,
+    paddingHorizontal: layout.horizontalPadding,
+    borderRadius: layout.radiusSm,
+    borderWidth: 1.5,
+    borderColor: colors.errorBorder,
+    backgroundColor: colors.errorBg,
+    marginTop: layout.fieldGap,
   },
-  logoutText: { fontSize: 15, fontWeight: '700', color: '#EF4444' },
 });
 
 export default CoachHomeScreen;

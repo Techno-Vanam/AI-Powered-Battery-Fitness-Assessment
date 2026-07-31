@@ -5,13 +5,18 @@
   "description": "AI-Powered Battery Fitness Assessment — National Hackathon (NeGD / MYAS, July 2026)",
   "scripts": {
     "source:start": "npm --prefix source start",
-    "source:android": "npm --prefix source run android",
+    "source:android": "cd source && npx react-native run-android",
     "source:ios": "npm --prefix source run ios",
     "source:test": "npm --prefix source test",
     "source:lint": "npm --prefix source run lint",
     "backend:start": "npm --prefix backend start",
     "backend:dev": "npm --prefix backend run dev",
-    "install:all": "npm --prefix source install && npm --prefix backend install"
+    "install:all": "npm --prefix source install && npm --prefix backend install",
+    "android:all": "concurrently -k -n backend,metro,android -c blue,green,magenta \"npm run backend:dev\" \"npm run source:start\" \"wait-on http://localhost:8081 && cd source && npx react-native run-android --no-packager\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "wait-on": "^8.0.5"
   },
   "engines": {
     "node": ">= 22.11.0"

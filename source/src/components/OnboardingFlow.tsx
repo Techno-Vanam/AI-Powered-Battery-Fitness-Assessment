@@ -9,14 +9,9 @@ import {
   useWindowDimensions,
   Platform,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-// Global Font Family Constant
-const GLOBAL_FONT_FAMILY = Platform.select({
-  ios: 'Poppins',
-  android: 'Poppins',
-  default: 'Poppins, system-ui, -apple-system, sans-serif',
-});
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
+import { fontFamily } from '../theme/fonts';
+import { colors, layout, moderateScale } from '../theme';
 
 /* --- Pure React Native Vector Lucide Icons --- */
 
@@ -334,6 +329,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   const slide = SLIDES[activeSlide];
 
   return (
+    <SafeAreaView style={styles.rootSafeArea} edges={['top', 'bottom', 'left', 'right']}>
     <View style={styles.rootContainer}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" translucent={false} />
 
@@ -451,10 +447,15 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
         </View>
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  rootSafeArea: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
   rootContainer: {
     flex: 1,
     backgroundColor: '#FFFFFF',
@@ -502,13 +503,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   badgeText: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 1.1,
   },
   stepLabelText: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     fontSize: 11,
     fontWeight: '800',
     color: '#94A3B8',
@@ -576,7 +577,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   stopwatchText: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     color: '#38BDF8',
     fontSize: 10,
     fontWeight: '800',
@@ -690,7 +691,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   floatingStatsText: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     fontSize: 10,
     fontWeight: '800',
     color: '#0F172A',
@@ -749,13 +750,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#3B82F6',
   },
   markerTextX: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     color: '#FFF',
     fontSize: 12,
     fontWeight: '900',
   },
   markerTextO: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     color: '#FFF',
     fontSize: 12,
     fontWeight: '900',
@@ -793,7 +794,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 9,
   },
   jerseyNumber: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     color: '#FBBF24',
     fontSize: 17,
     fontWeight: '900',
@@ -845,7 +846,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   floatingLineupText: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     fontSize: 10,
     fontWeight: '800',
     color: '#0F172A',
@@ -901,7 +902,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   liveText: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     color: '#FFF',
     fontSize: 9,
     fontWeight: '900',
@@ -917,26 +918,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   teamCode: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     color: '#94A3B8',
     fontSize: 10,
     fontWeight: '700',
   },
   teamScore: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     color: '#FFF',
     fontSize: 24,
     fontWeight: '900',
   },
   vsDivider: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     color: '#64748B',
     fontSize: 18,
     fontWeight: '700',
     marginTop: 8,
   },
   matchTimer: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     color: '#FBBF24',
     fontSize: 11,
     fontWeight: '800',
@@ -985,7 +986,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   floatingLiveText: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     fontSize: 10,
     fontWeight: '800',
     color: '#EF4444',
@@ -1018,7 +1019,7 @@ const styles = StyleSheet.create({
     maxWidth: 360,
   },
   titleText: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     fontWeight: '800',
     color: '#0F172A',
     textAlign: 'center',
@@ -1027,7 +1028,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   descriptionText: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     fontSize: 14,
     fontWeight: '400',
     color: '#64748B',
@@ -1053,12 +1054,12 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   subTextDot: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     color: '#94A3B8',
     fontSize: 12,
   },
   subTextContent: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     fontSize: 12,
     fontWeight: '700',
     color: '#0F172A',
@@ -1081,7 +1082,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   skipText: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     fontSize: 13,
     fontWeight: '800',
     color: '#64748B',
@@ -1101,7 +1102,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   nextPillText: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     fontSize: 13,
     fontWeight: '800',
     color: '#FFFFFF',
@@ -1127,7 +1128,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   startFullPillText: {
-    fontFamily: GLOBAL_FONT_FAMILY,
+    fontFamily: fontFamily('800'),
     fontSize: 14,
     fontWeight: '800',
     color: '#FFFFFF',
