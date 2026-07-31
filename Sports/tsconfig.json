@@ -1,6 +1,21 @@
 {
   "extends": "@react-native/typescript-config",
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@camera/*": ["src/camera/*"],
+      "@components/*": ["src/components/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@navigation/*": ["src/navigation/*"],
+      "@screens/*": ["src/screens/*"],
+      "@types/*": ["src/types/*"],
+      "@utils/*": ["src/utils/*"],
+      "@vision/*": ["src/vision/*"],
+      "@height/*": ["src/height/*"],
+      "@db/*": ["src/database/*"],
+      "@sync/*": ["src/sync/*"],
+      "@network/*": ["src/network/*"]
+    },
     "types": ["jest"]
   },
   "include": ["**/*.ts", "**/*.tsx"],
