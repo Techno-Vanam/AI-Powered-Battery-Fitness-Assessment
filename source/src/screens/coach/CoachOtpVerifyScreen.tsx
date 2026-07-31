@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput,
+  View, Text, StyleSheet, TouchableOpacity, TextInput,
   Animated, Alert, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ShieldCheck, RefreshCw } from 'lucide-react-native';
 import { verifyOTP, generateMockOTP, getLatestOTP } from '../../db/otpService';
 import { markUserVerified } from '../../db/userRepository';
