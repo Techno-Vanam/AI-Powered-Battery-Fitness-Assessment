@@ -19,6 +19,9 @@ import ForgotPasswordScreen from '../screens/shared/ForgotPasswordScreen';
 import ResetPasswordScreen from '../screens/shared/ResetPasswordScreen';
 import SetPasswordScreen from '../screens/shared/SetPasswordScreen';
 import TermsAndConditionsScreen from '../screens/shared/TermsAndConditionsScreen';
+import SitAndReachEntryScreen from '../screens/SitAndReach/SitAndReachEntryScreen';
+import SitAndReachHistoryScreen from '../screens/SitAndReach/SitAndReachHistoryScreen';
+import SitAndReachCorrectScreen from '../screens/SitAndReach/SitAndReachCorrectScreen';
 
 export type RootStackParamList = {
   Onboarding: undefined;
@@ -35,6 +38,9 @@ export type RootStackParamList = {
   ResetPassword: { local_id: string };
   SetPassword: { local_id: string; role: 'athlete' | 'coach' };
   TermsAndConditions: { onAccept?: () => void };
+  SitAndReachEntry: { athleteId: number; athleteName: string };
+  SitAndReachHistory: { athleteId: number; athleteName: string };
+  SitAndReachCorrect: { test: { id: number; trial_1: string; trial_2: string; trial_3: string }; athleteId: number; athleteName: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -53,7 +59,7 @@ export function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Onboarding"
+        initialRouteName="SitAndReachEntry"
         screenOptions={{ headerShown: false, animation: 'fade' }}
       >
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
@@ -74,7 +80,11 @@ export function AppNavigator() {
         <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         <Stack.Screen name="SetPassword" component={SetPasswordScreen} />
         <Stack.Screen name="TermsAndConditions" component={TermsAndConditionsScreen} />
+        <Stack.Screen name="SitAndReachEntry" component={SitAndReachEntryScreen} initialParams={{ athleteId: 1, athleteName: "Test Athlete" }} options={{ title: 'Sit & Reach Test' }} />
+        <Stack.Screen name="SitAndReachHistory" component={SitAndReachHistoryScreen} options={{ title: 'Test History' }} />
+        <Stack.Screen name="SitAndReachCorrect" component={SitAndReachCorrectScreen} options={{ title: 'Correct Entry' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+

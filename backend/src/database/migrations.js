@@ -71,4 +71,37 @@ export const migrations = [
 
   `CREATE INDEX IF NOT EXISTS idx_sync_queue_created_at
     ON sync_queue (created_at)`,
+
+  // ── sit_and_reach_tests ───────────────────────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS sit_and_reach_tests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    athlete_id INT NOT NULL,
+    tester_id INT NOT NULL,
+    session_date DATE NOT NULL,
+    trial_1 DECIMAL(5,1) NOT NULL,
+    trial_2 DECIMAL(5,1) NOT NULL,
+    trial_3 DECIMAL(5,1) NOT NULL,
+    score DECIMAL(5,1) NOT NULL,
+    unit VARCHAR(10) NOT NULL DEFAULT 'cm',
+    notes VARCHAR(500),
+    is_superseded BOOLEAN NOT NULL DEFAULT FALSE,
+    superseded_by INT DEFAULT NULL,
+    correction_of INT DEFAULT NULL,
+    idempotency_key VARCHAR(36) UNIQUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_sr_athlete FOREIGN KEY (athlete_id) REFERENCES athletes(id),
+    CONSTRAINT fk_sr_tester FOREIGN KEY (tester_id) REFERENCES users(id),
+    CONSTRAINT fk_sr_superseded_by FOREIGN KEY (superseded_by) REFERENCES sit_and_reach_tests(id),
+    CONSTRAINT fk_sr_correction_of FOREIGN KEY (correction_of) REFERENCES sit_and_reach_tests(id),
+    CONSTRAINT chk_sr_trial_range CHECK (
+      trial_1 BETWEEN -50 AND 100 AND
+      trial_2 BETWEEN -50 AND 100 AND
+      trial_3 BETWEEN -50 AND 100
+    )
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_sr_athlete_active_history
+    ON sit_and_reach_tests (athlete_id, is_superseded, created_at DESC)`,
 ];
+
