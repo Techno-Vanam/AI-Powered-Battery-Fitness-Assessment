@@ -78,9 +78,18 @@ const AthleteHomeScreen = ({ navigation }: any) => {
 
   const openAssessment = useCallback(
     (test?: DashboardTest) => {
-      comingSoon(test?.name ?? t('dashboard.continueAssessment'));
+      const name = (test?.name ?? '').toLowerCase();
+      if (name.includes('vertical')) {
+        navigation.navigate('JumpCalibration', { testType: 'vertical' });
+        return;
+      }
+      if (name.includes('broad')) {
+        navigation.navigate('JumpCalibration', { testType: 'broad' });
+        return;
+      }
+      navigation.navigate('JumpSelection');
     },
-    [comingSoon],
+    [navigation],
   );
 
   const onTabChange = useCallback(
@@ -165,10 +174,10 @@ const AthleteHomeScreen = ({ navigation }: any) => {
             {/* 4. Quick Actions */}
             <QuickActionsRow
               onContinue={() => openAssessment()}
-              onStart={() => comingSoon(t('dashboard.startAssessment'))}
+              onStart={() => openAssessment()}
               onResults={() => comingSoon(t('dashboard.viewResults'))}
               onReport={() => comingSoon(t('dashboard.viewReport'))}
-              onHistory={() => comingSoon(t('dashboard.assessmentHistory'))}
+              onHistory={() => navigation.navigate('JumpHistory')}
             />
 
             {/* 5. Current Test Card (only if incomplete) */}
@@ -229,7 +238,7 @@ const AthleteHomeScreen = ({ navigation }: any) => {
         <AthleteBottomNav
           active={activeTab}
           onChange={onTabChange}
-          onCenterPress={() => comingSoon(t('dashboard.startAssessment'))}
+          onCenterPress={() => openAssessment()}
         />
       </View>
     </Screen>
