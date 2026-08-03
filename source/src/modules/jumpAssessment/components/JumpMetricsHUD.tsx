@@ -74,7 +74,11 @@ export const JumpMetricsHUD: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   hudContainer: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'space-between',
     padding: 16,
     zIndex: 20,

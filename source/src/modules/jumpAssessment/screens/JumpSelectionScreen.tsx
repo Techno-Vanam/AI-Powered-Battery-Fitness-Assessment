@@ -3,21 +3,13 @@
  */
 
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { useCameraPermissions } from '../hooks/useCameraPermissions';
+import { StyleSheet, Text, TouchableOpacity, ScrollView } from 'react-native';
 
 interface Props {
   navigation: any;
 }
 
 export const JumpSelectionScreen: React.FC<Props> = ({ navigation }) => {
-  const { requestPermission } = useCameraPermissions();
-
-  const handleStartTest = (testType: 'vertical' | 'broad') => {
-    void requestPermission();
-    navigation.navigate('JumpCalibration', { testType });
-  };
-
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.headerTitle}>Jump Assessment Suite</Text>
@@ -25,29 +17,16 @@ export const JumpSelectionScreen: React.FC<Props> = ({ navigation }) => {
         AI-Powered Offline Fitness Testing with Zero Data Storage
       </Text>
 
-      {/* Vertical Jump Card */}
+      {/* Airtime Video Scrubber Card (MyJump 2 Method) */}
       <TouchableOpacity
-        style={styles.card}
+        style={[styles.card, { borderColor: '#00E676' }]}
         activeOpacity={0.8}
-        onPress={() => handleStartTest('vertical')}
+        onPress={() => navigation.navigate('JumpFrameAnalysis', { testType: 'vertical' })}
       >
-        <Text style={styles.cardBadge}>VERTICAL TEST</Text>
-        <Text style={styles.cardTitle}>Standing Vertical Jump</Text>
+        <Text style={[styles.cardBadge, { color: '#00E676' }]}>AIRTIME METHOD [SCIENTIFIC H = (g×t²)/8]</Text>
+        <Text style={styles.cardTitle}>Airtime Frame Analysis</Text>
         <Text style={styles.cardDesc}>
-          Measures difference between standing reach and maximum jump fingertip height.
-        </Text>
-      </TouchableOpacity>
-
-      {/* Broad Jump Card */}
-      <TouchableOpacity
-        style={styles.card}
-        activeOpacity={0.8}
-        onPress={() => handleStartTest('broad')}
-      >
-        <Text style={styles.cardBadge}>BROAD TEST</Text>
-        <Text style={styles.cardTitle}>Standing Broad Jump</Text>
-        <Text style={styles.cardDesc}>
-          Measures horizontal distance from takeoff line to heel landing stability.
+          Upload or record jump video, set precise takeoff and landing frame markers, and calculate jump height via physics airtime formula.
         </Text>
       </TouchableOpacity>
 

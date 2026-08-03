@@ -89,6 +89,11 @@ android {
         ndk {
             abiFilters "arm64-v8a"
         }
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_LD=lld", "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF", "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG=OFF"
+            }
+        }
     }
     signingConfigs {
         debug {
@@ -120,5 +125,36 @@ dependencies {
         implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
+    }
+}
+
+// react-native-video (6.19.2) is compiled against androidx.media3 1.8.0, but
+// react-native-vision-camera pulls in androidx.camera:camera-video, which
+// requests media3-container 1.9.0 — Gradle's default "highest wins" conflict
+// resolution then bumps every media3 artifact project-wide to 1.9.0. Media3
+// 1.9.0 changed the DefaultAllocator/DefaultLoadControl constructor signature
+// (in media3-exoplayer), so react-native-video's prebuilt RNVLoadControl
+// crashes at runtime with NoSuchMethodError the moment a <Video> component
+// mounts. Force the exoplayer-family artifacts back to 1.8.0 to match what
+// react-native-video needs — but deliberately leave media3-common (and
+// media3-container/muxer, which depend on it) unforced at 1.9.0, since
+// CameraX's video recorder (used by VisionCamera's in-app recording) calls
+// MediaFormatUtil.getFloatFromIntOrFloat, a method that only exists in
+// media3-common 1.9.0. Mixing media3-exoplayer 1.8.0 with media3-common 1.9.0
+// works because media3-common's 1.9.0 changes are additive (new method only),
+// not a removed/changed API.
+configurations.all {
+    resolutionStrategy {
+        force "androidx.media3:media3-database:1.8.0"
+        force "androidx.media3:media3-datasource:1.8.0"
+        force "androidx.media3:media3-datasource-okhttp:1.8.0"
+        force "androidx.media3:media3-decoder:1.8.0"
+        force "androidx.media3:media3-exoplayer:1.8.0"
+        force "androidx.media3:media3-exoplayer-dash:1.8.0"
+        force "androidx.media3:media3-exoplayer-hls:1.8.0"
+        force "androidx.media3:media3-exoplayer-smoothstreaming:1.8.0"
+        force "androidx.media3:media3-extractor:1.8.0"
+        force "androidx.media3:media3-session:1.8.0"
+        force "androidx.media3:media3-ui:1.8.0"
     }
 }

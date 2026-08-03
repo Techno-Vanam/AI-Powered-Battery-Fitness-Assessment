@@ -16,7 +16,7 @@ export const getAllPendingSync = (): SyncQueueItem[] => {
   const items: SyncQueueItem[] = [];
   if (result.rows) {
     for (let i = 0; i < result.rows.length; i++) {
-      items.push(result.rows[i] as SyncQueueItem);
+      items.push((result.rows[i] as unknown) as SyncQueueItem);
     }
   }
   return items;

@@ -1,10 +1,10 @@
-import { open, type OPSQLiteConnection } from '@op-engineering/op-sqlite';
+import { open, type DB } from '@op-engineering/op-sqlite';
 
 const DATABASE_NAME = 'SportsApp.db';
 
-let _db: OPSQLiteConnection | null = null;
+let _db: DB | null = null;
 
-export const getDBConnection = (): OPSQLiteConnection => {
+export const getDBConnection = (): DB => {
   if (!_db) {
     _db = open({ name: DATABASE_NAME });
   }

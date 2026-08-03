@@ -76,7 +76,7 @@ export const verifyOTP = (user_local_id: string, otp_code: string): boolean => {
     const record = latestRecordRows[0];
     console.log(`[otpService] verifyOTP matched -> id=${record.id} verified=${record.verified} expires=${JSON.stringify(record.expires_at)}`);
     const now = new Date();
-    const expiresAt = new Date(record.expires_at);
+    const expiresAt = new Date(record.expires_at as string);
 
     if (now <= expiresAt && record.verified === 0) {
       db.executeSync(

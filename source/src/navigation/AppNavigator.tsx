@@ -24,8 +24,10 @@ import { JumpSelectionScreen } from '../modules/jumpAssessment/screens/JumpSelec
 import { JumpCalibrationScreen } from '../modules/jumpAssessment/screens/JumpCalibrationScreen';
 import { VerticalJumpScreen } from '../modules/jumpAssessment/screens/VerticalJumpScreen';
 import { BroadJumpScreen } from '../modules/jumpAssessment/screens/BroadJumpScreen';
+import { JumpFrameAnalysisScreen } from '../modules/jumpAssessment/screens/JumpFrameAnalysisScreen';
 import { JumpResultScreen } from '../modules/jumpAssessment/screens/JumpResultScreen';
 import { JumpHistoryScreen } from '../modules/jumpAssessment/screens/JumpHistoryScreen';
+import { SKIP_LOGIN_FOR_TESTING } from '../config/devFlags';
 
 export type RootStackParamList = {
   Onboarding: undefined;
@@ -46,7 +48,8 @@ export type RootStackParamList = {
   JumpCalibration: { testType: 'vertical' | 'broad' };
   VerticalJump: { pixelsPerCm?: number };
   BroadJump: { pixelsPerCm?: number };
-  JumpResult: { testType: 'vertical' | 'broad'; metrics: any };
+  JumpFrameAnalysis: { testType?: 'vertical' | 'broad'; videoUri?: string };
+  JumpResult: { testType: 'vertical' | 'broad'; metrics: any; method?: 'airtime' | 'live' };
   JumpHistory: undefined;
 };
 
@@ -66,7 +69,7 @@ export function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Onboarding"
+        initialRouteName={SKIP_LOGIN_FOR_TESTING ? 'JumpSelection' : 'Onboarding'}
         screenOptions={{ headerShown: false, animation: 'fade' }}
       >
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
@@ -91,6 +94,7 @@ export function AppNavigator() {
         <Stack.Screen name="JumpCalibration" component={JumpCalibrationScreen} />
         <Stack.Screen name="VerticalJump" component={VerticalJumpScreen} />
         <Stack.Screen name="BroadJump" component={BroadJumpScreen} />
+        <Stack.Screen name="JumpFrameAnalysis" component={JumpFrameAnalysisScreen} />
         <Stack.Screen name="JumpResult" component={JumpResultScreen} />
         <Stack.Screen name="JumpHistory" component={JumpHistoryScreen} />
       </Stack.Navigator>

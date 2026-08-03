@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, Alert, ActivityIndicator } fro
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Eye, EyeOff, Lock, XCircle } from 'lucide-react-native';
+import { Eye, EyeOff, Lock, XCircle, CheckCircle } from 'lucide-react-native';
 import { setUserPassword } from '../../services/authService';
 import { createRegisterStyles } from '../../styles/screenStyles';
 import FieldError from '../../components/ui/FieldError';

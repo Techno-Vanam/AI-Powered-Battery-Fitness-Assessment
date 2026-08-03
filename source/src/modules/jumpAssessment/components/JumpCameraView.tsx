@@ -1,13 +1,28 @@
 /**
- * VisionCamera Wrapper Component with JSI FrameProcessor Integration
- * Displays live camera stream hardware preview and processes pose frames in RAM.
+ * JumpCameraView — VisionCamera v5 camera preview component.
+ *
+ * Key fix: VisionCamera v5's `useCamera` hook throws when `device="back"` is passed
+ * as a string and `useCameraDevices()` hasn't loaded yet. We must use `useCameraDevice('back')`
+ * and only render `<Camera>` after the device is resolved.
+ *
+ * Permissions: MUST use VisionCamera's own `useCameraPermission()`, NOT PermissionsAndroid.
  */
 
-import React, { useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Camera, useCameraDevice } from 'react-native-vision-camera';
-import { FramePoseData } from '../types/pose';
-import { useCameraPermissions } from '../hooks/useCameraPermissions';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
+import {
+  Camera,
+  useCameraDevice,
+  useCameraPermission,
+} from 'react-native-vision-camera';
+import { useIsFocused } from '@react-navigation/native';
+import type { FramePoseData } from '../types/pose';
 
 interface Props {
   onFrameProcessed: (pose: FramePoseData) => void;
@@ -15,130 +30,169 @@ interface Props {
 }
 
 export const JumpCameraView: React.FC<Props> = ({ onFrameProcessed }) => {
-  const { hasPermission, loading, requestPermission } = useCameraPermissions();
+  const isFocused = useIsFocused();
+
+  // VisionCamera v5 permission — must NOT use PermissionsAndroid
+  const { hasPermission, requestPermission } = useCameraPermission();
+
+  // Resolve back camera device (returns undefined while devices load)
   const device = useCameraDevice('back');
 
+  // Delay camera activation 400ms after focus so the Android Camera2 daemon can
+  // fully release any previous session (avoids CAMERA_IN_USE / black screen).
+  const [isCameraReady, setIsCameraReady] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
-    if (!hasPermission) {
-      void requestPermission();
+    if (!isFocused) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      setIsCameraReady(false);
+      return;
     }
-  }, [hasPermission, requestPermission]);
+    timerRef.current = setTimeout(() => setIsCameraReady(true), 400);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      setIsCameraReady(false);
+    };
+  }, [isFocused]);
 
-  // Frame processing loop feeding live pose data
+  // Debug log
   useEffect(() => {
-    if (!hasPermission) return;
+    console.log('[JumpCameraView]', {
+      hasPermission,
+      device: device?.name ?? 'none',
+      isFocused,
+      isCameraReady,
+    });
+  }, [hasPermission, device, isFocused, isCameraReady]);
 
+  // Simulated 25 FPS pose stream (replace with real frame processor when ML model is ready)
+  const onFrameProcessedRef = useRef(onFrameProcessed);
+  useEffect(() => { onFrameProcessedRef.current = onFrameProcessed; }, [onFrameProcessed]);
+
+  useEffect(() => {
+    if (!hasPermission || !isFocused || !isCameraReady) return;
     const interval = setInterval(() => {
-      onFrameProcessed({
+      onFrameProcessedRef.current({
         timestampMs: Date.now(),
         confidenceScore: 0.95,
         personDetected: true,
         feetVisible: true,
         handsVisible: true,
         landmarks: {
-          0: { x: 0.5, y: 0.2, visibility: 0.99 },
-          1: { x: 0.45, y: 0.3, visibility: 0.98 },
-          2: { x: 0.55, y: 0.3, visibility: 0.98 },
-          3: { x: 0.4, y: 0.4, visibility: 0.95 },
-          4: { x: 0.6, y: 0.4, visibility: 0.95 },
-          5: { x: 0.38, y: 0.25, visibility: 0.92 },
-          6: { x: 0.62, y: 0.25, visibility: 0.92 },
-          7: { x: 0.37, y: 0.2, visibility: 0.90 },
-          8: { x: 0.63, y: 0.2, visibility: 0.90 },
-          9: { x: 0.46, y: 0.55, visibility: 0.97 },
+          0:  { x: 0.50, y: 0.20, visibility: 0.99 },
+          1:  { x: 0.45, y: 0.30, visibility: 0.98 },
+          2:  { x: 0.55, y: 0.30, visibility: 0.98 },
+          3:  { x: 0.40, y: 0.40, visibility: 0.95 },
+          4:  { x: 0.60, y: 0.40, visibility: 0.95 },
+          5:  { x: 0.38, y: 0.25, visibility: 0.92 },
+          6:  { x: 0.62, y: 0.25, visibility: 0.92 },
+          7:  { x: 0.37, y: 0.20, visibility: 0.90 },
+          8:  { x: 0.63, y: 0.20, visibility: 0.90 },
+          9:  { x: 0.46, y: 0.55, visibility: 0.97 },
           10: { x: 0.54, y: 0.55, visibility: 0.97 },
-          11: { x: 0.45, y: 0.7, visibility: 0.96 },
-          12: { x: 0.55, y: 0.7, visibility: 0.96 },
+          11: { x: 0.45, y: 0.70, visibility: 0.96 },
+          12: { x: 0.55, y: 0.70, visibility: 0.96 },
           13: { x: 0.45, y: 0.85, visibility: 0.95 },
           14: { x: 0.55, y: 0.85, visibility: 0.95 },
           15: { x: 0.44, y: 0.88, visibility: 0.93 },
           16: { x: 0.56, y: 0.88, visibility: 0.93 },
         },
       });
-    }, 40); // 25 FPS stream
-
+    }, 40);
     return () => clearInterval(interval);
-  }, [hasPermission, onFrameProcessed]);
+  }, [hasPermission, isFocused, isCameraReady]);
 
-  if (!hasPermission && !loading) {
+  const handleRequestPermission = useCallback(async () => {
+    await requestPermission();
+  }, [requestPermission]);
+
+  // ── Permission gate ──────────────────────────────────────────────────────────
+  if (!hasPermission) {
     return (
-      <View style={styles.permissionContainer}>
-        <Text style={styles.permissionTitle}>Camera Permission Required</Text>
-        <Text style={styles.permissionSubtitle}>
-          Camera access is required to analyze jump posture and calculate jump metrics offline.
+      <View style={styles.overlay}>
+        <Text style={styles.permTitle}>📷 Camera Permission Required</Text>
+        <Text style={styles.permSubtitle}>
+          Camera access is needed to analyse your jump posture and calculate
+          metrics offline. No video is stored.
         </Text>
-        <TouchableOpacity style={styles.permissionBtn} onPress={requestPermission}>
-          <Text style={styles.btnText}>Grant Camera Permission</Text>
+        <TouchableOpacity
+          style={styles.permBtn}
+          onPress={handleRequestPermission}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.permBtnText}>Grant Camera Permission</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  if (!device) {
+  // ── Camera device not yet resolved ───────────────────────────────────────────
+  if (!device || !isCameraReady) {
     return (
-      <View style={styles.cameraPlaceholder}>
-        <Text style={styles.previewText}>Initializing Camera Device...</Text>
+      <View style={styles.overlay}>
+        <ActivityIndicator size="large" color="#38BDF8" />
+        <Text style={styles.waitText}>
+          {!device ? 'Locating back camera…' : 'Preparing camera…'}
+        </Text>
       </View>
     );
   }
 
+  // ── Active camera preview ────────────────────────────────────────────────────
   return (
-    <View style={styles.container}>
+    <View style={StyleSheet.absoluteFill}>
       <Camera
         style={StyleSheet.absoluteFill}
         device={device}
-        isActive={hasPermission}
+        isActive={isFocused && isCameraReady}
+        resizeMode="cover"
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#000000',
-  },
-  cameraPlaceholder: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#121212',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  previewText: {
-    color: '#888888',
-    fontSize: 14,
-  },
-  permissionContainer: {
-    ...StyleSheet.absoluteFillObject,
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: '#0F172A',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 30,
+    padding: 32,
     zIndex: 50,
   },
-  permissionTitle: {
+  permTitle: {
     color: '#FFFFFF',
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 12,
     textAlign: 'center',
   },
-  permissionSubtitle: {
+  permSubtitle: {
     color: '#94A3B8',
     fontSize: 14,
     textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 20,
+    marginBottom: 28,
+    lineHeight: 22,
   },
-  permissionBtn: {
+  permBtn: {
     backgroundColor: '#38BDF8',
     borderRadius: 14,
-    paddingHorizontal: 24,
+    paddingHorizontal: 28,
     paddingVertical: 16,
   },
-  btnText: {
+  permBtnText: {
     color: '#000000',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  waitText: {
+    color: '#94A3B8',
+    fontSize: 14,
+    marginTop: 16,
   },
 });

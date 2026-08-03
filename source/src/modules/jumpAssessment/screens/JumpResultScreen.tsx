@@ -13,7 +13,8 @@ interface Props {
 }
 
 export const JumpResultScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { testType, metrics } = route.params || {};
+  const { testType, metrics, method } = route.params || {};
+  const isAirtimeMethod = method === 'airtime';
 
   useEffect(() => {
     // Save metric attempt locally
@@ -34,7 +35,40 @@ export const JumpResultScreen: React.FC<Props> = ({ navigation, route }) => {
         {testType === 'vertical' ? 'Standing Vertical Jump' : 'Standing Broad Jump'}
       </Text>
 
-      {testType === 'vertical' && metrics ? (
+      {testType === 'vertical' && metrics && isAirtimeMethod ? (
+        <View style={styles.resultBox}>
+          <Text style={styles.scoreLabel}>JUMP HEIGHT (AIRTIME METHOD)</Text>
+          <Text style={styles.scoreValue}>{metrics.verticalJumpCm} cm</Text>
+
+          <View style={styles.divider} />
+
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>Airtime:</Text>
+            <Text style={styles.rowValue}>{metrics.airtimeMs} ms</Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>Takeoff Velocity:</Text>
+            <Text style={styles.rowValue}>{metrics.takeoffVelocityMs} m/s</Text>
+          </View>
+
+          {metrics.peakPowerWatts != null ? (
+            <View style={styles.row}>
+              <Text style={styles.rowLabel}>Peak Power (Sayers):</Text>
+              <Text style={styles.rowValue}>{metrics.peakPowerWatts} W</Text>
+            </View>
+          ) : null}
+
+          {metrics.relativePowerWkg != null ? (
+            <View style={styles.row}>
+              <Text style={styles.rowLabel}>Relative Power:</Text>
+              <Text style={styles.rowValue}>{metrics.relativePowerWkg} W/kg</Text>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
+
+      {testType === 'vertical' && metrics && !isAirtimeMethod ? (
         <View style={styles.resultBox}>
           <Text style={styles.scoreLabel}>VERTICAL JUMP HEIGHT</Text>
           <Text style={styles.scoreValue}>{metrics.verticalJumpCm} cm</Text>
@@ -75,7 +109,9 @@ export const JumpResultScreen: React.FC<Props> = ({ navigation, route }) => {
       <TouchableOpacity
         style={styles.retryBtn}
         onPress={() =>
-          navigation.replace('JumpCalibration', { testType })
+          isAirtimeMethod
+            ? navigation.replace('JumpFrameAnalysis', { testType })
+            : navigation.replace('JumpCalibration', { testType })
         }
       >
         <Text style={styles.retryText}>Retry Attempt</Text>
