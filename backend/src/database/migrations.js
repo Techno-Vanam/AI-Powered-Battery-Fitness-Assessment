@@ -71,4 +71,18 @@ export const migrations = [
 
   `CREATE INDEX IF NOT EXISTS idx_sync_queue_created_at
     ON sync_queue (created_at)`,
+
+  // ── weight_measurements ───────────────────────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS weight_measurements (
+    id             TEXT    PRIMARY KEY,
+    weight         REAL    NOT NULL,
+    ocr_confidence REAL    NOT NULL,
+    captured_at    TEXT    NOT NULL,
+    created_at     TEXT    NOT NULL,
+    updated_at     TEXT    NOT NULL
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_weight_captured_at
+    ON weight_measurements (captured_at)`,
 ];
+

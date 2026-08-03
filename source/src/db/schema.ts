@@ -61,5 +61,19 @@ export const createTables = (): void => {
     );
   `);
 
+  db.executeSync(`
+    CREATE TABLE IF NOT EXISTS WeightMeasurements (
+      id TEXT PRIMARY KEY,
+      weight REAL NOT NULL,
+      ocrRawText TEXT,
+      ocrConfidence REAL NOT NULL,
+      capturedImagePath TEXT,
+      timestamp TEXT NOT NULL,
+      syncStatus TEXT DEFAULT 'Pending',
+      retryCount INTEGER DEFAULT 0
+    );
+  `);
+
   console.log('[DB] Tables created successfully');
 };
+
