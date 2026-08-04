@@ -1,17 +1,19 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput,
-  ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator, Modal
+  View, Text, TouchableOpacity, TextInput,
+  Alert, ActivityIndicator
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
   User, Phone, CreditCard, Building2, CheckSquare, Square,
-  ChevronDown, AlertCircle, Check, Shield, ArrowLeft, ArrowRight
+  AlertCircle, Shield
 } from 'lucide-react-native';
 import { registerUser } from '../../services/authService';
-import DobPickerBox, { calcAge } from '../../components/DobPickerBox';
+import { createRegisterStyles } from '../../styles/screenStyles';
+import Screen from '../../components/ui/Screen';
+import Dropdown from '../../components/ui/Dropdown';
 
 const idTypeSchema = (idType: string | undefined) => {
   if (idType === 'APAAR') return yup.string().matches(/^\d{12}$/, 'Enter a valid 12-digit APAAR ID').required();
@@ -59,36 +61,47 @@ const schema = yup.object({
 
 type FormData = yup.InferType<typeof schema>;
 
-interface PickerItem { label: string; value: string; }
-interface PickerModalProps {
-  visible: boolean;
-  title: string;
-  items: PickerItem[];
-  selected: string;
-  onSelect: (val: string) => void;
-  onClose: () => void;
-}
-const PickerModal: React.FC<PickerModalProps> = ({ visible, title, items, selected, onSelect, onClose }) => (
-  <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-    <View style={styles.modalOverlay}>
-      <View style={styles.modalSheet}>
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>{title}</Text>
-          <TouchableOpacity onPress={onClose}><Text style={styles.modalClose}>Done</Text></TouchableOpacity>
-        </View>
-        <ScrollView>
-          {items.map(item => (
-            <TouchableOpacity key={item.value} style={styles.modalItem} onPress={() => { onSelect(item.value); onClose(); }}>
-              <Text style={[styles.modalItemText, selected === item.value && styles.modalItemSelected]}>{item.label}</Text>
-              {selected === item.value && <Check size={18} color="#4F46E5" />}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-    </View>
-  </Modal>
-);
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+const DAYS = Array.from({ length: 31 }, (_, i) => {
+  const value = String(i + 1).padStart(2, '0');
+  return { label: value, value };
+});
+const MONTHS = [
+  { label: 'Jan', value: '01' }, { label: 'Feb', value: '02' }, { label: 'Mar', value: '03' },
+  { label: 'Apr', value: '04' }, { label: 'May', value: '05' }, { label: 'Jun', value: '06' },
+  { label: 'Jul', value: '07' }, { label: 'Aug', value: '08' }, { label: 'Sep', value: '09' },
+  { label: 'Oct', value: '10' }, { label: 'Nov', value: '11' }, { label: 'Dec', value: '12' },
+];
+const currentYear = new Date().getFullYear();
+const YEARS = Array.from({ length: 100 }, (_, i) => {
+  const value = String(currentYear - i);
+  return { label: value, value };
+});
 
+const ID_TYPES = [
+  { label: 'NSRS', value: 'NSRS' },
+  { label: 'APAAR (12-digit)', value: 'APAAR' },
+  { label: 'Aadhar (12-digit)', value: 'AADHAR' },
+];
+
+const calcAge = (day: string, month: string, year: string): number | null => {
+  if (!day || !month || !year) return null;
+  const dob = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  const today = new Date();
+  if (isNaN(dob.getTime()) || dob > today) return null;
+  // Validate the date round-trips (catches Feb 30, etc.)
+  if (dob.getDate() !== parseInt(day) || dob.getMonth() !== parseInt(month) - 1 || dob.getFullYear() !== parseInt(year)) return null;
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+  return age;
+};
+
+// ---------------------------------------------------------------------------
+// Error display
+// ---------------------------------------------------------------------------
 const FieldError: React.FC<{ message?: string }> = ({ message }) =>
   message ? (
     <View style={styles.errorRow}>
@@ -100,7 +113,6 @@ const FieldError: React.FC<{ message?: string }> = ({ message }) =>
 const AthleteRegisterScreen = ({ navigation }: any) => {
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
-  const [pickerVisible, setPickerVisible] = useState<string | null>(null);
 
   const { control, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm<FormData>({
     mode: 'onChange',
@@ -205,32 +217,100 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
   }, [isMinor, navigation]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <Screen scroll keyboard>
           <View style={styles.header}>
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Join as an athlete and track your journey.</Text>
 
-            {/* Step Progress Bar */}
-            <View style={styles.stepIndicatorContainer}>
-              <TouchableOpacity
-                style={[styles.stepBadge, step === 1 && styles.stepBadgeActive]}
-                onPress={() => setStep(1)}
-              >
-                <Text style={[styles.stepBadgeText, step === 1 && styles.stepBadgeTextActive]}>
-                  1. Personal Info
-                </Text>
-              </TouchableOpacity>
-              <View style={styles.stepLine} />
-              <TouchableOpacity
-                style={[styles.stepBadge, step === 2 && styles.stepBadgeActive]}
-                onPress={handleNextStep}
-              >
-                <Text style={[styles.stepBadgeText, step === 2 && styles.stepBadgeTextActive]}>
-                  2. Verification
-                </Text>
-              </TouchableOpacity>
+          <View style={styles.form}>
+            {/* Full Name */}
+            <View style={styles.group}>
+              <Text style={styles.label}>Full Name</Text>
+              <Controller
+                control={control}
+                name="fullName"
+                render={({ field: { onChange, value } }) => (
+                  <View style={[styles.inputRow, errors.fullName && styles.inputError]}>
+                    <User size={18} color="#94A3B8" />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="e.g. Arjun Sharma"
+                      placeholderTextColor="#94A3B8"
+                      value={value}
+                      onChangeText={text => {
+                        onChange(text);
+                        validateField('fullName', text);
+                      }}
+                      autoCapitalize="words"
+                    />
+                  </View>
+                )}
+              />
+              <FieldError message={errors.fullName?.message} />
+            </View>
+
+            {/* Date of Birth */}
+            <View style={styles.group}>
+              <Text style={styles.label}>Date of Birth</Text>
+              <View style={styles.dobRow}>
+                <Controller
+                  control={control}
+                  name="dobDay"
+                  render={({ field: { onChange, value } }) => (
+                    <Dropdown
+                      compact
+                      items={DAYS}
+                      value={value}
+                      title="Select Day"
+                      placeholder="DD"
+                      role="athlete"
+                      hasError={!!errors.dobDay}
+                      onChange={onChange}
+                      style={{ flex: 1 }}
+                    />
+                  )}
+                />
+                <Controller
+                  control={control}
+                  name="dobMonth"
+                  render={({ field: { onChange, value } }) => (
+                    <Dropdown
+                      compact
+                      items={MONTHS}
+                      value={value}
+                      title="Select Month"
+                      placeholder="MM"
+                      role="athlete"
+                      hasError={!!errors.dobMonth}
+                      onChange={onChange}
+                      style={{ flex: 1 }}
+                    />
+                  )}
+                />
+                <Controller
+                  control={control}
+                  name="dobYear"
+                  render={({ field: { onChange, value } }) => (
+                    <Dropdown
+                      compact
+                      items={YEARS}
+                      value={value}
+                      title="Select Year"
+                      placeholder="YYYY"
+                      role="athlete"
+                      hasError={!!errors.dobYear}
+                      onChange={onChange}
+                      style={{ flex: 1.3 }}
+                    />
+                  )}
+                />
+              </View>
+              {age !== null && (
+                <View style={styles.agePill}>
+                  <Text style={styles.ageText}>Age: {age} years {isMinor ? '(Minor)' : ''}</Text>
+                </View>
+              )}
+              <FieldError message={errors.dobDay?.message || errors.dobMonth?.message || errors.dobYear?.message} />
             </View>
           </View>
 
@@ -408,32 +488,31 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
                   <FieldError message={errors.idType?.message} />
                 </View>
 
-                {/* ID Number */}
-                <View style={styles.group}>
-                  <Text style={styles.label}>ID Number</Text>
-                  <Controller
-                    control={control}
-                    name="idNumber"
-                    render={({ field: { onChange, value } }) => (
-                      <View style={[styles.inputRow, errors.idNumber && styles.inputError]}>
-                        <CreditCard size={18} color="#94A3B8" />
-                        <TextInput
-                          style={styles.input}
-                          placeholder={getIdPlaceholder()}
-                          placeholderTextColor="#94A3B8"
-                          keyboardType="number-pad"
-                          maxLength={idType === 'NSRS' ? 20 : 12}
-                          value={value}
-                          onChangeText={text => {
-                            onChange(text);
-                            validateField('idNumber', text);
-                          }}
-                        />
-                      </View>
-                    )}
+            {/* ID Type */}
+            <View style={styles.group}>
+              <Text style={styles.label}>ID Type</Text>
+              <Controller
+                control={control}
+                name="idType"
+                render={({ field: { onChange, value } }) => (
+                  <Dropdown
+                    items={ID_TYPES}
+                    value={value}
+                    title="Select ID Type"
+                    placeholder="Select ID type"
+                    role="athlete"
+                    hasError={!!errors.idType}
+                    icon={<CreditCard size={18} color="#94A3B8" />}
+                    onChange={itemValue => {
+                      onChange(itemValue);
+                      setValue('idNumber', '');
+                      void trigger('idType');
+                    }}
                   />
-                  <FieldError message={errors.idNumber?.message} />
-                </View>
+                )}
+              />
+              <FieldError message={errors.idType?.message} />
+            </View>
 
                 {/* School */}
                 <View style={styles.group}>
@@ -509,124 +588,10 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
               </TouchableOpacity>
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-
-      <PickerModal
-        visible={pickerVisible === 'idType'}
-        title="Select ID Type"
-        items={[
-          { label: 'NSRS', value: 'NSRS' },
-          { label: 'APAAR', value: 'APAAR' },
-          { label: 'AADHAR (Aadhar)', value: 'AADHAR' },
-        ]}
-        selected={idType}
-        onSelect={val => {
-          setValue('idType', val as any, { shouldValidate: true, shouldDirty: true });
-          setValue('idNumber', '');
-          void trigger('idType');
-        }}
-        onClose={() => setPickerVisible(null)}
-      />
-    </SafeAreaView>
+      </Screen>
   );
 };
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
-  flex: { flex: 1 },
-  scrollContent: { flexGrow: 1, padding: 24, paddingBottom: 40 },
-  header: { marginBottom: 20 },
-  title: { fontSize: 28, fontWeight: '800', color: '#0F172A', marginBottom: 6 },
-  subtitle: { fontSize: 15, color: '#64748B', lineHeight: 22, marginBottom: 14 },
-  
-  // Step indicator progress bar
-  stepIndicatorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F1F5F9',
-    borderRadius: 14,
-    padding: 6,
-  },
-  stepBadge: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  stepBadgeActive: {
-    backgroundColor: '#4F46E5',
-  },
-  stepBadgeText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#64748B',
-  },
-  stepBadgeTextActive: {
-    color: '#FFFFFF',
-  },
-  stepLine: {
-    width: 8,
-  },
-
-  form: { gap: 18 },
-  group: { gap: 6 },
-  label: { fontSize: 13, fontWeight: '700', color: '#334155', letterSpacing: 0.3 },
-  optional: { fontWeight: '400', color: '#94A3B8' },
-  inputRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: '#E2E8F0',
-    borderRadius: 14, paddingHorizontal: 14, height: 52,
-  },
-  inputError: { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' },
-  input: { flex: 1, fontSize: 15, color: '#0F172A', paddingVertical: 0 },
-  prefix: { fontSize: 15, color: '#0F172A', fontWeight: '600' },
-  guardianBlock: {
-    backgroundColor: '#FFF7ED', borderWidth: 1, borderColor: '#FDBA74',
-    borderRadius: 14, padding: 16, gap: 14,
-  },
-  guardianTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  guardianTitle: { fontSize: 13, fontWeight: '700', color: '#9A3412' },
-  segmented: {
-    flexDirection: 'row', backgroundColor: '#F1F5F9', borderRadius: 12,
-    padding: 4, gap: 4,
-  },
-  segment: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
-  segmentActive: { backgroundColor: '#4F46E5' },
-  segmentText: { fontSize: 13, fontWeight: '600', color: '#64748B' },
-  segmentTextActive: { color: '#FFFFFF' },
-  consentRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  consentText: { flex: 1, fontSize: 14, color: '#64748B', lineHeight: 20 },
-  consentLink: { color: '#4F46E5', fontWeight: '700', textDecorationLine: 'underline' },
-  button: {
-    backgroundColor: '#4F46E5', borderRadius: 14, height: 56,
-    justifyContent: 'center', alignItems: 'center', marginTop: 8,
-    shadowColor: '#4F46E5', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
-  },
-  buttonDisabled: { opacity: 0.5, backgroundColor: '#94A3B8', shadowOpacity: 0, elevation: 0 },
-  buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
-  btnRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  backStepBtn: { paddingVertical: 6, marginBottom: 4 },
-  backStepText: { color: '#4F46E5', fontSize: 14, fontWeight: '700' },
-  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 16, paddingBottom: 8 },
-  footerText: { fontSize: 14, color: '#64748B' },
-  footerLink: { fontSize: 14, color: '#4F46E5', fontWeight: '700' },
-  errorRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  errorText: { fontSize: 12, color: '#EF4444', fontWeight: '500' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  modalSheet: { backgroundColor: '#FFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '60%', paddingBottom: 32 },
-  modalHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    padding: 18, borderBottomWidth: 1, borderColor: '#E2E8F0',
-  },
-  modalTitle: { fontSize: 16, fontWeight: '700', color: '#0F172A' },
-  modalClose: { fontSize: 15, color: '#4F46E5', fontWeight: '700' },
-  modalItem: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingVertical: 14, paddingHorizontal: 20, borderBottomWidth: 1, borderColor: '#F1F5F9',
-  },
-  modalItemText: { fontSize: 15, color: '#334155' },
-  modalItemSelected: { color: '#4F46E5', fontWeight: '700' },
-});
+const styles = createRegisterStyles('athlete');
 
 export default AthleteRegisterScreen;

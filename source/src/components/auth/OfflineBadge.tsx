@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { WifiOff } from 'lucide-react-native';
+import AppText from '../ui/AppText';
+import { colors, layout } from '../../theme';
 
 interface Props {
   visible: boolean;
@@ -10,8 +12,10 @@ const OfflineBadge: React.FC<Props> = ({ visible }) => {
   if (!visible) return null;
   return (
     <View style={styles.badge}>
-      <WifiOff size={12} color="#92400E" />
-      <Text style={styles.text}>Offline mode</Text>
+      <WifiOff size={layout.iconSm - 6} color={colors.warning} />
+      <AppText variant="caption" color={colors.warning}>
+        Offline mode
+      </AppText>
     </View>
   );
 };
@@ -21,18 +25,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#FEF3C7',
-    borderColor: '#F59E0B',
+    backgroundColor: colors.warningBg,
+    borderColor: colors.warningBorder,
     borderWidth: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: layout.fieldGap + 2,
     paddingVertical: 4,
-    borderRadius: 20,
+    borderRadius: layout.radiusXl,
     alignSelf: 'flex-start',
-  },
-  text: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#92400E',
   },
 });
 

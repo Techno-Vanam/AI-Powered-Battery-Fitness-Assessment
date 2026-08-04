@@ -5,7 +5,7 @@ import {
   createUser,
   getUserByIdentifier,
   updateUserPassword,
-  upsertUserLocally,
+  upsertCachedUser,
   User,
 } from '../db/userRepository';
 import { generateMockOTP } from '../db/otpService';
@@ -43,9 +43,8 @@ export interface RegisterPayload
  */
 export const registerUser = async (
   payload: RegisterPayload
-): Promise<{ local_id: string; otp: string }> => {
-  // ── Step 1: Check if already registered locally ──────────────────────────
-  const existing = getUserByIdentifier(payload.id_type, payload.id_number);
+): { local_id: string; otp: string } => {
+  const existing = getUserByIdentifier(payload.id_type, payload.id_number, payload.role);
   if (existing?.local_id) {
     const otp = generateMockOTP(existing.local_id);
     // Attempt cloud sync for existing unsynced user
@@ -117,6 +116,7 @@ export const registerUser = async (
 
 /**
  * Local-first login — checks SQLite first; falls back to cloud API when online.
+ * Successful cloud logins are cached locally for later offline use.
  */
 export const loginUser = async (
   id_type: string,
@@ -175,6 +175,19 @@ export const loginUser = async (
     clearTimeout(timeoutId);
     throw new Error(err.message === 'Account setup incomplete. Please complete registration first.' ? err.message : 'Invalid ID or password.');
   }
+
+  const cloudUser = body.data.user;
+  const password_hash = await hashPassword(password);
+
+  return upsertCachedUser({
+    ...cloudUser,
+    role,
+    id_type,
+    id_number,
+    password_hash,
+    is_verified: cloudUser.is_verified ?? 1,
+    consent_given: cloudUser.consent_given ?? 1,
+  });
 };
 
 /**

@@ -1,17 +1,25 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput,
-  ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator, Modal
+  View, Text, TouchableOpacity, TextInput,
+  Alert, ActivityIndicator
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
   User, Phone, CreditCard, Building2, CheckSquare, Square,
-  ChevronDown, AlertCircle, Check, Briefcase, ArrowLeft, ArrowRight
+  AlertCircle, Briefcase
 } from 'lucide-react-native';
 import { registerUser } from '../../services/authService';
-import DobPickerBox from '../../components/DobPickerBox';
+import { createRegisterStyles } from '../../styles/screenStyles';
+import Screen from '../../components/ui/Screen';
+import Dropdown from '../../components/ui/Dropdown';
+
+const ID_TYPES = [
+  { label: 'NSRS', value: 'NSRS' },
+  { label: 'APAAR (12-digit)', value: 'APAAR' },
+  { label: 'Aadhar (12-digit)', value: 'AADHAR' },
+];
 
 const idTypeSchema = (idType: string | undefined) => {
   if (idType === 'APAAR') return yup.string().matches(/^\d{12}$/, 'Enter a valid 12-digit APAAR ID').required();
@@ -57,27 +65,6 @@ const DESIGNATIONS = [
   { label: 'TIZC', value: 'tizc' },
 ];
 
-const PickerModal = ({ visible, title, items, selected, onSelect, onClose }: any) => (
-  <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-    <View style={styles.modalOverlay}>
-      <View style={styles.modalSheet}>
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>{title}</Text>
-          <TouchableOpacity onPress={onClose}><Text style={styles.modalClose}>Done</Text></TouchableOpacity>
-        </View>
-        <ScrollView>
-          {items.map((item: any) => (
-            <TouchableOpacity key={item.value} style={styles.modalItem} onPress={() => { onSelect(item.value); onClose(); }}>
-              <Text style={[styles.modalItemText, selected === item.value && styles.modalItemSelected]}>{item.label}</Text>
-              {selected === item.value && <Check size={18} color="#4F46E5" />}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-    </View>
-  </Modal>
-);
-
 const FieldError: React.FC<{ message?: string }> = ({ message }) =>
   message ? (
     <View style={styles.errorRow}>
@@ -89,7 +76,6 @@ const FieldError: React.FC<{ message?: string }> = ({ message }) =>
 const CoachRegisterScreen = ({ navigation }: any) => {
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
-  const [pickerVisible, setPickerVisible] = useState<string | null>(null);
 
   const { control, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm<FormData>({
     mode: 'onChange',
@@ -105,11 +91,6 @@ const CoachRegisterScreen = ({ navigation }: any) => {
   const idType = watch('idType');
   const consent = watch('consent');
   const gender = watch('gender');
-  const designation = watch('designation');
-  const dobDay = watch('dobDay');
-  const dobMonth = watch('dobMonth');
-  const dobYear = watch('dobYear');
-  const selectedDesignationLabel = DESIGNATIONS.find(item => item.value === designation)?.label || 'Select designation';
 
   const getIdPlaceholder = () => {
     if (idType === 'APAAR') return '12-digit APAAR ID';
@@ -183,9 +164,7 @@ const CoachRegisterScreen = ({ navigation }: any) => {
   }, [navigation]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <Screen scroll keyboard>
           <View style={styles.header}>
             <Text style={styles.title}>Coach Registration</Text>
             <Text style={styles.subtitle}>Register as a coach or physical educator.</Text>
@@ -314,39 +293,30 @@ const CoachRegisterScreen = ({ navigation }: any) => {
               </>
             )}
 
-            {/* PAGE 2: Institutional & Identity Details */}
-            {step === 2 && (
-              <>
-                {/* Back to Step 1 Button */}
-                <TouchableOpacity style={styles.backStepBtn} onPress={() => setStep(1)}>
-                  <ArrowLeft size={16} color="#7C3AED" />
-                  <Text style={styles.backStepText}>← Back to Personal Details</Text>
-                </TouchableOpacity>
-
-                {/* Organization */}
-                <View style={styles.group}>
-                  <Text style={styles.label}>Organization Name</Text>
-                  <Controller
-                    control={control}
-                    name="organizationName"
-                    render={({ field: { onChange, value } }) => (
-                      <View style={[styles.inputRow, errors.organizationName && styles.inputError]}>
-                        <Building2 size={18} color="#94A3B8" />
-                        <TextInput
-                          style={styles.input}
-                          placeholder="e.g. Sports Authority of India"
-                          placeholderTextColor="#94A3B8"
-                          value={value}
-                          onChangeText={text => {
-                            onChange(text);
-                            validateField('organizationName', text);
-                          }}
-                        />
-                      </View>
-                    )}
+            {/* Designation */}
+            <View style={styles.group}>
+              <Text style={styles.label}>Designation</Text>
+              <Controller
+                control={control}
+                name="designation"
+                render={({ field: { onChange, value } }) => (
+                  <Dropdown
+                    items={DESIGNATIONS}
+                    value={value}
+                    title="Select Designation"
+                    placeholder="Select designation"
+                    role="coach"
+                    hasError={!!errors.designation}
+                    icon={<Briefcase size={18} color="#94A3B8" />}
+                    onChange={itemValue => {
+                      onChange(itemValue);
+                      void trigger('designation');
+                    }}
                   />
-                  <FieldError message={errors.organizationName?.message} />
-                </View>
+                )}
+              />
+              <FieldError message={errors.designation?.message} />
+            </View>
 
                 {/* Designation */}
                 <View style={styles.group}>
@@ -378,32 +348,31 @@ const CoachRegisterScreen = ({ navigation }: any) => {
                   <FieldError message={errors.idType?.message} />
                 </View>
 
-                {/* ID Number */}
-                <View style={styles.group}>
-                  <Text style={styles.label}>ID Number</Text>
-                  <Controller
-                    control={control}
-                    name="idNumber"
-                    render={({ field: { onChange, value } }) => (
-                      <View style={[styles.inputRow, errors.idNumber && styles.inputError]}>
-                        <CreditCard size={18} color="#94A3B8" />
-                        <TextInput
-                          style={styles.input}
-                          placeholder={getIdPlaceholder()}
-                          placeholderTextColor="#94A3B8"
-                          keyboardType="number-pad"
-                          maxLength={idType === 'NSRS' ? 20 : 12}
-                          value={value}
-                          onChangeText={text => {
-                            onChange(text);
-                            validateField('idNumber', text);
-                          }}
-                        />
-                      </View>
-                    )}
+            {/* ID Type */}
+            <View style={styles.group}>
+              <Text style={styles.label}>ID Type</Text>
+              <Controller
+                control={control}
+                name="idType"
+                render={({ field: { onChange, value } }) => (
+                  <Dropdown
+                    items={ID_TYPES}
+                    value={value}
+                    title="Select ID Type"
+                    placeholder="Select ID type"
+                    role="coach"
+                    hasError={!!errors.idType}
+                    icon={<CreditCard size={18} color="#94A3B8" />}
+                    onChange={itemValue => {
+                      onChange(itemValue);
+                      setValue('idNumber', '');
+                      void trigger('idType');
+                    }}
                   />
-                  <FieldError message={errors.idNumber?.message} />
-                </View>
+                )}
+              />
+              <FieldError message={errors.idType?.message} />
+            </View>
 
                 {/* Consent */}
                 <View style={styles.group}>
@@ -454,129 +423,10 @@ const CoachRegisterScreen = ({ navigation }: any) => {
               </TouchableOpacity>
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-
-      <PickerModal
-        visible={pickerVisible === 'idType'}
-        title="Select ID Type"
-        items={[
-          { label: 'NSRS', value: 'NSRS' },
-          { label: 'APAAR', value: 'APAAR' },
-          { label: 'AADHAR (Aadhar)', value: 'AADHAR' },
-        ]}
-        selected={idType}
-        onSelect={(val: string) => {
-          setValue('idType', val as any, { shouldValidate: true, shouldDirty: true });
-          setValue('idNumber', '');
-          void trigger('idType');
-        }}
-        onClose={() => setPickerVisible(null)}
-      />
-
-      <PickerModal
-        visible={pickerVisible === 'designation'}
-        title="Select Designation"
-        items={DESIGNATIONS}
-        selected={designation}
-        onSelect={(val: string) => {
-          setValue('designation', val as any, { shouldValidate: true, shouldDirty: true });
-          void trigger('designation');
-        }}
-        onClose={() => setPickerVisible(null)}
-      />
-    </SafeAreaView>
+      </Screen>
   );
 };
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
-  flex: { flex: 1 },
-  scrollContent: { flexGrow: 1, padding: 24, paddingBottom: 40 },
-  header: { marginBottom: 20 },
-  title: { fontSize: 28, fontWeight: '800', color: '#0F172A', marginBottom: 6 },
-  subtitle: { fontSize: 15, color: '#64748B', lineHeight: 22, marginBottom: 14 },
-
-  stepIndicatorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F1F5F9',
-    borderRadius: 14,
-    padding: 6,
-  },
-  stepBadge: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  stepBadgeActive: {
-    backgroundColor: '#7C3AED',
-  },
-  stepBadgeText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#64748B',
-  },
-  stepBadgeTextActive: {
-    color: '#FFFFFF',
-  },
-  stepLine: {
-    width: 8,
-  },
-
-  form: { gap: 18 },
-  group: { gap: 6 },
-  label: { fontSize: 13, fontWeight: '700', color: '#334155', letterSpacing: 0.3 },
-  optional: { fontWeight: '400', color: '#94A3B8' },
-  inputRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: '#E2E8F0',
-    borderRadius: 14, paddingHorizontal: 14, height: 52,
-  },
-  inputError: { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' },
-  input: { flex: 1, fontSize: 15, color: '#0F172A', paddingVertical: 0 },
-  prefix: { fontSize: 15, color: '#0F172A', fontWeight: '600' },
-  segmented: {
-    flexDirection: 'row', backgroundColor: '#F1F5F9', borderRadius: 12,
-    padding: 4, gap: 4,
-  },
-  segment: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
-  segmentActive: { backgroundColor: '#7C3AED' },
-  segmentText: { fontSize: 13, fontWeight: '600', color: '#64748B' },
-  segmentTextActive: { color: '#FFFFFF' },
-  consentRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  consentText: { flex: 1, fontSize: 14, color: '#64748B', lineHeight: 20 },
-  consentLink: { color: '#7C3AED', fontWeight: '700', textDecorationLine: 'underline' },
-  button: {
-    backgroundColor: '#7C3AED', borderRadius: 14, height: 56,
-    justifyContent: 'center', alignItems: 'center', marginTop: 8,
-    shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
-  },
-  buttonDisabled: { opacity: 0.5, backgroundColor: '#94A3B8', shadowOpacity: 0, elevation: 0 },
-  buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
-  btnRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  backStepBtn: { paddingVertical: 6, marginBottom: 4 },
-  backStepText: { color: '#7C3AED', fontSize: 14, fontWeight: '700' },
-  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 16, paddingBottom: 8 },
-  footerText: { fontSize: 14, color: '#64748B' },
-  footerLink: { fontSize: 14, color: '#7C3AED', fontWeight: '700' },
-  errorRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  errorText: { fontSize: 12, color: '#EF4444', fontWeight: '500' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  modalSheet: { backgroundColor: '#FFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '50%', paddingBottom: 32 },
-  modalHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    padding: 18, borderBottomWidth: 1, borderColor: '#E2E8F0',
-  },
-  modalTitle: { fontSize: 16, fontWeight: '700', color: '#0F172A' },
-  modalClose: { fontSize: 15, color: '#7C3AED', fontWeight: '700' },
-  modalItem: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingVertical: 14, paddingHorizontal: 20, borderBottomWidth: 1, borderColor: '#F1F5F9',
-  },
-  modalItemText: { fontSize: 15, color: '#334155' },
-  modalItemSelected: { color: '#7C3AED', fontWeight: '700' },
-});
+const styles = createRegisterStyles('coach');
 
 export default CoachRegisterScreen;

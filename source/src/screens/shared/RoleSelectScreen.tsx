@@ -1,162 +1,231 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Activity, ClipboardList, ChevronRight } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
+import Screen from '../../components/ui/Screen';
+import AppText from '../../components/ui/AppText';
+import { colors, layout } from '../../theme';
+import { fontFamily } from '../../theme/fonts';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RoleSelect'>;
 
 const RoleSelectScreen: React.FC<Props> = ({ navigation }) => {
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.title}>Choose Your Role</Text>
-          <Text style={styles.subtitle}>Select Athlete or Coach to continue</Text>
+    <Screen edges={['top', 'bottom', 'left', 'right']} contentStyle={styles.safeFill}>
+      <View style={styles.screen}>
+        <View style={styles.top}>
+          <AppText variant="h1" style={styles.title}>
+            Choose Your Role
+          </AppText>
+          <AppText variant="subtitle" color={colors.textSecondary}>
+            Select Athlete or Coach to continue
+          </AppText>
         </View>
 
-        <View style={styles.cardsContainer}>
+        <View style={styles.middle}>
+          {/* Athlete — indigo tint + left accent */}
           <TouchableOpacity
-            style={styles.card}
+            style={[styles.roleCard, styles.athleteCard]}
             onPress={() => navigation.navigate('AthleteLogin')}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
-            <View style={[styles.iconContainer, styles.athleteIconBg]}>
-              <Activity size={32} color="#4F46E5" />
+            <View style={styles.athleteAccent} />
+            <View style={styles.cardBody}>
+              <View style={[styles.iconBox, styles.athleteIcon]}>
+                <Activity size={layout.iconLg} color={colors.athlete.primary} strokeWidth={2.2} />
+              </View>
+              <View style={styles.cardContent}>
+                <View style={[styles.badge, styles.athleteBadge]}>
+                  <AppText variant="pill" color={colors.athlete.primary}>
+                    Athlete
+                  </AppText>
+                </View>
+                <AppText variant="h3" color={colors.textPrimary}>
+                  I am an Athlete
+                </AppText>
+                <AppText variant="bodySm" color={colors.textSecondary}>
+                  Track fitness assessments and view your progress.
+                </AppText>
+              </View>
+              <View style={[styles.arrowCircle, styles.athleteArrow]}>
+                <ChevronRight size={20} color={colors.athlete.primary} />
+              </View>
             </View>
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>Athlete</Text>
-              <Text style={styles.cardDescription}>
-                Track fitness assessments and view your progress.
-              </Text>
-            </View>
-            <ChevronRight size={24} color="#CBD5E1" />
           </TouchableOpacity>
 
+          {/* Coach — green tint + filled icon */}
           <TouchableOpacity
-            style={styles.card}
+            style={[styles.roleCard, styles.coachCard]}
             onPress={() => navigation.navigate('CoachLogin')}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
-            <View style={[styles.iconContainer, styles.coachIconBg]}>
-              <ClipboardList size={32} color="#059669" />
+            <View style={styles.coachAccent} />
+            <View style={styles.cardBody}>
+              <View style={[styles.iconBox, styles.coachIcon]}>
+                <ClipboardList size={layout.iconLg - 2} color="#FFFFFF" strokeWidth={2.2} />
+              </View>
+              <View style={styles.cardContent}>
+                <View style={[styles.badge, styles.coachBadge]}>
+                  <AppText variant="pill" color={colors.coach.accent}>
+                    Coach
+                  </AppText>
+                </View>
+                <AppText variant="h3" color={colors.textPrimary}>
+                  I am a Coach
+                </AppText>
+                <AppText variant="bodySm" color={colors.textSecondary}>
+                  Manage athletes and record assessments.
+                </AppText>
+              </View>
+              <View style={[styles.arrowCircle, styles.coachArrow]}>
+                <ChevronRight size={20} color={colors.coach.accent} />
+              </View>
             </View>
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>Coach</Text>
-              <Text style={styles.cardDescription}>
-                Manage athletes and record assessments.
-              </Text>
-            </View>
-            <ChevronRight size={24} color="#CBD5E1" />
           </TouchableOpacity>
         </View>
 
-        <View style={styles.footerContainer}>
-          <Text style={styles.footerText}>New here?</Text>
+        <View style={styles.bottom}>
+          <AppText variant="bodySm" color={colors.textSecondary}>
+            New here?
+          </AppText>
           <View style={styles.registerLinks}>
             <TouchableOpacity onPress={() => navigation.navigate('AthleteRegister')}>
-              <Text style={styles.linkText}>Register as Athlete</Text>
+              <AppText variant="bodySm" color={colors.athlete.primary} style={styles.link}>
+                Register as Athlete
+              </AppText>
             </TouchableOpacity>
-            <Text style={styles.footerText}> | </Text>
+            <AppText variant="bodySm" color={colors.textMuted}>
+              {' | '}
+            </AppText>
             <TouchableOpacity onPress={() => navigation.navigate('CoachRegister')}>
-              <Text style={styles.linkText}>Register as Coach</Text>
+              <AppText variant="bodySm" color={colors.coach.primary} style={styles.link}>
+                Register as Coach
+              </AppText>
             </TouchableOpacity>
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
+  safeFill: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
   },
-  container: {
+  screen: {
     flex: 1,
-    paddingHorizontal: 24,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
-  headerContainer: {
-    marginBottom: 40,
+  top: {
+    paddingTop: layout.sectionGap,
+    gap: layout.fieldGap,
   },
   title: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#0F172A',
-    marginBottom: 8,
     letterSpacing: -0.5,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#64748B',
-    fontWeight: '500',
+  middle: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: layout.formGap,
   },
-  cardsContainer: {
-    gap: 16,
+  roleCard: {
+    borderRadius: layout.radiusXl,
+    borderWidth: 1.5,
+    overflow: 'hidden',
   },
-  card: {
+  athleteCard: {
+    backgroundColor: colors.athlete.light,
+    borderColor: colors.athlete.primary + '35',
+  },
+  coachCard: {
+    backgroundColor: colors.coach.accentLight,
+    borderColor: colors.coach.accent + '40',
+  },
+  athleteAccent: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 5,
+    backgroundColor: colors.athlete.primary,
+  },
+  coachAccent: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 5,
+    backgroundColor: colors.coach.accent,
+  },
+  cardBody: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+    paddingVertical: layout.fieldGap + 10,
+    paddingHorizontal: layout.horizontalPadding - 6,
+    paddingLeft: layout.horizontalPadding - 2,
   },
-  iconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
+  iconBox: {
+    width: layout.inputHeight + 6,
+    height: layout.inputHeight + 6,
+    borderRadius: layout.radiusLg,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: layout.fieldGap + 6,
   },
-  athleteIconBg: {
-    backgroundColor: '#EEF2FF',
+  athleteIcon: {
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.athlete.primary + '30',
   },
-  coachIconBg: {
-    backgroundColor: '#ECFDF5',
+  coachIcon: {
+    backgroundColor: colors.coach.accent,
   },
   cardContent: {
     flex: 1,
+    gap: 4,
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1E293B',
-    marginBottom: 4,
+  badge: {
+    alignSelf: 'flex-start',
+    borderRadius: layout.radiusXl,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginBottom: 2,
   },
-  cardDescription: {
-    fontSize: 14,
-    color: '#64748B',
-    lineHeight: 20,
+  athleteBadge: {
+    backgroundColor: colors.surface,
   },
-  footerContainer: {
-    marginTop: 48,
+  coachBadge: {
+    backgroundColor: colors.surface,
+  },
+  arrowCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 4,
   },
-  footerText: {
-    fontSize: 14,
-    color: '#64748B',
+  athleteArrow: {
+    backgroundColor: colors.surface,
+  },
+  coachArrow: {
+    backgroundColor: colors.surface,
+  },
+  bottom: {
+    alignItems: 'center',
+    gap: layout.fieldGap,
+    paddingBottom: layout.fieldGap,
   },
   registerLinks: {
     flexDirection: 'row',
-    marginTop: 12,
     alignItems: 'center',
     flexWrap: 'wrap',
     justifyContent: 'center',
   },
-  linkText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#4F46E5',
+  link: {
+    fontFamily: fontFamily('700'),
   },
 });
 

@@ -26,7 +26,7 @@ export interface User {
 
 export const createUser = (userData: User): string => {
   const db = getDBConnection();
-  const existing = getUserByIdentifier(userData.id_type, userData.id_number);
+  const existing = getUserByIdentifier(userData.id_type, userData.id_number, userData.role);
   if (existing?.local_id) {
     return existing.local_id;
   }
@@ -71,7 +71,7 @@ export const createUser = (userData: User): string => {
 
     return local_id;
   } catch (error: any) {
-    const duplicateUser = getUserByIdentifier(userData.id_type, userData.id_number);
+    const duplicateUser = getUserByIdentifier(userData.id_type, userData.id_number, userData.role);
     if (duplicateUser?.local_id) {
       return duplicateUser.local_id;
     }
@@ -151,22 +151,63 @@ export const updateUserPassword = (local_id: string, password_hash: string): voi
   }
 };
 
-export const upsertUserLocally = (userData: User): void => {
+/**
+ * Cache a cloud-authenticated user locally for offline login.
+ * Does NOT enqueue sync_queue (already exists on server).
+ */
+export const upsertCachedUser = (userData: User & { password_hash: string }): User => {
   const db = getDBConnection();
-  const existing = getUserByLocalId(userData.local_id || '') || getUserByIdentifier(userData.id_type, userData.id_number);
-  const local_id = userData.local_id || existing?.local_id || uuidv4();
   const now = new Date().toISOString();
-  const createdAt = userData.created_at || existing?.created_at || now;
+  const existing = getUserByIdentifier(userData.id_type, userData.id_number, userData.role);
+  const local_id = userData.local_id || existing?.local_id || uuidv4();
+
+  if (existing) {
+    db.executeSync(
+      `UPDATE users SET
+          server_id = COALESCE(?, server_id),
+          full_name = ?,
+          dob = ?,
+          gender = ?,
+          phone = ?,
+          school_or_org = ?,
+          designation = ?,
+          guardian_name = ?,
+          guardian_relation = ?,
+          password_hash = ?,
+          is_verified = ?,
+          consent_given = ?,
+          updated_at = ?,
+          sync_status = 'synced'
+        WHERE local_id = ?`,
+      [
+        userData.server_id ?? null,
+        userData.full_name,
+        userData.dob ?? null,
+        userData.gender,
+        userData.phone ?? null,
+        userData.school_or_org ?? null,
+        userData.designation ?? null,
+        userData.guardian_name ?? null,
+        userData.guardian_relation ?? null,
+        userData.password_hash,
+        userData.is_verified ?? 1,
+        userData.consent_given ?? existing.consent_given ?? 1,
+        now,
+        existing.local_id,
+      ]
+    );
+    return getUserByLocalId(existing.local_id!) as User;
+  }
 
   db.executeSync(
-    `INSERT OR REPLACE INTO users (
+    `INSERT INTO users (
         local_id, server_id, role, full_name, dob, gender, phone, id_type, id_number,
-        school_or_org, designation, guardian_name, guardian_relation, password_hash,
-        is_verified, consent_given, created_at, updated_at, sync_status
+        school_or_org, designation, guardian_name, guardian_relation,
+        password_hash, is_verified, consent_given, created_at, updated_at, sync_status
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')`,
     [
       local_id,
-      userData.server_id ?? existing?.server_id ?? null,
+      userData.server_id ?? null,
       userData.role,
       userData.full_name,
       userData.dob ?? null,
@@ -178,12 +219,13 @@ export const upsertUserLocally = (userData: User): void => {
       userData.designation ?? null,
       userData.guardian_name ?? null,
       userData.guardian_relation ?? null,
-      userData.password_hash ?? existing?.password_hash ?? null,
+      userData.password_hash,
       userData.is_verified ?? 1,
       userData.consent_given ?? 1,
-      createdAt,
+      userData.created_at ?? now,
       now,
     ]
   );
-};
 
+  return getUserByLocalId(local_id) as User;
+};

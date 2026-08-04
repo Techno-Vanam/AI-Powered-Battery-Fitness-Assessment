@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import {
-  View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView,
-  NativeSyntheticEvent, NativeScrollEvent
-} from 'react-native';
+import React from 'react';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { FileText, ArrowLeft } from 'lucide-react-native';
+import AppText from '../../components/ui/AppText';
+import Button from '../../components/ui/Button';
+import Screen from '../../components/ui/Screen';
+import { colors, layout } from '../../theme';
 
 const TC_CONTENT = `
 Last Updated: July 2025
@@ -70,85 +71,100 @@ const TermsAndConditionsScreen = ({ navigation, route }: any) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <ArrowLeft size={22} color="#0F172A" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Terms & Conditions</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      <ScrollView
-        contentContainerStyle={styles.content}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-      >
-        <View style={styles.iconRow}>
-          <FileText size={32} color="#4F46E5" />
+    <Screen
+      scroll
+      header={
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <ArrowLeft size={layout.iconMd - 2} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <AppText variant="h3">Terms & Conditions</AppText>
+          <View style={styles.headerSpacer} />
         </View>
-        <Text style={styles.title}>Sports Assessment Platform</Text>
-        <Text style={styles.subtitle}>Terms of Use &amp; Privacy Policy</Text>
-
-        <View style={styles.divider} />
-
-        <Text style={styles.body}>{TC_CONTENT.trim()}</Text>
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.acceptBtn, !hasScrolledToBottom && styles.acceptBtnDisabled]}
-          onPress={handleAccept}
-          disabled={!hasScrolledToBottom}
-        >
-          <Text style={styles.acceptText}>
-            {hasScrolledToBottom ? 'Accept & Return to Registration' : 'Scroll to Bottom to Accept'}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.declineBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.declineText}>Back Without Accepting</Text>
-        </TouchableOpacity>
+      }
+      footer={
+        <View style={styles.footer}>
+          <Button title="Accept & Return to Registration" role="athlete" onPress={handleAccept} style={styles.acceptBtn} />
+          <TouchableOpacity style={styles.declineBtn} onPress={() => navigation.goBack()}>
+            <AppText variant="bodySm" color={colors.textMuted}>
+              Back Without Accepting
+            </AppText>
+          </TouchableOpacity>
+        </View>
+      }
+      contentStyle={styles.scrollBody}
+    >
+      <View style={styles.iconRow}>
+        <FileText size={layout.iconLg} color={colors.athlete.primary} />
       </View>
-    </SafeAreaView>
+      <AppText variant="h3" style={styles.centered}>
+        Sports Assessment Platform
+      </AppText>
+      <AppText variant="bodySm" color={colors.textSecondary} style={styles.centered}>
+        Terms of Use & Privacy Policy
+      </AppText>
+
+      <View style={styles.divider} />
+
+      <AppText variant="bodySm" color={colors.textLabel} style={styles.body}>
+        {TC_CONTENT.trim()}
+      </AppText>
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
   header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: layout.fieldGap + 8,
+    paddingVertical: layout.fieldGap + 6,
+    borderBottomWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
-  backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 17, fontWeight: '700', color: '#0F172A' },
-  content: { padding: 24, paddingBottom: 12 },
+  backBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerSpacer: { width: 40 },
+  scrollBody: {
+    paddingTop: layout.fieldGap,
+  },
   iconRow: {
-    width: 64, height: 64, borderRadius: 32, backgroundColor: '#EEF2FF',
-    alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 16,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.athlete.light,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginBottom: layout.fieldGap + 8,
   },
-  title: { fontSize: 20, fontWeight: '800', color: '#0F172A', textAlign: 'center' },
-  subtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', marginTop: 4, marginBottom: 20 },
-  divider: { height: 1, backgroundColor: '#E2E8F0', marginBottom: 20 },
-  body: { fontSize: 14, color: '#334155', lineHeight: 24 },
+  centered: { textAlign: 'center' },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginVertical: layout.fieldGap + 8,
+  },
+  body: { lineHeight: layout.fieldGap + 16 },
   footer: {
-    padding: 20, paddingBottom: 32, gap: 10, borderTopWidth: 1,
-    borderColor: '#E2E8F0', backgroundColor: '#FFFFFF',
+    padding: layout.horizontalPadding - 4,
+    paddingBottom: layout.fieldGap,
+    gap: layout.fieldGap + 2,
+    borderTopWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
-  acceptBtn: {
-    height: 52, borderRadius: 14, backgroundColor: '#4F46E5',
-    justifyContent: 'center', alignItems: 'center',
-    shadowColor: '#4F46E5', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
+  acceptBtn: { marginTop: 0 },
+  declineBtn: {
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  acceptBtnDisabled: {
-    backgroundColor: '#94A3B8',
-    opacity: 0.6,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  acceptText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
-  declineBtn: { height: 44, justifyContent: 'center', alignItems: 'center' },
-  declineText: { fontSize: 14, color: '#94A3B8' },
 });
 
 export default TermsAndConditionsScreen;

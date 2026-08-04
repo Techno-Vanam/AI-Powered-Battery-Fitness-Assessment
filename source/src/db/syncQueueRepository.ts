@@ -44,18 +44,17 @@ export const markUserConflict = (local_id: string): void => {
   );
 };
 
-/** Remove local user + OTP rows after successful cloud sync */
-export const deleteLocalUserAfterSync = (local_id: string): void => {
+/** Clear ephemeral OTP rows after successful cloud sync (keep user cached locally). */
+export const clearLocalOtpAfterSync = (local_id: string): void => {
   const db = getDBConnection();
   db.executeSync(`DELETE FROM otp_verifications WHERE user_local_id = ?`, [local_id]);
-  db.executeSync(`DELETE FROM users WHERE local_id = ?`, [local_id]);
 };
 
-export const markUserSynced = (local_id: string, server_id: string): void => {
+export const markUserSynced = (local_id: string, server_id?: string | null): void => {
   const db = getDBConnection();
   const now = new Date().toISOString();
   db.executeSync(
-    `UPDATE users SET server_id = ?, sync_status = 'synced', updated_at = ? WHERE local_id = ?`,
-    [server_id, now, local_id]
+    `UPDATE users SET server_id = COALESCE(?, server_id, local_id), sync_status = 'synced', updated_at = ? WHERE local_id = ?`,
+    [server_id ?? null, now, local_id]
   );
 };
