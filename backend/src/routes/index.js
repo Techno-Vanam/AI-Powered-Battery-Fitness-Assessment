@@ -2,6 +2,7 @@ import { Router } from 'express';
 import authRoutes from './authRoutes.js';
 import syncRoutes from './syncRoutes.js';
 import dashboardRoutes from './dashboardRoutes.js';
+import reportRoutes from './reportRoutes.js';
 
 const router = Router();
 
@@ -13,5 +14,9 @@ router.get('/health', (_req, res) => {
 router.use('/auth', authRoutes);
 router.use('/sync', syncRoutes);
 router.use('/coach', dashboardRoutes);
+
+// Public report download endpoint — scanned from QR code on report card
+// GET /api/report/:athleteId?assessmentId=...
+router.use('/report', reportRoutes);
 
 export default router;

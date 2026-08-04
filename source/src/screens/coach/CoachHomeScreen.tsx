@@ -1,412 +1,307 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  FlatList,
-  ActivityIndicator,
-  Alert,
-  StatusBar,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  ClipboardList,
-  CheckCircle,
-  Users,
-  RefreshCw,
-  FileText,
-  TrendingUp,
-  Plus,
-  Play,
-  BarChart3,
-  SlidersHorizontal,
-  CloudUpload,
-} from 'lucide-react-native';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { Bell, Users, Activity, Clock, CheckCircle2 } from 'lucide-react-native';
+import { useApp } from '../../context/AppContext';
+import { useTranslation } from '../../i18n';
+import { StatCard } from '../../components/ui/StatCard';
+import { QuickActionCard } from '../../components/ui/QuickActionCard';
+import { ProgressBar } from '../../components/ui/ProgressBar';
+import { StatusBadge } from '../../components/ui/StatusBadge';
+import { colors } from '../../theme/colors';
+import { layout } from '../../theme/layout';
 
-import { CoachHeader } from '../../components/coach/CoachHeader';
-import { StatCard } from '../../components/coach/StatCard';
-import { PrimaryActionButton } from '../../components/coach/PrimaryActionButton';
-import { AssessmentListItem } from '../../components/coach/AssessmentListItem';
-import { TestProgressGrid } from '../../components/coach/TestProgressGrid';
-import { QuickActionButton } from '../../components/coach/QuickActionButton';
-import { ActivityFeedItem } from '../../components/coach/ActivityFeedItem';
-import { PendingTaskCard } from '../../components/coach/PendingTaskCard';
-import { AnalyticsSummaryCard } from '../../components/coach/AnalyticsSummaryCard';
-import { BottomTabBar, TabKey } from '../../components/coach/BottomTabBar';
+interface CoachHomeScreenProps {
+  onOpenNotifications: () => void;
+  onNavigateAddAthlete: () => void;
+  onNavigateViewAthletes: () => void;
+  onNavigateViewAllSessions: () => void;
+}
 
-import {
-  fetchCoachStats,
-  fetchCurrentAssessments,
-  fetchTestProgress,
-  fetchRecentActivity,
-  fetchPendingTasks,
-  fetchAnalyticsPreview,
-  INITIAL_COACH_STATS,
-  INITIAL_CURRENT_ASSESSMENTS,
-  INITIAL_TEST_PROGRESS,
-  INITIAL_RECENT_ACTIVITIES,
-  INITIAL_PENDING_TASKS,
-  INITIAL_ANALYTICS_PREVIEW,
-  CoachStats,
-  CurrentAssessment,
-  TestProgressItem,
-  ActivityItem,
-  PendingTaskItem,
-  AnalyticsPreview,
-} from '../../services/dashboardService';
+export const CoachHomeScreen: React.FC<CoachHomeScreenProps> = ({
+  onOpenNotifications,
+  onNavigateAddAthlete,
+  onNavigateViewAthletes,
+  onNavigateViewAllSessions,
+}) => {
+  const { unreadNotifCount, athletes, sessions, coachProfile } = useApp();
+  const t = useTranslation();
 
-export const CoachHomeScreen = ({ navigation }: any) => {
-  const [activeTab, setActiveTab] = useState<TabKey>('Home');
-  const [isOffline, setIsOffline] = useState(false);
-  const [lastSynced, setLastSynced] = useState<string | undefined>();
+  const totalAthletes = athletes.length; // 250
+  const completedAthletes = athletes.filter(a => a.status === 'Completed').length; // 142
+  const pendingAthletes = athletes.filter(a => a.status === 'Pending').length;     // 18
+  const totalAssessments = completedAthletes + pendingAthletes;                    // 160
 
-  // Data states — pre-initialized for instant zero-flicker native rendering
-  const [stats, setStats] = useState<CoachStats>(INITIAL_COACH_STATS);
-  const [assessments, setAssessments] = useState<CurrentAssessment[]>(INITIAL_CURRENT_ASSESSMENTS);
-  const [testProgress, setTestProgress] = useState<TestProgressItem[]>(INITIAL_TEST_PROGRESS);
-  const [activities, setActivities] = useState<ActivityItem[]>(INITIAL_RECENT_ACTIVITIES);
-  const [tasks, setTasks] = useState<PendingTaskItem[]>(INITIAL_PENDING_TASKS);
-  const [analytics, setAnalytics] = useState<AnalyticsPreview>(INITIAL_ANALYTICS_PREVIEW);
-
-  const coachId = 'coach_101';
-  const coachName = 'Coach Rajesh Kumar';
-  const institutionName = 'National Sports Academy, Delhi';
-
-  const loadDashboardData = useCallback(async () => {
-    try {
-      const [statsRes, asmRes, actRes, taskRes, analyticsRes] = await Promise.all([
-        fetchCoachStats(coachId),
-        fetchCurrentAssessments(coachId),
-        fetchRecentActivity(coachId),
-        fetchPendingTasks(coachId),
-        fetchAnalyticsPreview(coachId),
-      ]);
-
-      if (statsRes.data) setStats(statsRes.data);
-      setIsOffline(statsRes.isOffline);
-      if (statsRes.lastSynced) setLastSynced(statsRes.lastSynced);
-
-      if (asmRes.data) setAssessments(asmRes.data);
-      if (actRes.data) setActivities(actRes.data);
-      if (taskRes.data) setTasks(taskRes.data);
-      if (analyticsRes.data) setAnalytics(analyticsRes.data);
-
-      // Fetch test progress for selected/first assessment
-      const selectedAsmId = (asmRes.data && asmRes.data.length > 0) ? asmRes.data[0].id : undefined;
-      const progressRes = await fetchTestProgress(coachId, selectedAsmId);
-      if (progressRes.data) setTestProgress(progressRes.data);
-    } catch (error) {
-      console.warn('[CoachHomeScreen] Background sync completed with cache');
-    }
-  }, []);
-
-  useEffect(() => {
-    loadDashboardData();
-  }, [loadDashboardData]);
-
-
-
-  const handleResolveTask = (task: PendingTaskItem) => {
-    Alert.alert('Action Triggered', `Resolving task: ${task.title}`);
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return t('greeting_morning');
+    if (hour < 17) return t('greeting_afternoon');
+    return t('greeting_evening');
   };
 
-  const handlePrimaryAction = (actionName: string) => {
-    Alert.alert(actionName, `Navigating to ${actionName}`);
-  };
-
-  const handleSelectTab = (tab: TabKey) => {
-    setActiveTab(tab);
-    if (tab !== 'Home') {
-      Alert.alert(tab, `Switched to ${tab} screen.`);
-    }
-  };
+  const coachNameDisplay = coachProfile.name
+    ? `Coach ${coachProfile.name.split(' ')[0]}`
+    : 'Coach Rajesh';
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-
-      {/* 1. Header */}
-      <CoachHeader
-        coachName={coachName}
-        institutionName={institutionName}
-        isOnline={!isOffline}
-        unreadNotifications={3}
-        onPressNotifications={() => Alert.alert('Notifications', 'You have 3 unread notifications')}
-        onPressSettings={() => handlePrimaryAction('Settings')}
-      />
-
-      {isOffline && (
-        <View style={styles.offlineBanner}>
-          <Text style={styles.offlineBannerText}>
-            Offline Mode • Showing cached data {lastSynced ? `(Last synced: ${new Date(lastSynced).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})` : ''}
-          </Text>
-        </View>
-      )}
-
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* 2. Statistics Cards */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Overview Statistics</Text>
-        </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsRow}>
-            <StatCard
-              title="Active Tests"
-              value={stats?.active_assessments ?? 0}
-              icon={<ClipboardList size={18} color="#7C3AED" />}
-              accentColor="#7C3AED"
-            />
-            <StatCard
-              title="Completed"
-              value={stats?.completed_assessments ?? 0}
-              icon={<CheckCircle size={18} color="#10B981" />}
-              accentColor="#10B981"
-            />
-            <StatCard
-              title="Registered Athletes"
-              value={stats?.athletes_registered ?? 0}
-              icon={<Users size={18} color="#0284C7" />}
-              accentColor="#0284C7"
-            />
-            <StatCard
-              title="Pending Sync"
-              value={stats?.pending_sync ?? 0}
-              icon={<RefreshCw size={18} color="#F59E0B" />}
-              accentColor="#F59E0B"
-            />
-            <StatCard
-              title="Reports Done"
-              value={stats?.reports_generated ?? 0}
-              icon={<FileText size={18} color="#8B5CF6" />}
-              accentColor="#8B5CF6"
-            />
-            <StatCard
-              title="Avg. Completion"
-              value={`${stats?.avg_completion_pct ?? 0}%`}
-              icon={<TrendingUp size={18} color="#10B981" />}
-              accentColor="#10B981"
-            />
-          </ScrollView>
-
-        {/* 3. Primary Actions */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Primary Actions</Text>
-        </View>
-        <View style={styles.primaryGrid}>
-          <PrimaryActionButton
-            label="New Assessment"
-            icon={<Plus size={22} color="#FFFFFF" />}
-            onPress={() => handlePrimaryAction('New Assessment')}
-            primary
-          />
-          <PrimaryActionButton
-            label="Continue Test"
-            icon={<Play size={22} color="#FFFFFF" />}
-            onPress={() => handlePrimaryAction('Continue Assessment')}
-            primary
-            color="#6D28D9"
-          />
-          <PrimaryActionButton
-            label="Athletes"
-            icon={<Users size={22} color="#7C3AED" />}
-            onPress={() => handlePrimaryAction('Athlete Management')}
-          />
-          <PrimaryActionButton
-            label="Analytics"
-            icon={<BarChart3 size={22} color="#7C3AED" />}
-            onPress={() => handlePrimaryAction('Analytics')}
-          />
-          <PrimaryActionButton
-            label="Reports"
-            icon={<FileText size={22} color="#7C3AED" />}
-            onPress={() => handlePrimaryAction('Reports')}
-          />
-          <PrimaryActionButton
-            label="Sync Data"
-            icon={<CloudUpload size={22} color="#7C3AED" />}
-            badgeCount={stats?.pending_sync}
-            onPress={() => handlePrimaryAction('Sync Data')}
-          />
+    <View style={styles.container}>
+      {/* Top Navigation Header with Time Greeting */}
+      <View style={styles.topBar}>
+        <View style={styles.greetingCol}>
+          <Text style={styles.greetingText}>{getGreeting()}</Text>
+          <Text style={styles.coachNameText}>{coachNameDisplay}</Text>
         </View>
 
-        {/* 4. Current Assessments */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Current Assessments</Text>
-          <Text style={styles.sectionSub}>In-progress fitness batches</Text>
-        </View>
-        <FlatList
-          data={assessments}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <AssessmentListItem
-              assessment={item}
-              onPress={(asm) => Alert.alert('Assessment Selected', asm.title)}
-            />
+        <TouchableOpacity style={styles.bellBtn} onPress={onOpenNotifications}>
+          <Bell size={22} color={colors.textPrimary} />
+          {unreadNotifCount > 0 && (
+            <View style={styles.redBadge}>
+              <Text style={styles.redBadgeText}>{unreadNotifCount}</Text>
+            </View>
           )}
-          scrollEnabled={false}
-        />
+        </TouchableOpacity>
+      </View>
 
-        {/* 5. Test Progress */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>10-Test Battery Progress</Text>
-          <Text style={styles.sectionSub}>Per-test status breakdown</Text>
-        </View>
-        <TestProgressGrid
-          tests={testProgress}
-          onSelectTest={(t) => Alert.alert('Test Details', `${t.test_name}: ${t.status}`)}
-        />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Dashboard Statistics (2x2 Equal Size Grid with Distinct Colors & Icons) */}
+        <View style={styles.statsSection}>
+          <View style={styles.statsRow}>
+            <StatCard
+              label={t('stat_total_athletes')}
+              value={totalAthletes}
+              color="#007AFF"
+              bgColor="#E5F1FF"
+              borderColor="#B3D7FF"
+              icon={<Users size={20} color="#007AFF" />}
+            />
+            <View style={styles.gridSpacer} />
+            <StatCard
+              label={t('stat_total_assessments')}
+              value={totalAssessments}
+              color="#5856D6"
+              bgColor="#F0F0FC"
+              borderColor="#C6C4F4"
+              icon={<Activity size={20} color="#5856D6" />}
+            />
+          </View>
 
-        {/* 6. Quick Actions */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Quick Tools</Text>
-        </View>
-        <View style={styles.quickRow}>
-          <QuickActionButton
-            label="Athletes"
-            icon={<Users size={20} color="#7C3AED" />}
-            onPress={() => handlePrimaryAction('Athletes')}
-          />
-          <QuickActionButton
-            label="Reports"
-            icon={<FileText size={20} color="#7C3AED" />}
-            onPress={() => handlePrimaryAction('Reports')}
-          />
-          <QuickActionButton
-            label="Analytics"
-            icon={<BarChart3 size={20} color="#7C3AED" />}
-            onPress={() => handlePrimaryAction('Analytics')}
-          />
-          <QuickActionButton
-            label="Sync Centre"
-            icon={<RefreshCw size={20} color="#7C3AED" />}
-            onPress={() => handlePrimaryAction('Sync Centre')}
-          />
-          <QuickActionButton
-            label="Settings"
-            icon={<SlidersHorizontal size={20} color="#7C3AED" />}
-            onPress={() => handlePrimaryAction('Settings')}
-          />
+          <View style={[styles.statsRow, { marginTop: 12 }]}>
+            <StatCard
+              label={t('stat_pending_assessments')}
+              value={pendingAthletes}
+              color="#FF9500"
+              bgColor="#FFF5E6"
+              borderColor="#FFD699"
+              icon={<Clock size={20} color="#FF9500" />}
+            />
+            <View style={styles.gridSpacer} />
+            <StatCard
+              label={t('stat_completed_assessments')}
+              value={completedAthletes}
+              color="#34C759"
+              bgColor="#E8F9ED"
+              borderColor="#A3E9B8"
+              icon={<CheckCircle2 size={20} color="#34C759" />}
+            />
+          </View>
         </View>
 
-        {/* 7. Pending Tasks */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Action Required</Text>
-          <Text style={styles.sectionSub}>Pending tasks and sync alerts</Text>
-        </View>
-        <FlatList
-          data={tasks}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <PendingTaskCard task={item} onResolve={handleResolveTask} />
-          )}
-          scrollEnabled={false}
-        />
-
-        {/* 8. Recent Activity */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <Text style={styles.sectionSub}>Latest events and uploads</Text>
-        </View>
-        <View style={styles.cardBox}>
-          <FlatList
-            data={activities}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <ActivityFeedItem activity={item} />}
-            scrollEnabled={false}
+        {/* Quick Action Cards (Formatted in App Colors) */}
+        <View style={styles.quickActionsSection}>
+          <Text style={styles.sectionHeader}>{t('quick_actions')}</Text>
+          <QuickActionCard
+            title={t('add_athlete')}
+            subtitle={t('add_athlete_sub')}
+            type="add"
+            onPress={onNavigateAddAthlete}
+          />
+          <QuickActionCard
+            title={t('view_athletes')}
+            subtitle={t('view_athletes_sub')}
+            type="view"
+            onPress={onNavigateViewAthletes}
           />
         </View>
 
-        {/* 9. Analytics Preview */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Analytics Summary</Text>
-        </View>
-        {analytics && (
-          <AnalyticsSummaryCard
-            analytics={analytics}
-            onPressViewAll={() => handlePrimaryAction('Full Analytics')}
-          />
-        )}
+        {/* Recent Sessions */}
+        <View style={styles.sessionsSection}>
+          <View style={styles.sectionTitleRow}>
+            <Text style={styles.sectionHeader}>{t('recent_sessions')}</Text>
+            <TouchableOpacity onPress={onNavigateViewAllSessions}>
+              <Text style={styles.viewAllText}>{t('view_all')}</Text>
+            </TouchableOpacity>
+          </View>
 
-        <View style={{ height: 32 }} />
+          {sessions.slice(0, 4).map(session => (
+            <View key={session.id} style={[styles.sessionCard, layout.shadowSubtle]}>
+              <View style={styles.sessionHeaderRow}>
+                <Text style={sessionDateStyle(session.status)}>{session.date}</Text>
+                <StatusBadge status={session.status} />
+              </View>
+
+              <Text style={styles.sessionTitle}>{session.sessionName}</Text>
+              <Text style={styles.sessionSubText}>
+                {session.schoolName} · Coach {session.coachName}
+              </Text>
+
+              <View style={styles.progressRow}>
+                <Text style={styles.assessedCountText}>
+                  {session.assessedCount}/{session.totalAthletes} {t('athletes_assessed')}
+                </Text>
+                <Text style={styles.progressPctText}>{session.progressPercentage}{t('complete')}</Text>
+              </View>
+
+              <ProgressBar progress={session.progressPercentage} color={colors.primary} height={6} />
+            </View>
+          ))}
+        </View>
       </ScrollView>
-
-      {/* 10. Bottom Navigation */}
-      <BottomTabBar activeTab={activeTab} onSelectTab={handleSelectTab} />
-    </SafeAreaView>
+    </View>
   );
 };
 
+function sessionDateStyle(_status: string) {
+  return styles.sessionDate;
+}
+
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  offlineBanner: {
-    backgroundColor: '#FEF3C7',
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#FDE68A',
-    alignItems: 'center',
-  },
-  offlineBannerText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#92400E',
-  },
   container: {
     flex: 1,
+    backgroundColor: colors.background,
   },
-  scrollContent: {
-    padding: 16,
-  },
-  sectionHeader: {
-    marginTop: 18,
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#0F172A',
-  },
-  sectionSub: {
-    fontSize: 12,
-    color: '#64748B',
-    marginTop: 2,
-  },
-  statsRow: {
-    paddingVertical: 4,
-  },
-  primaryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  quickRow: {
+  topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 10,
     backgroundColor: '#FFFFFF',
-    padding: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
   },
-  cardBox: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+  greetingCol: {
+    flexDirection: 'column',
   },
-  loader: {
-    paddingVertical: 20,
+  greetingText: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: colors.textSecondary,
+    marginBottom: 1,
+  },
+  coachNameText: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: colors.textPrimary,
+    letterSpacing: -0.4,
+  },
+  bellBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surfaceSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  redBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: colors.error,
+    borderRadius: 9,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  redBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  scrollContent: {
+    paddingTop: 12,
+    paddingBottom: 24,
+  },
+  statsSection: {
+    paddingHorizontal: 16,
+    marginBottom: 20,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  gridSpacer: {
+    width: 12,
+  },
+  quickActionsSection: {
+    paddingHorizontal: 16,
+    marginBottom: 20,
+  },
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginBottom: 12,
+  },
+  sessionsSection: {
+    paddingHorizontal: 16,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  viewAllText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  sessionCard: {
+    backgroundColor: colors.surface,
+    borderRadius: layout.cardRadius,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 16,
+    marginBottom: 12,
+  },
+  sessionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  sessionDate: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  sessionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  sessionSubText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginBottom: 12,
+  },
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  assessedCountText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  progressPctText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.primary,
   },
 });
-
-export default CoachHomeScreen;

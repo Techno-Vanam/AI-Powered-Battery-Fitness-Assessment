@@ -4,7 +4,8 @@ import {
   getAllPendingSync,
   incrementAttempts,
   removeSyncItem,
-  deleteLocalUserAfterSync,
+  clearLocalOtpAfterSync,
+  markUserSynced,
   markUserConflict,
 } from '../db/syncQueueRepository';
 import { getUserByLocalId } from '../db/userRepository';
@@ -92,8 +93,9 @@ export const runSyncJob = async (): Promise<void> => {
 
       if (detail?.status === 'synced' || detail?.status === 'updated') {
         removeSyncItem(item.queue_id);
-        deleteLocalUserAfterSync(item.entity_local_id);
-        console.log(`[Sync] ✓ ${item.entity_local_id} → cloud, local cleared`);
+        markUserSynced(item.entity_local_id, detail.server_id);
+        clearLocalOtpAfterSync(item.entity_local_id);
+        console.log(`[Sync] ✓ ${item.entity_local_id} → cloud, kept local cache`);
         continue;
       }
 

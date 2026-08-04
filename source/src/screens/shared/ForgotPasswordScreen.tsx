@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput,
-  ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator, Modal
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { CreditCard, Search, ChevronDown, AlertCircle, Check, Info } from 'lucide-react-native';
+import { CreditCard, Search, AlertCircle, Info } from 'lucide-react-native';
 import { getUserByIdentifier } from '../../db/userRepository';
+import Screen from '../../components/ui/Screen';
+import AppText from '../../components/ui/AppText';
+import Button from '../../components/ui/Button';
+import Dropdown from '../../components/ui/Dropdown';
+import { FormField, InputRow } from '../../components/ui/FormField';
+import { createRegisterStyles } from '../../styles/screenStyles';
+import { colors, layout } from '../../theme';
 
 const ID_TYPES = [
   { label: 'NSRS', value: 'NSRS' },
@@ -23,44 +27,16 @@ const idNumberSchema = (idType: string | undefined) => {
 
 const schema = yup.object({
   idType: yup.string().oneOf(['NSRS', 'APAAR', 'AADHAR']).required('Please select an ID type'),
-  idNumber: yup.string().when('idType', ([idType], schema) => idNumberSchema(idType)),
+  idNumber: yup.string().when('idType', ([idType], s) => idNumberSchema(idType)),
 });
 
 type FormData = yup.InferType<typeof schema>;
 
-const PickerModal = ({ visible, items, selected, onSelect, onClose }: any) => (
-  <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-    <View style={styles.modalOverlay}>
-      <View style={styles.modalSheet}>
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>Select ID Type</Text>
-          <TouchableOpacity onPress={onClose}><Text style={styles.modalClose}>Done</Text></TouchableOpacity>
-        </View>
-        <ScrollView>
-          {items.map((item: any) => (
-            <TouchableOpacity key={item.value} style={styles.modalItem} onPress={() => { onSelect(item.value); onClose(); }}>
-              <Text style={[styles.modalItemText, selected === item.value && styles.modalItemSelected]}>{item.label}</Text>
-              {selected === item.value && <Check size={18} color="#4F46E5" />}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-    </View>
-  </Modal>
-);
-
-const FieldError: React.FC<{ message?: string }> = ({ message }) =>
-  message ? (
-    <View style={styles.errorRow}>
-      <AlertCircle size={12} color="#EF4444" />
-      <Text style={styles.errorText}>{message}</Text>
-    </View>
-  ) : null;
+const styles = createRegisterStyles('athlete');
 
 const ForgotPasswordScreen = ({ navigation }: any) => {
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
-  const [pickerVisible, setPickerVisible] = useState(false);
 
   const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
     resolver: yupResolver(schema) as any,
@@ -79,15 +55,11 @@ const ForgotPasswordScreen = ({ navigation }: any) => {
     setLoading(true);
     setNotFound(false);
     try {
-      // 1. Check local SQLite first
       const user = await getUserByIdentifier(data.idType ?? 'NSRS', data.idNumber ?? '');
       if (user) {
         navigation.navigate('ResetPassword', { local_id: user.local_id });
         return;
       }
-
-      // 2. If not found locally and device might be online, could check remote here
-      //    For now, surface as not-found since we're offline-first
       setNotFound(true);
     } catch (e: any) {
       Alert.alert('Error', e.message || 'Something went wrong.');
@@ -97,151 +69,94 @@ const ForgotPasswordScreen = ({ navigation }: any) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          <View style={styles.header}>
-            <View style={styles.iconCircle}>
-              <Search size={28} color="#4F46E5" />
-            </View>
-            <Text style={styles.title}>Forgot Password?</Text>
-            <Text style={styles.subtitle}>
-              Enter the ID you used during registration. If we find your account, you can reset your password immediately — no OTP needed.
-            </Text>
-          </View>
+    <Screen scroll keyboard centered>
+      <View style={styles.headerCentered}>
+        <View style={styles.iconCircle}>
+          <Search size={layout.iconMd + 4} color={colors.athlete.primary} />
+        </View>
+        <AppText variant="h2" style={{ textAlign: 'center' }}>
+          Forgot Password?
+        </AppText>
+        <AppText variant="bodySm" color={colors.textSecondary} style={{ textAlign: 'center' }}>
+          Enter the ID you used during registration. If we find your account, you can reset your password immediately — no OTP needed.
+        </AppText>
+      </View>
 
-          <View style={styles.infoBox}>
-            <Info size={16} color="#3B82F6" />
-            <Text style={styles.infoText}>
-              No SMS is sent. If your ID is found in the database, you'll be taken directly to a password reset screen.
-            </Text>
-          </View>
+      <View style={styles.infoBox}>
+        <Info size={layout.iconSm - 2} color="#3B82F6" />
+        <AppText variant="caption" color="#1D4ED8" style={styles.infoText}>
+          No SMS is sent. If your ID is found in the database, you'll be taken directly to a password reset screen.
+        </AppText>
+      </View>
 
-          <View style={styles.form}>
-            <View style={styles.group}>
-              <Text style={styles.label}>ID Type</Text>
-              <TouchableOpacity
-                style={[styles.inputRow, errors.idType && styles.inputError]}
-                onPress={() => setPickerVisible(true)}
-              >
-                <CreditCard size={18} color="#94A3B8" />
-                <Text style={[styles.input, { paddingVertical: 0, color: '#0F172A', fontWeight: '600' }]}>
-                  {ID_TYPES.find(t => t.value === idType)?.label || 'Select ID Type'}
-                </Text>
-                <ChevronDown size={18} color="#94A3B8" />
-              </TouchableOpacity>
-              <FieldError message={errors.idType?.message} />
-            </View>
-
-            <View style={styles.group}>
-              <Text style={styles.label}>ID Number</Text>
-              <Controller
-                control={control}
-                name="idNumber"
-                render={({ field: { onChange, value } }) => (
-                  <View style={[styles.inputRow, (errors.idNumber || notFound) && styles.inputError]}>
-                    <CreditCard size={18} color="#94A3B8" />
-                    <TextInput
-                      style={styles.input}
-                      placeholder={getIdPlaceholder()}
-                      placeholderTextColor="#94A3B8"
-                      keyboardType="number-pad"
-                      maxLength={idType === 'NSRS' ? 20 : 12}
-                      value={value}
-                      onChangeText={v => { onChange(v); setNotFound(false); }}
-                    />
-                  </View>
-                )}
+      <View style={styles.form}>
+        <FormField label="ID Type" error={errors.idType?.message}>
+          <Controller
+            control={control}
+            name="idType"
+            render={({ field: { onChange, value } }) => (
+              <Dropdown
+                items={ID_TYPES}
+                value={value}
+                title="Select ID Type"
+                placeholder="Select ID type"
+                role="athlete"
+                hasError={!!errors.idType}
+                icon={<CreditCard size={layout.iconSm} color={colors.textMuted} />}
+                onChange={itemValue => {
+                  onChange(itemValue);
+                  setValue('idNumber', '');
+                  setNotFound(false);
+                }}
               />
-              <FieldError message={errors.idNumber?.message} />
-              {notFound && (
-                <View style={styles.errorRow}>
-                  <AlertCircle size={12} color="#EF4444" />
-                  <Text style={styles.errorText}>No account found with this ID.</Text>
-                </View>
-              )}
+            )}
+          />
+        </FormField>
+
+        <FormField label="ID Number" error={errors.idNumber?.message}>
+          <Controller
+            control={control}
+            name="idNumber"
+            render={({ field: { onChange, value } }) => (
+              <InputRow hasError={!!errors.idNumber || notFound}>
+                <CreditCard size={layout.iconSm} color={colors.textMuted} />
+                <TextInput
+                  style={styles.input}
+                  placeholder={getIdPlaceholder()}
+                  placeholderTextColor={colors.textMuted}
+                  keyboardType="number-pad"
+                  maxLength={idType === 'NSRS' ? 20 : 12}
+                  value={value}
+                  onChangeText={v => { onChange(v); setNotFound(false); }}
+                />
+              </InputRow>
+            )}
+          />
+          {notFound && (
+            <View style={styles.errorRow}>
+              <AlertCircle size={12} color={colors.error} />
+              <AppText variant="caption" color={colors.error}>
+                No account found with this ID.
+              </AppText>
             </View>
+          )}
+        </FormField>
 
-            <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleSubmit(onSubmit)}
-              disabled={loading}
-            >
-              {loading
-                ? <ActivityIndicator color="#fff" />
-                : <Text style={styles.buttonText}>Check & Reset Password</Text>}
-            </TouchableOpacity>
+        <Button
+          title="Check & Reset Password"
+          role="athlete"
+          loading={loading}
+          onPress={handleSubmit(onSubmit)}
+        />
 
-            <TouchableOpacity style={styles.backRow} onPress={() => navigation.goBack()}>
-              <Text style={styles.backText}>Back to Login</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-
-      <PickerModal
-        visible={pickerVisible}
-        items={ID_TYPES}
-        selected={idType}
-        onSelect={(val: string) => { setValue('idType', val as any); setValue('idNumber', ''); setNotFound(false); }}
-        onClose={() => setPickerVisible(false)}
-      />
-    </SafeAreaView>
+        <TouchableOpacity style={styles.backRow} onPress={() => navigation.goBack()}>
+          <AppText variant="bodySm" color={colors.textSecondary}>
+            Back to Login
+          </AppText>
+        </TouchableOpacity>
+      </View>
+    </Screen>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
-  flex: { flex: 1 },
-  scrollContent: { flexGrow: 1, padding: 24, paddingBottom: 40, justifyContent: 'center' },
-  header: { alignItems: 'center', marginBottom: 24, gap: 12 },
-  iconCircle: {
-    width: 68, height: 68, borderRadius: 34, backgroundColor: '#EEF2FF',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  title: { fontSize: 24, fontWeight: '800', color: '#0F172A', textAlign: 'center' },
-  subtitle: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 22, paddingHorizontal: 8 },
-  infoBox: {
-    flexDirection: 'row', gap: 10, alignItems: 'flex-start',
-    backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE',
-    borderRadius: 14, padding: 14, marginBottom: 24,
-  },
-  infoText: { flex: 1, fontSize: 13, color: '#1D4ED8', lineHeight: 20 },
-  form: { gap: 18 },
-  group: { gap: 6 },
-  label: { fontSize: 13, fontWeight: '700', color: '#334155', letterSpacing: 0.3 },
-  inputRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: '#E2E8F0',
-    borderRadius: 14, paddingHorizontal: 14, height: 52,
-  },
-  inputError: { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' },
-  input: { flex: 1, fontSize: 15, color: '#0F172A', paddingVertical: 0 },
-  button: {
-    height: 56, borderRadius: 14, backgroundColor: '#4F46E5',
-    justifyContent: 'center', alignItems: 'center', marginTop: 4,
-    shadowColor: '#4F46E5', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
-  },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
-  backRow: { alignItems: 'center', marginTop: 8 },
-  backText: { fontSize: 14, color: '#64748B' },
-  errorRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  errorText: { fontSize: 12, color: '#EF4444', fontWeight: '500' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  modalSheet: { backgroundColor: '#FFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '50%', paddingBottom: 32 },
-  modalHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    padding: 18, borderBottomWidth: 1, borderColor: '#E2E8F0',
-  },
-  modalTitle: { fontSize: 16, fontWeight: '700', color: '#0F172A' },
-  modalClose: { fontSize: 15, color: '#4F46E5', fontWeight: '700' },
-  modalItem: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingVertical: 14, paddingHorizontal: 20, borderBottomWidth: 1, borderColor: '#F1F5F9',
-  },
-  modalItemText: { fontSize: 15, color: '#334155' },
-  modalItemSelected: { color: '#4F46E5', fontWeight: '700' },
-});
 
 export default ForgotPasswordScreen;

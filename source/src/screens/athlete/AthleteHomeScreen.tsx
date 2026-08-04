@@ -1,67 +1,280 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  View,
 } from 'react-native';
-import { User, Activity, LogOut } from 'lucide-react-native';
+import Screen from '../../components/ui/Screen';
+import AppText from '../../components/ui/AppText';
+import Button from '../../components/ui/Button';
+import {
+  AchievementsRow,
+  AiInsightsCard,
+  AssessmentHistoryList,
+  AthleteBottomNav,
+  AthleteTab,
+  CurrentTestCard,
+  DashboardHeader,
+  DigitalReportCard,
+  GreetingCard,
+  LatestResultCard,
+  OfflineSyncCentre,
+  PerformanceSummary,
+  ProgressCard,
+  QuickActionsRow,
+  TestAccuracyCard,
+  TestJourneyList,
+} from '../../components/dashboard';
+import {
+  fetchAthleteDashboard,
+  syncAthleteDashboardNow,
+} from '../../services/athleteDashboardService';
+import { MOCK_ATHLETE_DASHBOARD } from '../../data/mockAthleteDashboard';
+import type { AthleteDashboardData, DashboardTest, HistoryItem } from '../../types/athleteDashboard';
+import { colors, layout } from '../../theme';
+import { t } from '../../utils/i18n';
 
-const AthleteHomeScreen = ({ navigation, route }: any) => {
+/**
+ * Athlete Dashboard (Home) — sections 1–15 in order.
+ * Data: GET /api/athlete/dashboard (mock + AsyncStorage offline cache).
+ */
+const AthleteHomeScreen = ({ navigation }: any) => {
+  const [data, setData] = useState<AthleteDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [fromCache, setFromCache] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [activeTab, setActiveTab] = useState<AthleteTab>('home');
+
+  const load = useCallback(async (mode: 'initial' | 'sync' = 'initial') => {
+    if (mode === 'sync') setSyncing(true);
+    if (mode === 'initial') setLoading(true);
+
+    try {
+      const result =
+        mode === 'sync' ? await syncAthleteDashboardNow() : await fetchAthleteDashboard();
+      setData(result.data);
+      setFromCache(result.fromCache);
+      setIsOnline(result.isOnline);
+    } catch {
+      setData(MOCK_ATHLETE_DASHBOARD);
+      setFromCache(true);
+      setIsOnline(false);
+    } finally {
+      setLoading(false);
+      setSyncing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load('initial');
+  }, [load]);
+
+  const comingSoon = useCallback((label?: string) => {
+    Alert.alert(label ?? 'Info', t('dashboard.comingSoon'));
+  }, []);
+
+  const openAssessment = useCallback(
+    (test?: DashboardTest) => {
+      comingSoon(test?.name ?? t('dashboard.continueAssessment'));
+    },
+    [comingSoon],
+  );
+
+  const onTabChange = useCallback(
+    (tab: AthleteTab) => {
+      setActiveTab(tab);
+      if (tab === 'home') return;
+      if (tab === 'profile') {
+        Alert.alert('Profile', undefined, [
+          {
+            text: 'Log Out',
+            style: 'destructive',
+            onPress: () => navigation.reset({ index: 0, routes: [{ name: 'RoleSelect' }] }),
+          },
+          { text: 'Cancel', style: 'cancel' },
+        ]);
+        return;
+      }
+      comingSoon(t(`dashboard.nav.${tab}`));
+    },
+    [comingSoon, navigation],
+  );
+
+  const showLoading = loading && !data;
+  const showError = !loading && !data;
+  const incomplete = Boolean(data && data.progress.remaining > 0);
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <View style={styles.avatarCircle}>
-            <User size={36} color="#4F46E5" />
+    <Screen
+      fullWidth
+      edges={['top', 'left', 'right']}
+      style={styles.screen}
+    >
+      <View style={styles.root}>
+        {showLoading ? (
+          <View style={styles.center}>
+            <ActivityIndicator color={colors.textPrimary} size="large" />
+            <AppText variant="bodySm" color={colors.textSecondary}>
+              {t('dashboard.loading')}
+            </AppText>
           </View>
-          <Text style={styles.welcome}>Welcome, Athlete!</Text>
-          <Text style={styles.subtitle}>Your fitness dashboard is coming soon.</Text>
-        </View>
+        ) : null}
 
-        <View style={styles.card}>
-          <Activity size={24} color="#4F46E5" />
-          <Text style={styles.cardTitle}>Battery Fitness Assessment</Text>
-          <Text style={styles.cardBody}>
-            Your assessment results and progress tracking will appear here.
-          </Text>
-        </View>
+        {showError ? (
+          <View style={styles.center}>
+            <AppText variant="body">{t('dashboard.error')}</AppText>
+            <Button title={t('dashboard.retry')} role="athlete" onPress={() => load('initial')} />
+          </View>
+        ) : null}
 
-        <TouchableOpacity
-          style={styles.logoutBtn}
-          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'RoleSelect' }] })}
-        >
-          <LogOut size={18} color="#EF4444" />
-          <Text style={styles.logoutText}>Log Out</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+        {data ? (
+          <ScrollView
+            style={styles.scroll}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.content}
+            bounces={false}
+            overScrollMode="never"
+          >
+            {/* 1. Header */}
+            <DashboardHeader
+              profile={data.profile}
+              onNotifications={() => comingSoon('Notifications')}
+              onSettings={() => comingSoon('Settings')}
+            />
+
+            {fromCache && !isOnline ? (
+              <View style={styles.offlineBanner}>
+                <AppText variant="caption" color={colors.warning}>
+                  {t('dashboard.cachedOffline')}
+                </AppText>
+              </View>
+            ) : null}
+
+            {/* 2. Greeting Card */}
+            <GreetingCard name={data.profile.name} greeting={data.greeting} />
+
+            {/* 3. Overall Assessment Progress */}
+            <ProgressCard
+              progress={data.progress}
+              onContinue={() => openAssessment()}
+            />
+
+            {/* 4. Quick Actions */}
+            <QuickActionsRow
+              onContinue={() => openAssessment()}
+              onStart={() => comingSoon(t('dashboard.startAssessment'))}
+              onResults={() => comingSoon(t('dashboard.viewResults'))}
+              onReport={() => comingSoon(t('dashboard.viewReport'))}
+              onHistory={() => comingSoon(t('dashboard.assessmentHistory'))}
+            />
+
+            {/* 5. Current Test Card (only if incomplete) */}
+            {incomplete ? (
+              <CurrentTestCard
+                currentTest={data.currentTest}
+                onContinue={() => openAssessment()}
+              />
+            ) : null}
+
+            {/* 6. Test Journey (10 Tests) */}
+            <TestJourneyList tests={data.tests} onOpenTest={openAssessment} />
+
+            {/* 7. Latest Result */}
+            <LatestResultCard latestResult={data.latestResult} />
+
+            {/* 8. Performance Summary */}
+            <PerformanceSummary performance={data.performance} />
+
+            {/* 9. AI Insights */}
+            <AiInsightsCard aiInsights={data.aiInsights} />
+
+            {/* 10. Test Accuracy */}
+            <TestAccuracyCard
+              overall={data.accuracy.overall}
+              items={data.accuracy.items}
+            />
+
+            {/* 11. Assessment History */}
+            <AssessmentHistoryList
+              history={data.history}
+              onView={(item: HistoryItem) => comingSoon(item.label)}
+            />
+
+            {/* 12. Digital Report Card */}
+            <DigitalReportCard
+              onViewPdf={() => comingSoon(t('dashboard.viewPdf'))}
+              onDownload={() => comingSoon(t('dashboard.download'))}
+              onShare={() => comingSoon(t('dashboard.share'))}
+            />
+
+            {/* 13. Achievements */}
+            <AchievementsRow achievements={data.achievements} />
+
+            {/* 14. Offline Sync Centre */}
+            <OfflineSyncCentre
+              isOnline={isOnline}
+              sync={data.sync}
+              syncing={syncing}
+              onSyncNow={() => load('sync')}
+            />
+
+            <View style={styles.bottomSpacer} />
+          </ScrollView>
+        ) : null}
+
+        {/* 15. Floating premium dock */}
+        <AthleteBottomNav
+          active={activeTab}
+          onChange={onTabChange}
+          onCenterPress={() => comingSoon(t('dashboard.startAssessment'))}
+        />
+      </View>
+    </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
-  content: { flexGrow: 1, padding: 24, alignItems: 'center', gap: 24, paddingTop: 48 },
-  header: { alignItems: 'center', gap: 10 },
-  avatarCircle: {
-    width: 80, height: 80, borderRadius: 40,
-    backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center',
+  screen: {
+    backgroundColor: '#FFFFFF',
   },
-  welcome: { fontSize: 26, fontWeight: '800', color: '#0F172A' },
-  subtitle: { fontSize: 15, color: '#64748B', textAlign: 'center' },
-  card: {
-    width: '100%', backgroundColor: '#FFFFFF', borderRadius: 16,
-    borderWidth: 1.5, borderColor: '#E2E8F0', padding: 20, gap: 10,
+  root: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+  },
+  scroll: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+  },
+  content: {
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 120,
+    gap: 20,
+  },
+  center: {
+    flex: 1,
     alignItems: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+    justifyContent: 'center',
+    gap: layout.fieldGap,
+    paddingHorizontal: layout.horizontalPadding,
   },
-  cardTitle: { fontSize: 17, fontWeight: '700', color: '#0F172A' },
-  cardBody: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 20 },
-  logoutBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingVertical: 12, paddingHorizontal: 24,
-    borderRadius: 12, borderWidth: 1.5, borderColor: '#FCA5A5',
-    backgroundColor: '#FFF5F5', marginTop: 16,
+  offlineBanner: {
+    backgroundColor: '#FFFBEB',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
-  logoutText: { fontSize: 15, fontWeight: '700', color: '#EF4444' },
+  bottomSpacer: {
+    height: 8,
+  },
 });
 
 export default AthleteHomeScreen;
