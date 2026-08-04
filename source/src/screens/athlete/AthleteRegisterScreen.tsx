@@ -182,7 +182,7 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
     setLoading(true);
     try {
       const dob = `${data.dobYear}-${data.dobMonth}-${data.dobDay}`;
-      const { local_id, otp } = registerUser({
+      const { local_id, otp } = await registerUser({
         role: 'athlete',
         full_name: data.fullName,
         dob,

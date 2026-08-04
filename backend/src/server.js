@@ -11,10 +11,10 @@ async function start() {
     process.exit(1);
   }
 
-  const server = app.listen(env.PORT, () => {
+  const server = app.listen(env.PORT, '0.0.0.0', () => {
     console.log(`[Server] Running in ${env.NODE_ENV} mode`);
-    console.log(`[Server] Listening on http://localhost:${env.PORT}`);
-    console.log(`[Server] API base: http://localhost:${env.PORT}/api`);
+    console.log(`[Server] Listening on http://0.0.0.0:${env.PORT}`);
+    console.log(`[Server] API base: http://0.0.0.0:${env.PORT}/api`);
   });
 
   function shutdown(signal) {

@@ -67,6 +67,7 @@ const AthleteLoginScreen = ({ navigation }: any) => {
   const [loading, setLoading] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [pickerVisible, setPickerVisible] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
@@ -90,11 +91,14 @@ const AthleteLoginScreen = ({ navigation }: any) => {
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
+    setLoginError(null);
     try {
       await loginUser(data.idType ?? 'NSRS', data.idNumber ?? '', data.password, 'athlete');
       navigation.reset({ index: 0, routes: [{ name: 'AthleteHome' }] });
     } catch (e: any) {
-      Alert.alert('Login Failed', e.message || 'Invalid ID or password.');
+      const errMsg = e.message || 'Invalid ID or password.';
+      setLoginError(errMsg);
+      Alert.alert('Login Failed', errMsg);
     } finally {
       setLoading(false);
     }
@@ -186,6 +190,13 @@ const AthleteLoginScreen = ({ navigation }: any) => {
               <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
 
+            {loginError ? (
+              <View style={styles.loginErrorBanner}>
+                <AlertCircle size={16} color="#EF4444" />
+                <Text style={styles.loginErrorText}>{loginError}</Text>
+              </View>
+            ) : null}
+
             <TouchableOpacity
               style={[styles.button, loading && styles.buttonDisabled]}
               onPress={handleSubmit(onSubmit)}
@@ -241,6 +252,23 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontSize: 15, color: '#0F172A', paddingVertical: 0 },
   forgotRow: { alignItems: 'flex-end', marginTop: -6 },
   forgotText: { fontSize: 13, color: '#4F46E5', fontWeight: '700' },
+  loginErrorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 4,
+  },
+  loginErrorText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#991B1B',
+  },
   button: {
     height: 56, borderRadius: 14, backgroundColor: '#4F46E5',
     justifyContent: 'center', alignItems: 'center', marginTop: 4,
