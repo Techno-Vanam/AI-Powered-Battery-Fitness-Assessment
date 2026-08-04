@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView
+  View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView,
+  NativeSyntheticEvent, NativeScrollEvent
 } from 'react-native';
 import { FileText, ArrowLeft } from 'lucide-react-native';
 
@@ -53,6 +54,15 @@ For questions or concerns regarding these Terms, please contact: support@sportsa
 
 const TermsAndConditionsScreen = ({ navigation, route }: any) => {
   const { onAccept } = route.params ?? {};
+  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const paddingToBottom = 30;
+    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
+      setHasScrolledToBottom(true);
+    }
+  };
 
   const handleAccept = () => {
     if (onAccept) onAccept();
@@ -69,7 +79,11 @@ const TermsAndConditionsScreen = ({ navigation, route }: any) => {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <View style={styles.iconRow}>
           <FileText size={32} color="#4F46E5" />
         </View>
@@ -82,8 +96,14 @@ const TermsAndConditionsScreen = ({ navigation, route }: any) => {
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.acceptBtn} onPress={handleAccept}>
-          <Text style={styles.acceptText}>Accept &amp; Return to Registration</Text>
+        <TouchableOpacity
+          style={[styles.acceptBtn, !hasScrolledToBottom && styles.acceptBtnDisabled]}
+          onPress={handleAccept}
+          disabled={!hasScrolledToBottom}
+        >
+          <Text style={styles.acceptText}>
+            {hasScrolledToBottom ? 'Accept & Return to Registration' : 'Scroll to Bottom to Accept'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.declineBtn} onPress={() => navigation.goBack()}>
           <Text style={styles.declineText}>Back Without Accepting</Text>
@@ -119,6 +139,12 @@ const styles = StyleSheet.create({
     height: 52, borderRadius: 14, backgroundColor: '#4F46E5',
     justifyContent: 'center', alignItems: 'center',
     shadowColor: '#4F46E5', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
+  },
+  acceptBtnDisabled: {
+    backgroundColor: '#94A3B8',
+    opacity: 0.6,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   acceptText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
   declineBtn: { height: 44, justifyContent: 'center', alignItems: 'center' },

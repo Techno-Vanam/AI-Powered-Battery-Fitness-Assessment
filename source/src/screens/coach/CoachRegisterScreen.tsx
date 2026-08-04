@@ -8,9 +8,10 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
   User, Phone, CreditCard, Building2, CheckSquare, Square,
-  ChevronDown, AlertCircle, Check, Briefcase
+  ChevronDown, AlertCircle, Check, Briefcase, ArrowLeft, ArrowRight
 } from 'lucide-react-native';
 import { registerUser } from '../../services/authService';
+import DobPickerBox from '../../components/DobPickerBox';
 
 const idTypeSchema = (idType: string | undefined) => {
   if (idType === 'APAAR') return yup.string().matches(/^\d{12}$/, 'Enter a valid 12-digit APAAR ID').required();
@@ -21,8 +22,9 @@ const idTypeSchema = (idType: string | undefined) => {
 const schema = yup.object({
   coachName: yup
     .string()
+    .transform(value => (typeof value === 'string' ? value.trim() : value))
     .required('Please enter a valid name')
-    .matches(/^[A-Za-z]+(\s[A-Za-z]+)*$/, 'Please enter a valid name')
+    .matches(/^[A-Za-z.\s'-]+$/, 'Please enter a valid name')
     .min(2, 'Please enter a valid name')
     .max(50, 'Please enter a valid name'),
   organizationName: yup.string().min(2, 'Please enter your organization name').required('Please enter your organization name'),
@@ -30,6 +32,9 @@ const schema = yup.object({
     .string()
     .oneOf(['coach', 'pe_teacher', 'tidc', 'tizc'], 'Please select a designation')
     .required('Please select a designation'),
+  dobDay: yup.string().optional(),
+  dobMonth: yup.string().optional(),
+  dobYear: yup.string().optional(),
   gender: yup.string().required('Please select a gender'),
   phone: yup
     .string()
@@ -82,15 +87,17 @@ const FieldError: React.FC<{ message?: string }> = ({ message }) =>
   ) : null;
 
 const CoachRegisterScreen = ({ navigation }: any) => {
+  const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [pickerVisible, setPickerVisible] = useState<string | null>(null);
 
-  const { control, handleSubmit, watch, setValue, trigger, formState: { errors, isValid } } = useForm<FormData>({
+  const { control, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm<FormData>({
     mode: 'onChange',
     reValidateMode: 'onChange',
     resolver: yupResolver(schema) as any,
     defaultValues: {
-      coachName: '', organizationName: '', designation: undefined as any, gender: '',
+      coachName: '', organizationName: '', designation: undefined as any,
+      dobDay: '', dobMonth: '', dobYear: '', gender: '',
       phone: '', idType: 'NSRS', idNumber: '', consent: false,
     },
   });
@@ -99,6 +106,9 @@ const CoachRegisterScreen = ({ navigation }: any) => {
   const consent = watch('consent');
   const gender = watch('gender');
   const designation = watch('designation');
+  const dobDay = watch('dobDay');
+  const dobMonth = watch('dobMonth');
+  const dobYear = watch('dobYear');
   const selectedDesignationLabel = DESIGNATIONS.find(item => item.value === designation)?.label || 'Select designation';
 
   const getIdPlaceholder = () => {
@@ -134,12 +144,28 @@ const CoachRegisterScreen = ({ navigation }: any) => {
     void trigger(field as any);
   };
 
+  const handleNextStep = async () => {
+    const fieldsToValidate: Array<keyof FormData> = ['coachName', 'gender', 'phone'];
+    if (dobDay || dobMonth || dobYear) {
+      fieldsToValidate.push('dobDay', 'dobMonth', 'dobYear');
+    }
+
+    const isValidStep1 = await trigger(fieldsToValidate);
+    if (isValidStep1) {
+      setStep(2);
+    } else {
+      Alert.alert('Incomplete Form', 'Please fix errors in Step 1 before proceeding.');
+    }
+  };
+
   const onSubmit = useCallback(async (data: FormData) => {
     setLoading(true);
     try {
+      const dob = data.dobDay && data.dobMonth && data.dobYear ? `${data.dobYear}-${data.dobMonth}-${data.dobDay}` : undefined;
       const { local_id, otp } = await registerUser({
         role: 'coach',
         full_name: data.coachName,
+        dob,
         gender: data.gender,
         phone: data.phone || undefined,
         id_type: data.idType,
@@ -163,200 +189,263 @@ const CoachRegisterScreen = ({ navigation }: any) => {
           <View style={styles.header}>
             <Text style={styles.title}>Coach Registration</Text>
             <Text style={styles.subtitle}>Register as a coach or physical educator.</Text>
+
+            {/* Step Indicator */}
+            <View style={styles.stepIndicatorContainer}>
+              <TouchableOpacity
+                style={[styles.stepBadge, step === 1 && styles.stepBadgeActive]}
+                onPress={() => setStep(1)}
+              >
+                <Text style={[styles.stepBadgeText, step === 1 && styles.stepBadgeTextActive]}>
+                  1. Personal Info
+                </Text>
+              </TouchableOpacity>
+              <View style={styles.stepLine} />
+              <TouchableOpacity
+                style={[styles.stepBadge, step === 2 && styles.stepBadgeActive]}
+                onPress={handleNextStep}
+              >
+                <Text style={[styles.stepBadgeText, step === 2 && styles.stepBadgeTextActive]}>
+                  2. Verification
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <View style={styles.form}>
-            {/* Coach Name */}
-            <View style={styles.group}>
-              <Text style={styles.label}>Full Name</Text>
-              <Controller
-                control={control}
-                name="coachName"
-                render={({ field: { onChange, value } }) => (
-                  <View style={[styles.inputRow, errors.coachName && styles.inputError]}>
-                    <User size={18} color="#94A3B8" />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="e.g. Rajesh Kumar"
-                      placeholderTextColor="#94A3B8"
-                      value={value}
-                      onChangeText={text => {
-                        onChange(text);
-                        validateField('coachName', text);
-                      }}
-                      autoCapitalize="words"
-                    />
+            {/* PAGE 1: Personal Info (Until Mobile Number) */}
+            {step === 1 && (
+              <>
+                {/* Coach Name */}
+                <View style={styles.group}>
+                  <Text style={styles.label}>Full Name</Text>
+                  <Controller
+                    control={control}
+                    name="coachName"
+                    render={({ field: { onChange, value } }) => (
+                      <View style={[styles.inputRow, errors.coachName && styles.inputError]}>
+                        <User size={18} color="#94A3B8" />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="e.g. Rajesh Kumar"
+                          placeholderTextColor="#94A3B8"
+                          value={value}
+                          onChangeText={text => {
+                            onChange(text);
+                            validateField('coachName', text);
+                          }}
+                          autoCapitalize="words"
+                        />
+                      </View>
+                    )}
+                  />
+                  <FieldError message={errors.coachName?.message} />
+                </View>
+
+                {/* Date of Birth Box Module */}
+                <DobPickerBox
+                  dobDay={dobDay || ''}
+                  dobMonth={dobMonth || ''}
+                  dobYear={dobYear || ''}
+                  onSelectDate={(d, m, y) => {
+                    setValue('dobDay', d, { shouldValidate: true, shouldDirty: true });
+                    setValue('dobMonth', m, { shouldValidate: true, shouldDirty: true });
+                    setValue('dobYear', y, { shouldValidate: true, shouldDirty: true });
+                    void trigger(['dobDay', 'dobMonth', 'dobYear']);
+                  }}
+                  error={errors.dobDay?.message || errors.dobMonth?.message || errors.dobYear?.message}
+                />
+
+                {/* Gender */}
+                <View style={styles.group}>
+                  <Text style={styles.label}>Gender</Text>
+                  <View style={styles.segmented}>
+                    {[{ label: 'Male', value: 'M' }, { label: 'Female', value: 'F' }, { label: 'Other', value: 'O' }].map(g => (
+                      <TouchableOpacity
+                        key={g.value}
+                        style={[styles.segment, gender === g.value && styles.segmentActive]}
+                        onPress={() => {
+                          setValue('gender', g.value, { shouldValidate: true, shouldDirty: true });
+                          void trigger('gender');
+                        }}
+                      >
+                        <Text style={[styles.segmentText, gender === g.value && styles.segmentTextActive]}>{g.label}</Text>
+                      </TouchableOpacity>
+                    ))}
                   </View>
-                )}
-              />
-              <FieldError message={errors.coachName?.message} />
-            </View>
+                  <FieldError message={errors.gender?.message} />
+                </View>
 
-            {/* Organization */}
-            <View style={styles.group}>
-              <Text style={styles.label}>Organization Name</Text>
-              <Controller
-                control={control}
-                name="organizationName"
-                render={({ field: { onChange, value } }) => (
-                  <View style={[styles.inputRow, errors.organizationName && styles.inputError]}>
-                    <Building2 size={18} color="#94A3B8" />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="e.g. Sports Authority of India"
-                      placeholderTextColor="#94A3B8"
-                      value={value}
-                      onChangeText={text => {
-                        onChange(text);
-                        validateField('organizationName', text);
-                      }}
-                    />
+                {/* Phone Number (Last Field of Page 1) */}
+                <View style={styles.group}>
+                  <Text style={styles.label}>Phone Number <Text style={styles.optional}>(Optional)</Text></Text>
+                  <Controller
+                    control={control}
+                    name="phone"
+                    render={({ field: { onChange, value } }) => (
+                      <View style={[styles.inputRow, errors.phone && styles.inputError]}>
+                        <Phone size={18} color="#94A3B8" />
+                        <Text style={styles.prefix}>+91</Text>
+                        <TextInput
+                          style={styles.input}
+                          placeholder="10-digit mobile number"
+                          placeholderTextColor="#94A3B8"
+                          keyboardType="number-pad"
+                          maxLength={10}
+                          value={value}
+                          onChangeText={text => {
+                            onChange(text);
+                            validateField('phone', text);
+                          }}
+                        />
+                      </View>
+                    )}
+                  />
+                  <FieldError message={errors.phone?.message} />
+                </View>
+
+                {/* Page 1 Action: NEXT Button */}
+                <TouchableOpacity style={styles.button} onPress={handleNextStep}>
+                  <View style={styles.btnRow}>
+                    <Text style={styles.buttonText}>Next Step</Text>
+                    <ArrowRight size={18} color="#FFF" />
                   </View>
-                )}
-              />
-              <FieldError message={errors.organizationName?.message} />
-            </View>
-
-            {/* Designation */}
-            <View style={styles.group}>
-              <Text style={styles.label}>Designation</Text>
-              <TouchableOpacity
-                style={[styles.inputRow, errors.designation && styles.inputError]}
-                onPress={() => setPickerVisible('designation')}
-              >
-                <Briefcase size={18} color="#94A3B8" />
-                <Text style={[styles.input, { paddingVertical: 0, color: '#0F172A', fontWeight: '600' }]}>
-                  {selectedDesignationLabel}
-                </Text>
-                <ChevronDown size={18} color="#94A3B8" />
-              </TouchableOpacity>
-              <FieldError message={errors.designation?.message} />
-            </View>
-
-            {/* Gender */}
-            <View style={styles.group}>
-              <Text style={styles.label}>Gender</Text>
-              <View style={styles.segmented}>
-                {[{ label: 'Male', value: 'M' }, { label: 'Female', value: 'F' }, { label: 'Other', value: 'O' }].map(g => (
-                  <TouchableOpacity
-                    key={g.value}
-                    style={[styles.segment, gender === g.value && styles.segmentActive]}
-                    onPress={() => {
-                      setValue('gender', g.value, { shouldValidate: true, shouldDirty: true });
-                      void trigger('gender');
-                    }}
-                  >
-                    <Text style={[styles.segmentText, gender === g.value && styles.segmentTextActive]}>{g.label}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <FieldError message={errors.gender?.message} />
-            </View>
-
-            {/* Phone */}
-            <View style={styles.group}>
-              <Text style={styles.label}>Phone Number <Text style={styles.optional}>(Optional)</Text></Text>
-              <Controller
-                control={control}
-                name="phone"
-                render={({ field: { onChange, value } }) => (
-                  <View style={[styles.inputRow, errors.phone && styles.inputError]}>
-                    <Phone size={18} color="#94A3B8" />
-                    <Text style={styles.prefix}>+91</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="10-digit mobile number"
-                      placeholderTextColor="#94A3B8"
-                      keyboardType="number-pad"
-                      maxLength={10}
-                      value={value}
-                      onChangeText={text => {
-                        onChange(text);
-                        validateField('phone', text);
-                      }}
-                    />
-                  </View>
-                )}
-              />
-              <FieldError message={errors.phone?.message} />
-            </View>
-
-            {/* ID Type */}
-            <View style={styles.group}>
-              <Text style={styles.label}>ID Type</Text>
-              <TouchableOpacity
-                style={[styles.inputRow, errors.idType && styles.inputError]}
-                onPress={() => setPickerVisible('idType')}
-              >
-                <CreditCard size={18} color="#94A3B8" />
-                <Text style={[styles.input, { paddingVertical: 0, color: '#0F172A', fontWeight: '600' }]}>{idType}</Text>
-                <ChevronDown size={18} color="#94A3B8" />
-              </TouchableOpacity>
-              <FieldError message={errors.idType?.message} />
-            </View>
-
-            {/* ID Number */}
-            <View style={styles.group}>
-              <Text style={styles.label}>ID Number</Text>
-              <Controller
-                control={control}
-                name="idNumber"
-                render={({ field: { onChange, value } }) => (
-                  <View style={[styles.inputRow, errors.idNumber && styles.inputError]}>
-                    <CreditCard size={18} color="#94A3B8" />
-                    <TextInput
-                      style={styles.input}
-                      placeholder={getIdPlaceholder()}
-                      placeholderTextColor="#94A3B8"
-                      keyboardType="number-pad"
-                      maxLength={idType === 'NSRS' ? 20 : 12}
-                      value={value}
-                      onChangeText={text => {
-                        onChange(text);
-                        validateField('idNumber', text);
-                      }}
-                    />
-                  </View>
-                )}
-              />
-              <FieldError message={errors.idNumber?.message} />
-            </View>
-
-            {/* Consent */}
-            <View style={styles.group}>
-              <View style={styles.consentRow}>
-                <TouchableOpacity onPress={() => {
-                  setValue('consent', !consent, { shouldValidate: true, shouldDirty: true });
-                  void trigger('consent');
-                }}>
-                  {consent
-                    ? <CheckSquare size={24} color="#4F46E5" />
-                    : <Square size={24} color="#CBD5E1" />}
                 </TouchableOpacity>
-                <Text style={styles.consentText}>
-                  I agree to the{' '}
-                  <Text
-                    style={styles.consentLink}
-                    onPress={() => navigation.navigate('TermsAndConditions', {
-                      onAccept: () => setValue('consent', true, { shouldValidate: true }),
-                    })}
-                  >
-                    Terms & Conditions
-                  </Text>
-                </Text>
-              </View>
-              <FieldError message={errors.consent?.message} />
-            </View>
+              </>
+            )}
 
-            <TouchableOpacity
-              style={[styles.button, (loading || !isValid) && styles.buttonDisabled]}
-              onPress={handleSubmit(onSubmit as any)}
-              disabled={loading || !isValid}
-            >
-              {loading
-                ? <ActivityIndicator color="#fff" />
-                : <Text style={styles.buttonText}>Register & Get OTP</Text>}
-            </TouchableOpacity>
+            {/* PAGE 2: Institutional & Identity Details */}
+            {step === 2 && (
+              <>
+                {/* Back to Step 1 Button */}
+                <TouchableOpacity style={styles.backStepBtn} onPress={() => setStep(1)}>
+                  <ArrowLeft size={16} color="#7C3AED" />
+                  <Text style={styles.backStepText}>← Back to Personal Details</Text>
+                </TouchableOpacity>
+
+                {/* Organization */}
+                <View style={styles.group}>
+                  <Text style={styles.label}>Organization Name</Text>
+                  <Controller
+                    control={control}
+                    name="organizationName"
+                    render={({ field: { onChange, value } }) => (
+                      <View style={[styles.inputRow, errors.organizationName && styles.inputError]}>
+                        <Building2 size={18} color="#94A3B8" />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="e.g. Sports Authority of India"
+                          placeholderTextColor="#94A3B8"
+                          value={value}
+                          onChangeText={text => {
+                            onChange(text);
+                            validateField('organizationName', text);
+                          }}
+                        />
+                      </View>
+                    )}
+                  />
+                  <FieldError message={errors.organizationName?.message} />
+                </View>
+
+                {/* Designation */}
+                <View style={styles.group}>
+                  <Text style={styles.label}>Designation</Text>
+                  <TouchableOpacity
+                    style={[styles.inputRow, errors.designation && styles.inputError]}
+                    onPress={() => setPickerVisible('designation')}
+                  >
+                    <Briefcase size={18} color="#94A3B8" />
+                    <Text style={[styles.input, { paddingVertical: 0, color: '#0F172A', fontWeight: '600' }]}>
+                      {selectedDesignationLabel}
+                    </Text>
+                    <ChevronDown size={18} color="#94A3B8" />
+                  </TouchableOpacity>
+                  <FieldError message={errors.designation?.message} />
+                </View>
+
+                {/* ID Type */}
+                <View style={styles.group}>
+                  <Text style={styles.label}>ID Type</Text>
+                  <TouchableOpacity
+                    style={[styles.inputRow, errors.idType && styles.inputError]}
+                    onPress={() => setPickerVisible('idType')}
+                  >
+                    <CreditCard size={18} color="#94A3B8" />
+                    <Text style={[styles.input, { paddingVertical: 0, color: '#0F172A', fontWeight: '600' }]}>{idType}</Text>
+                    <ChevronDown size={18} color="#94A3B8" />
+                  </TouchableOpacity>
+                  <FieldError message={errors.idType?.message} />
+                </View>
+
+                {/* ID Number */}
+                <View style={styles.group}>
+                  <Text style={styles.label}>ID Number</Text>
+                  <Controller
+                    control={control}
+                    name="idNumber"
+                    render={({ field: { onChange, value } }) => (
+                      <View style={[styles.inputRow, errors.idNumber && styles.inputError]}>
+                        <CreditCard size={18} color="#94A3B8" />
+                        <TextInput
+                          style={styles.input}
+                          placeholder={getIdPlaceholder()}
+                          placeholderTextColor="#94A3B8"
+                          keyboardType="number-pad"
+                          maxLength={idType === 'NSRS' ? 20 : 12}
+                          value={value}
+                          onChangeText={text => {
+                            onChange(text);
+                            validateField('idNumber', text);
+                          }}
+                        />
+                      </View>
+                    )}
+                  />
+                  <FieldError message={errors.idNumber?.message} />
+                </View>
+
+                {/* Consent */}
+                <View style={styles.group}>
+                  <View style={styles.consentRow}>
+                    <TouchableOpacity onPress={() => {
+                      setValue('consent', !consent, { shouldValidate: true, shouldDirty: true });
+                      void trigger('consent');
+                    }}>
+                      {consent
+                        ? <CheckSquare size={24} color="#7C3AED" />
+                        : <Square size={24} color="#CBD5E1" />}
+                    </TouchableOpacity>
+                    <Text style={styles.consentText}>
+                      I agree to the{' '}
+                      <Text
+                        style={styles.consentLink}
+                        onPress={() => navigation.navigate('TermsAndConditions', {
+                          onAccept: () => {
+                            setValue('consent', true, { shouldValidate: true, shouldDirty: true });
+                            void trigger('consent');
+                          },
+                        })}
+                      >
+                        Terms & Conditions
+                      </Text>
+                    </Text>
+                  </View>
+                  <FieldError message={errors.consent?.message} />
+                </View>
+
+                {/* Submit Button */}
+                <TouchableOpacity
+                  style={[styles.button, (loading || !consent) && styles.buttonDisabled]}
+                  onPress={handleSubmit(onSubmit as any)}
+                  disabled={loading || !consent}
+                >
+                  {loading
+                    ? <ActivityIndicator color="#fff" />
+                    : <Text style={styles.buttonText}>Register & Get OTP</Text>}
+                </TouchableOpacity>
+              </>
+            )}
 
             <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an account?</Text>
@@ -404,9 +493,38 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
   flex: { flex: 1 },
   scrollContent: { flexGrow: 1, padding: 24, paddingBottom: 40 },
-  header: { marginBottom: 28 },
+  header: { marginBottom: 20 },
   title: { fontSize: 28, fontWeight: '800', color: '#0F172A', marginBottom: 6 },
-  subtitle: { fontSize: 15, color: '#64748B', lineHeight: 22 },
+  subtitle: { fontSize: 15, color: '#64748B', lineHeight: 22, marginBottom: 14 },
+
+  stepIndicatorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 14,
+    padding: 6,
+  },
+  stepBadge: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  stepBadgeActive: {
+    backgroundColor: '#7C3AED',
+  },
+  stepBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  stepBadgeTextActive: {
+    color: '#FFFFFF',
+  },
+  stepLine: {
+    width: 8,
+  },
+
   form: { gap: 18 },
   group: { gap: 6 },
   label: { fontSize: 13, fontWeight: '700', color: '#334155', letterSpacing: 0.3 },
@@ -419,33 +537,27 @@ const styles = StyleSheet.create({
   inputError: { borderColor: '#FCA5A5', backgroundColor: '#FFF5F5' },
   input: { flex: 1, fontSize: 15, color: '#0F172A', paddingVertical: 0 },
   prefix: { fontSize: 15, color: '#0F172A', fontWeight: '600' },
-  designationGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  designationBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12,
-    borderWidth: 1.5, borderColor: '#E2E8F0', backgroundColor: '#FFFFFF',
-  },
-  designationBtnActive: { backgroundColor: '#4F46E5', borderColor: '#4F46E5' },
-  designationText: { fontSize: 13, fontWeight: '600', color: '#64748B' },
-  designationTextActive: { color: '#FFFFFF' },
   segmented: {
     flexDirection: 'row', backgroundColor: '#F1F5F9', borderRadius: 12,
     padding: 4, gap: 4,
   },
   segment: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
-  segmentActive: { backgroundColor: '#4F46E5' },
+  segmentActive: { backgroundColor: '#7C3AED' },
   segmentText: { fontSize: 13, fontWeight: '600', color: '#64748B' },
   segmentTextActive: { color: '#FFFFFF' },
   consentRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   consentText: { flex: 1, fontSize: 14, color: '#64748B', lineHeight: 20 },
-  consentLink: { color: '#4F46E5', fontWeight: '700', textDecorationLine: 'underline' },
+  consentLink: { color: '#7C3AED', fontWeight: '700', textDecorationLine: 'underline' },
   button: {
     backgroundColor: '#7C3AED', borderRadius: 14, height: 56,
     justifyContent: 'center', alignItems: 'center', marginTop: 8,
     shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
   },
-  buttonDisabled: { opacity: 0.6 },
+  buttonDisabled: { opacity: 0.5, backgroundColor: '#94A3B8', shadowOpacity: 0, elevation: 0 },
   buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  btnRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  backStepBtn: { paddingVertical: 6, marginBottom: 4 },
+  backStepText: { color: '#7C3AED', fontSize: 14, fontWeight: '700' },
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 16, paddingBottom: 8 },
   footerText: { fontSize: 14, color: '#64748B' },
   footerLink: { fontSize: 14, color: '#7C3AED', fontWeight: '700' },
