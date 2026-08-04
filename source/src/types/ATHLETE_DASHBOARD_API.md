@@ -23,21 +23,21 @@ Authorization: Bearer <token>   # optional for now; wire when auth tokens exist
     },
     "greeting": {
       "lastAssessmentDate": "2026-07-28",
-      "completedTests": 7,
-      "totalTests": 10,
-      "statusLabel": "7/10 Tests Completed"
+      "completedTests": 4,
+      "totalTests": 5,
+      "statusLabel": "4/5 Tests Completed"
     },
     "progress": {
-      "percent": 70,
-      "completed": 7,
-      "remaining": 3
+      "percent": 80,
+      "completed": 4,
+      "remaining": 1
     },
     "currentTest": {
-      "testId": "shuttle_run",
-      "name": "Shuttle Run",
+      "testId": "sit_ups",
+      "name": "Sit-Ups",
       "status": "in_progress",
       "attemptsRemaining": 1,
-      "estimatedMinutes": 4
+      "estimatedMinutes": 3
     },
     "tests": [
       {

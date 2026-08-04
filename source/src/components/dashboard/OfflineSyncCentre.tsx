@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Wifi, WifiOff } from 'lucide-react-native';
+import SFSymbol from '../ui/SFSymbol';
 import AppText from '../ui/AppText';
 import SectionTitle from './SectionTitle';
 import { colors } from '../../theme';
@@ -20,9 +20,9 @@ export default function OfflineSyncCentre({ isOnline, sync, syncing, onSyncNow }
       <SectionTitle title={t('dashboard.syncCentre')} />
       <View style={styles.statusRow}>
         {isOnline ? (
-          <Wifi size={18} color={colors.success} />
+          <SFSymbol name="wifi" size={18} color={colors.success} />
         ) : (
-          <WifiOff size={18} color={colors.error} />
+          <SFSymbol name="wifi.slash" size={18} color={colors.error} />
         )}
         <AppText
           variant="bodySm"

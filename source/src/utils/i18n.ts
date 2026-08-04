@@ -18,7 +18,7 @@ const en: Record<string, string> = {
   'dashboard.assessmentHistory': 'Assessment History',
   'dashboard.quickActions': 'Quick Actions',
   'dashboard.currentTest': 'Current Test',
-  'dashboard.testJourney': 'Test Journey (10 Tests)',
+  'dashboard.testJourney': 'Test Journey (5 Tests)',
   'dashboard.latestResult': 'Latest Result',
   'dashboard.performanceSummary': 'Performance Summary',
   'dashboard.aiInsights': 'AI Insights',
