@@ -14,6 +14,7 @@ National Hackathon submission project — NeGD / MYAS, July 2026.
 ├── presentation/   # Slide deck
 ├── compliance/     # Data protection declaration, consent forms
 ├── CHECKLIST.md    # Final submission checklist
+
 └── README.md
 ```
 
@@ -57,5 +58,7 @@ Before deadline, populate all folders and create: `TeamName_Submission.zip`
 # Archive root folders (exclude node_modules, .git)
 Compress-Archive -Path app,source,backend,models,docs,demo,presentation,compliance,README.md,CHECKLIST.md -DestinationPath TeamName_Submission.zip
 ```
+
+
 
 See `auth-flow-documentation.md` for authentication flow details.
