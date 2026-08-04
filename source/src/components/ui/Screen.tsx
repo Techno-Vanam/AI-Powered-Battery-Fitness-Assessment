@@ -15,6 +15,8 @@ type Props = {
   scroll?: boolean;
   centered?: boolean;
   keyboard?: boolean;
+  /** Skip max-width / side padding so content can use the full screen width */
+  fullWidth?: boolean;
   style?: ViewStyle;
   contentStyle?: ViewStyle;
   header?: React.ReactNode;
@@ -27,27 +29,36 @@ export function Screen({
   scroll = false,
   centered = false,
   keyboard = false,
+  fullWidth = false,
   style,
   contentStyle,
   header,
   footer,
   edges = ['top', 'bottom', 'left', 'right'],
 }: Props) {
+  const wrapStyle = fullWidth ? styles.contentWrapFull : styles.contentWrap;
+
   const inner = scroll ? (
     <ScrollView
       contentContainerStyle={[
-        styles.scrollContent,
+        fullWidth ? styles.scrollContentFull : styles.scrollContent,
         centered && styles.centered,
         contentStyle,
       ]}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.contentWrap}>{children}</View>
+      <View style={wrapStyle}>{children}</View>
     </ScrollView>
   ) : (
-    <View style={[styles.staticContent, centered && styles.centered, contentStyle]}>
-      <View style={styles.contentWrap}>{children}</View>
+    <View
+      style={[
+        fullWidth ? styles.staticContentFull : styles.staticContent,
+        centered && styles.centered,
+        contentStyle,
+      ]}
+    >
+      <View style={wrapStyle}>{children}</View>
     </View>
   );
 
@@ -88,6 +99,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: layout.horizontalPadding,
     paddingVertical: layout.verticalPadding,
   },
+  staticContentFull: {
+    flex: 1,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+  scrollContentFull: {
+    flexGrow: 1,
+    paddingHorizontal: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
   centered: {
     justifyContent: 'center',
   },
@@ -96,6 +118,11 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: layout.contentMaxWidth,
     alignSelf: 'center',
+  },
+  contentWrapFull: {
+    flex: 1,
+    width: '100%',
+    alignSelf: 'stretch',
   },
 });
 

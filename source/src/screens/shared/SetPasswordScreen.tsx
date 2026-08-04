@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, Alert, ActivityIndicator } fro
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Eye, EyeOff, Lock, CheckCircle, XCircle } from 'lucide-react-native';
+import { Eye, EyeOff, Lock, XCircle } from 'lucide-react-native';
 import { setUserPassword } from '../../services/authService';
 import { createRegisterStyles } from '../../styles/screenStyles';
 import FieldError from '../../components/ui/FieldError';
@@ -43,7 +43,6 @@ const SetPasswordScreen = ({ navigation, route }: any) => {
   const [showPwd, setShowPwd] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
   const { control, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     resolver: yupResolver(schema),
@@ -61,33 +60,14 @@ const SetPasswordScreen = ({ navigation, route }: any) => {
     setLoading(true);
     try {
       await setUserPassword(local_id, data.password);
-      setSuccess(true);
+      const homeRoute = role === 'coach' ? 'CoachHome' : 'AthleteHome';
+      navigation.reset({ index: 0, routes: [{ name: homeRoute }] });
     } catch (e: any) {
       Alert.alert('Error', e.message || 'Failed to set password.');
     } finally {
       setLoading(false);
     }
   };
-
-  if (success) {
-    return (
-      <Screen centered contentStyle={styles.successContainer}>
-        <View style={styles.successIcon}>
-          <CheckCircle size={56} color="#22C55E" />
-        </View>
-        <Text style={styles.successTitle}>Account Created!</Text>
-        <Text style={styles.successSubtitle}>
-          Your account has been set up successfully. You can now log in.
-        </Text>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate(role === 'coach' ? 'CoachLogin' : 'AthleteLogin')}
-        >
-          <Text style={styles.buttonText}>Go to Login</Text>
-        </TouchableOpacity>
-      </Screen>
-    );
-  }
 
   return (
     <Screen scroll keyboard>

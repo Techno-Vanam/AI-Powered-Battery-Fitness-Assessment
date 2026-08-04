@@ -1,3 +1,14 @@
+import NetInfo from '@react-native-community/netinfo';
+import { API_BASE_URL } from '../config/api';
+import {
+  getAllPendingSync,
+  incrementAttempts,
+  removeSyncItem,
+  clearLocalOtpAfterSync,
+  markUserSynced,
+  markUserConflict,
+} from '../db/syncQueueRepository';
+import { getUserByLocalId } from '../db/userRepository';
 import { NetworkService } from './NetworkService';
 import { SQLiteService } from './SQLiteService';
 import { WeightAPIService, WeightPayload } from './WeightAPIService';
@@ -35,41 +46,90 @@ export const SyncService = {
     _isSyncing = true;
     let syncedCount = 0;
 
-    try {
-      const pendingRecords = SQLiteService.getPendingMeasurements();
-      if (pendingRecords.length === 0) {
-        _isSyncing = false;
-        return { count: 0, success: true };
-      }
+    // 1. Sync pending user registration queue items
+    const pendingItems = getAllPendingSync();
+    if (pendingItems.length > 0) {
+      try {
+        const usersToSync = pendingItems
+          .map(item => getUserByLocalId(item.entity_local_id))
+          .filter(Boolean);
 
-      const payloads: WeightPayload[] = pendingRecords.map((r) => ({
-        id: r.id,
-        weight: r.weight,
-        ocr_confidence: r.ocrConfidence,
-        captured_at: r.timestamp,
-      }));
+        if (usersToSync.length > 0) {
+          const response = await fetch(`${API_BASE_URL}/auth/sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ users: usersToSync }),
+          });
 
-      const syncResult = await WeightAPIService.syncPendingMeasurements(payloads);
+          if (response.ok) {
+            const body = (await response.json()) as any;
+            const details = body.data?.details ?? [];
+            const detailByLocalId = new Map(details.map((d: any) => [d.local_id, d]));
 
-      if (syncResult.success && syncResult.syncedIds.length > 0) {
-        syncedCount = syncResult.syncedIds.length;
+            for (const item of pendingItems) {
+              const detail = detailByLocalId.get(item.entity_local_id);
 
-        for (const record of pendingRecords) {
-          if (syncResult.syncedIds.includes(record.id)) {
-            // Delete temporary SQLite cache record
-            SQLiteService.deleteMeasurement(record.id);
+              if (detail?.status === 'conflict') {
+                markUserConflict(item.entity_local_id);
+                removeSyncItem(item.queue_id);
+                console.warn(`[Sync] Conflict for ${item.entity_local_id}`);
+                continue;
+              }
 
-            // Delete temporary captured image file
-            if (record.capturedImagePath) {
-              await ImageProcessingService.deleteTempImage(record.capturedImagePath);
+              if (detail?.status === 'failed') {
+                incrementAttempts(item.queue_id);
+                console.warn(`[Sync] Failed for ${item.entity_local_id}: ${detail.reason}`);
+                continue;
+              }
+
+              if (detail?.status === 'synced' || detail?.status === 'updated') {
+                removeSyncItem(item.queue_id);
+                markUserSynced(item.entity_local_id, detail.server_id);
+                clearLocalOtpAfterSync(item.entity_local_id);
+                console.log(`[Sync] ✓ ${item.entity_local_id} → cloud, kept local cache`);
+                syncedCount++;
+                continue;
+              }
+
+              incrementAttempts(item.queue_id);
             }
-          } else {
-            SQLiteService.updateSyncStatus(record.id, 'Pending', true);
           }
         }
+      } catch (err) {
+        console.warn('[SyncService] User sync error:', err);
+      }
+    try {
+      const pendingRecords = SQLiteService.getPendingMeasurements();
+      if (pendingRecords.length > 0) {
+        const payloads: WeightPayload[] = pendingRecords.map((r) => ({
+          id: r.id,
+          weight: r.weight,
+          ocr_confidence: r.ocrConfidence,
+          captured_at: r.timestamp,
+        }));
 
-        // Notify subscribers to refresh UI
-        _syncListeners.forEach((fn) => fn());
+        const syncResult = await WeightAPIService.syncPendingMeasurements(payloads);
+
+        if (syncResult.success && syncResult.syncedIds.length > 0) {
+          syncedCount += syncResult.syncedIds.length;
+
+          for (const record of pendingRecords) {
+            if (syncResult.syncedIds.includes(record.id)) {
+              // Delete temporary SQLite cache record
+              SQLiteService.deleteMeasurement(record.id);
+
+              // Delete temporary captured image file
+              if (record.capturedImagePath) {
+                await ImageProcessingService.deleteTempImage(record.capturedImagePath);
+              }
+            } else {
+              SQLiteService.updateSyncStatus(record.id, 'Pending', true);
+            }
+          }
+
+          // Notify subscribers to refresh UI
+          _syncListeners.forEach((fn) => fn());
+        }
       }
     } catch (err) {
       console.warn('[SyncService] Background sync error:', err);
