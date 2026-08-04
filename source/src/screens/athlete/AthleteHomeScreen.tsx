@@ -262,7 +262,43 @@ const AthleteHomeScreen = ({ navigation }: any) => {
   );
 };
 
+
 const styles = StyleSheet.create({
+  moduleCard: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.surface,
+    padding: layout.horizontalPadding,
+    borderRadius: layout.radiusLg,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    marginVertical: 4,
+  },
+  moduleCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: layout.horizontalPadding,
+    flex: 1,
+  },
+  moduleIconBox: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  moduleTextCol: {
+    gap: 2,
+    flex: 1,
+  },
   screen: {
     backgroundColor: '#FFFFFF',
   },
@@ -344,3 +380,4 @@ const styles = StyleSheet.create({
 });
 
 export default AthleteHomeScreen;
+
