@@ -6,16 +6,17 @@ Steps to reproduce the submitted release APK from source.
 
 | Tool | Version | Notes |
 |------|---------|-------|
-| Node.js | >= 22.11.0 | |
-| Android SDK | _[To be filled]_ | |
-| Gradle | _[From project wrapper]_ | |
-| JDK | _[To be filled]_ | |
-| NDK | _[If used]_ | |
+| Node.js | v24.11.1 | Node >= 22.11.0 required |
+| Android SDK | API 35 (Android 15) | SDK location: `Android/Sdk` |
+| Gradle | 9.3.1 | Project Gradle wrapper |
+| JDK | 21.0.7 | Oracle JDK 21 |
+| NDK | 27.1.12297006 | CMake / C++ native build |
 
 ## Environment Variables
 
-```bash
-# [List required ANDROID_HOME, JAVA_HOME, etc.]
+```powershell
+$env:JAVA_HOME="C:\Program Files\Java\jdk-21"
+$env:ANDROID_HOME="C:\Users\ASHWATHKRISHNAA_PV\AppData\Local\Android\Sdk"
 ```
 
 ## Build Steps
@@ -25,21 +26,24 @@ Steps to reproduce the submitted release APK from source.
 cd source
 npm install
 
-# 2. [Android release build commands — to be completed]
+# 2. Android release build command
 cd android
-./gradlew assembleRelease
+.\gradlew.bat assembleRelease
 
 # 3. Output APK location
-# source/android/app/build/outputs/apk/release/
-# Copy APK to ../app/ for submission
+# source/android/app/build/outputs/apk/release/app-release.apk
+# Copy APK to ../app/ for submission:
+Copy-Item "app/build/outputs/apk/release/app-release.apk" "../../app/BatteryFitnessAssessment_v1.0.apk"
 ```
 
 ## Expected Build Time
 
-_[To be filled — e.g. ~5–10 minutes on standard hardware]_
+- Fresh build (with CMake/Ninja native compilation): ~25–30 minutes
+- Incremental build: ~2–5 minutes
 
 ## Verify Build
 
-- [ ] APK installs on Android 10+ device
-- [ ] Version matches submitted APK filename
-- [ ] Release build (not debug)
+- [x] APK installs on Android 10+ device
+- [x] Version matches submitted APK filename (`BatteryFitnessAssessment_v1.0.apk`)
+- [x] Release build (78.48 MB, optimized React Native bundle)
+

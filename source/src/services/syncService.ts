@@ -7,6 +7,7 @@ import {
   clearLocalOtpAfterSync,
   markUserSynced,
   markUserConflict,
+  markUserSynced,
 } from '../db/syncQueueRepository';
 import { getUserByLocalId } from '../db/userRepository';
 import { NetworkService } from './NetworkService';

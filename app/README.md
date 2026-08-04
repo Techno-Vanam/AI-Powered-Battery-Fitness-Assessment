@@ -1,10 +1,10 @@
 # Application — APK and Installation
 
-## Contents (to add before submission)
+## Contents
 
-- [ ] Signed release APK: `TeamName_BatteryTest_v1.0.apk`
-- [ ] App version and build metadata on About screen (version, build date, team name)
-- [ ] iOS build (optional): TestFlight link or IPA + instructions
+- [x] Release APK: [`BatteryFitnessAssessment_v1.0.apk`](file:///c:/AI-Powered-Battery-Fitness-Assessment/app/BatteryFitnessAssessment_v1.0.apk) (78.48 MB)
+- [x] Debug APK: [`app-debug.apk`](file:///c:/AI-Powered-Battery-Fitness-Assessment/app/app-debug.apk) (173.5 MB)
+- [x] App version: `1.0.0` (Build date: August 2026)
 
 ---
 
@@ -19,20 +19,23 @@
 
 ### Steps
 
-1. _[Document APK sideload steps]_
-2. _[List required permissions and how to grant them]_
-3. _[Initial setup: language selection, registration, calibration if any]_
+1. Copy `BatteryFitnessAssessment_v1.0.apk` to your Android device storage or download directly.
+2. Tap the `.apk` file in your Android file manager to initiate installation.
+3. If prompted, enable **"Install unknown apps"** for your File Manager browser/app.
+4. Open **Battery Fitness Assessment** after installation finishes.
+5. Grant Camera, Storage, and Network permissions when prompted on initial launch.
 
 ### Permissions
 
 | Permission | Purpose |
 |------------|---------|
-| Camera | _[Test video capture]_ |
-| Storage | _[Local data and reports]_ |
-| Internet | _[Sync when online — app works offline]_ |
+| Camera | Test video capture and AI fitness movement evaluation |
+| Storage / Media | Storing local SQLite database, reports, and sync logs |
+| Internet | Syncing assessment scores to backend when online (fully offline capable) |
 
 ---
 
 ## Test Credentials
 
 See [`TEST_CREDENTIALS.md`](TEST_CREDENTIALS.md) for pre-configured coach and athlete accounts.
+

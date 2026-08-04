@@ -69,11 +69,14 @@ const CoachLoginScreen = ({ navigation }: any) => {
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
+    setLoginError(null);
     try {
       await loginUser(data.idType ?? 'NSRS', data.idNumber ?? '', data.password, 'coach');
       navigation.reset({ index: 0, routes: [{ name: 'CoachHome' }] });
     } catch (e: any) {
-      Alert.alert('Login Failed', e.message || 'Invalid ID or password.');
+      const errMsg = e.message || 'Invalid ID or password.';
+      setLoginError(errMsg);
+      Alert.alert('Login Failed', errMsg);
     } finally {
       setLoading(false);
     }
