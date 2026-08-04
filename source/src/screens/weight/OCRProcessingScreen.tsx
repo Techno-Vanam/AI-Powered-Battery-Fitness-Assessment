@@ -42,7 +42,6 @@ export const OCRProcessingScreen = ({ route, navigation }: any) => {
     const runPipeline = async () => {
       try {
         // Step 1: Capturing Image
-        await new Promise((resolve) => setTimeout(resolve, 150));
         if (!isMounted) return;
         updateStepStatus(0, 'completed');
         updateStepStatus(1, 'active');
@@ -52,31 +51,27 @@ export const OCRProcessingScreen = ({ route, navigation }: any) => {
           imagePath || 'file:///data/cache/weight_capture.jpg',
           cropRect
         );
-        await new Promise((resolve) => setTimeout(resolve, 200));
         if (!isMounted) return;
         updateStepStatus(1, 'completed');
         updateStepStatus(2, 'active');
 
-        // Step 3: Running Google ML Kit OCR on cropped LCD image only
+        // Step 3: Dual-Engine LCD OCR (Native 7-segment -> ML Kit fallback)
         const ocrResult = await OCRService.recognizeLCDWeight(
           processed.processedImagePath,
           undefined,
-          cropRect
+          undefined // already cropped by processLCDDisplayImage above
         );
-        await new Promise((resolve) => setTimeout(resolve, 250));
         if (!isMounted) return;
         updateStepStatus(2, 'completed');
         updateStepStatus(3, 'active');
 
-        // Step 4: Validating Weight Digits (regex ^\d{2,3}(\.\d{1,2})?$)
-        await new Promise((resolve) => setTimeout(resolve, 150));
+        // Step 4: Validating Weight Digits
         if (!isMounted) return;
         updateStepStatus(3, 'completed');
         updateStepStatus(4, 'active');
 
-        // Step 5: Cleaning Memory (Low-end device optimization)
+        // Step 5: Cleaning Memory
         await ImageProcessingService.deleteTempImage(processed.processedImagePath);
-        await new Promise((resolve) => setTimeout(resolve, 150));
         if (!isMounted) return;
         updateStepStatus(4, 'completed');
 

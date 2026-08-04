@@ -18,6 +18,7 @@ import { createScreenStyles } from '../../styles/screenStyles';
 import { NetworkService } from '../../services/NetworkService';
 import { SQLiteService } from '../../services/SQLiteService';
 import { SyncService } from '../../services/syncService';
+import { WeightAPIService } from '../../services/WeightAPIService';
 
 
 const screenStyles = createScreenStyles();
@@ -42,6 +43,14 @@ export const WeightMeasurementScreen = ({ navigation }: any) => {
     } else {
       setLastWeight(null);
       setLastTime(null);
+    }
+
+    if (online) {
+      const serverLatest = await WeightAPIService.getLatestMeasurement();
+      if (serverLatest) {
+        setLastWeight(serverLatest.weight);
+        setLastTime(serverLatest.captured_at);
+      }
     }
   };
 
@@ -92,7 +101,7 @@ export const WeightMeasurementScreen = ({ navigation }: any) => {
   };
 
   return (
-    <Screen scroll contentStyle={screenStyles.content}>
+    <Screen scroll>
       {/* Top Header Navigation */}
       <View style={styles.topBar}>
         <TouchableOpacity
@@ -173,7 +182,7 @@ export const WeightMeasurementScreen = ({ navigation }: any) => {
               Last Measured Weight
             </AppText>
             <AppText variant="h1" style={styles.weightValueText}>
-              {lastWeight !== null ? `${lastWeight.toFixed(1)} kg` : '--.- kg'}
+              {lastWeight !== null ? `${lastWeight} kg` : '--.- kg'}
             </AppText>
           </View>
         </View>

@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import NetInfo from '@react-native-community/netinfo';
-import { API_BASE_URL } from '../config/api';
+import { fetchApi } from '../config/api';
 import {
   createUser,
   getUserByIdentifier,
@@ -80,7 +80,7 @@ export const loginUser = async (
     throw new Error('Invalid ID or password.');
   }
 
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+  const response = await fetchApi('/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id_type, id_number, password, role }),

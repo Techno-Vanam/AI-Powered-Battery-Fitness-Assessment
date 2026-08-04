@@ -255,7 +255,7 @@ export const LiveWeightScannerScreen = ({ navigation }: any) => {
               <AppText variant="h1" style={[styles.weightNumber, {
                 color: isStable ? '#10B981' : '#fff',
               }]}>
-                {displayWeight.toFixed(1)}
+                {displayWeight}
               </AppText>
               <AppText variant="h3" style={[styles.weightUnit, {
                 color: isStable ? '#10B981' : 'rgba(255,255,255,0.6)',
@@ -330,7 +330,7 @@ export const LiveWeightScannerScreen = ({ navigation }: any) => {
               ]}
             >
               {isStable
-                ? `Confirm — ${scanState.stableWeight?.toFixed(1)} kg`
+                ? `Confirm — ${scanState.stableWeight} kg`
                 : 'Detecting weight...'}
             </AppText>
           </TouchableOpacity>

@@ -98,4 +98,37 @@ describe('SevenSegmentLCDRecognitionEngine', () => {
     expect(result.isConsensusReached).toBe(false);
     expect(result.updatedHistory.length).toBe(3); // Only the 3 recent readings kept
   });
+
+  it('infers missing decimal points when 3 or 4 digit integers are returned (725 -> 72.5, 1025 -> 102.5)', () => {
+    const res1 = SevenSegmentLCDRecognitionEngine.parseSevenSegmentLCDWeight('725');
+    expect(res1.weight).toBe(72.5);
+
+    const res2 = SevenSegmentLCDRecognitionEngine.parseSevenSegmentLCDWeight('1025');
+    expect(res2.weight).toBe(102.5);
+  });
+
+  it('disambiguates LCD letter misreads on screens (T2.5 -> 72.5, P8.5 -> 98.5, E5.2 -> 35.2)', () => {
+    const resT = SevenSegmentLCDRecognitionEngine.parseSevenSegmentLCDWeight('T2.5');
+    expect(resT.weight).toBe(72.5);
+
+    const resP = SevenSegmentLCDRecognitionEngine.parseSevenSegmentLCDWeight('P8.5');
+    expect(resP.weight).toBe(98.5);
+
+    const resE = SevenSegmentLCDRecognitionEngine.parseSevenSegmentLCDWeight('E5.2');
+    expect(resE.weight).toBe(35.2);
+  });
+
+  it('locks consensus instantly in 2 frames for fast sub-second scanning', () => {
+    let history: number[] = [];
+
+    // Frame 1
+    let eval1 = SevenSegmentLCDRecognitionEngine.evaluateFrameConsensus(72.5, history, 2);
+    expect(eval1.isConsensusReached).toBe(false);
+    history = eval1.updatedHistory;
+
+    // Frame 2 -> Sub-second locked!
+    let eval2 = SevenSegmentLCDRecognitionEngine.evaluateFrameConsensus(72.5, history, 2);
+    expect(eval2.isConsensusReached).toBe(true);
+    expect(eval2.stableWeight).toBe(72.5);
+  });
 });

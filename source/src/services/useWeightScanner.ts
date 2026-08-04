@@ -10,19 +10,19 @@ import { ImageProcessingService, CropRect } from './ImageProcessingService';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-/** Process one frame every 300ms (≈3.3 FPS). Low enough for 2GB RAM Android 10. */
-const FRAME_INTERVAL_MS = 300;
+/** Process one frame every 150ms for sub-second real-time scanning. */
+const FRAME_INTERVAL_MS = 150;
 
-/** Required matching readings within rolling window. */
-const REQUIRED_STABLE_FRAMES = 5;
+/** Required matching readings within rolling window (2 consecutive stable readings). */
+const REQUIRED_STABLE_FRAMES = 2;
 
 /** Max buffer size of recent readings. */
-const MAX_BUFFER_SIZE = 10;
+const MAX_BUFFER_SIZE = 8;
 
-/** Max age of buffer readings before expiration (3000 ms = 3s). */
-const MAX_READING_AGE_MS = 3000;
+/** Max age of buffer readings before expiration (2000 ms = 2s). */
+const MAX_READING_AGE_MS = 2000;
 
-/** ±0.2 kg fuzzy tolerance — allows for normal ML Kit variance frame-to-frame. */
+/** ±0.2 kg fuzzy tolerance — allows for normal variance frame-to-frame. */
 const WEIGHT_TOLERANCE_KG = 0.2;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ const INITIAL_SCAN_STATE: ScanState = {
 function getStatusLabel(status: ScanStatus, reading: number | null, frames: number): string {
   switch (status) {
     case 'searching': return 'Searching for scale display...';
-    case 'reading':   return reading ? `Reading ${reading.toFixed(1)} kg — ${frames}/${REQUIRED_STABLE_FRAMES} stable` : 'Scanning...';
+    case 'reading':   return reading ? `Reading ${reading} kg — ${frames}/${REQUIRED_STABLE_FRAMES} stable` : 'Scanning...';
     case 'stable':    return 'Weight detected!';
     case 'error':     return 'Detection error — retrying...';
     default:          return 'Ready to scan';

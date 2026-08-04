@@ -135,7 +135,11 @@ export const SevenSegmentLCDRecognitionEngine = {
       .replace(/\bq\b|(?<=\d)q|q(?=\d)/gi, '9')
       .replace(/\bb\b|(?<=\d)b|b(?=\d)/gi, '6')
       .replace(/\bH\b|(?<=\d)H|H(?=\d)/gi, '4')
-      .replace(/\bA\b|(?<=\d)A|A(?=\d)/gi, '4');
+      .replace(/\bA\b|(?<=\d)A|A(?=\d)/gi, '4')
+      .replace(/\bT\b|(?<=\d)T|T(?=\d)/gi, '7')
+      .replace(/\bP\b|(?<=\d)P|P(?=\d)/gi, '9')
+      .replace(/\bE\b|(?<=\d)E|E(?=\d)/gi, '3')
+      .replace(/\by\b|(?<=\d)y|y(?=\d)/gi, '4');
 
     // 2. Replace non-numeric/non-dot with space (preserve word/token boundaries!)
     const cleanedText = disambiguated
@@ -162,6 +166,23 @@ export const SevenSegmentLCDRecognitionEngine = {
         const parsedWeight = parseFloat(match[1]);
         if (parsedWeight >= 20.0 && parsedWeight <= 250.0) {
           return { weight: parsedWeight, rawCleaned: match[1] };
+        }
+      }
+
+      // Infer missing decimal point: e.g. "725" -> "72.5", "1025" -> "102.5"
+      if (/^\d{3,4}$/.test(sanitizedToken)) {
+        const candidate1 = sanitizedToken.slice(0, -1) + '.' + sanitizedToken.slice(-1);
+        const val1 = parseFloat(candidate1);
+        if (val1 >= 20.0 && val1 <= 250.0) {
+          return { weight: val1, rawCleaned: candidate1 };
+        }
+
+        if (sanitizedToken.length === 4) {
+          const candidate2 = sanitizedToken.slice(0, 2) + '.' + sanitizedToken.slice(2);
+          const val2 = parseFloat(candidate2);
+          if (val2 >= 20.0 && val2 <= 250.0) {
+            return { weight: val2, rawCleaned: candidate2 };
+          }
         }
       }
     }

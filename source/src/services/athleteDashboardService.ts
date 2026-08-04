@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import { API_BASE_URL } from '../config/api';
+import { fetchApi } from '../config/api';
 import { MOCK_ATHLETE_DASHBOARD } from '../data/mockAthleteDashboard';
 import type { AthleteDashboardData } from '../types/athleteDashboard';
 
@@ -71,7 +71,7 @@ export async function fetchAthleteDashboard(): Promise<DashboardLoadResult> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-    const response = await fetch(`${API_BASE_URL}/athlete/dashboard`, {
+    const response = await fetchApi('/athlete/dashboard', {
       method: 'GET',
       headers: { Accept: 'application/json' },
       signal: controller.signal,

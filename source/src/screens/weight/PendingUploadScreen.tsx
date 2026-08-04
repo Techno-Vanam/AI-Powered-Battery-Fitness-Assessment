@@ -93,7 +93,7 @@ export const PendingUploadScreen = ({ navigation }: any) => {
           </View>
           <View style={styles.weightCol}>
             <AppText variant="h2" color={accent.primary}>
-              {item.weight.toFixed(1)} kg
+              {item.weight} kg
             </AppText>
             <View style={styles.timeRow}>
               <Clock size={12} color={colors.textMuted} />

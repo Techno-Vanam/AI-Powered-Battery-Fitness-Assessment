@@ -223,9 +223,13 @@ class SevenSegmentAnalyzerModule(reactContext: ReactApplicationContext) :
         }
         scaled.recycle()
 
+        // Polarity auto-detection: Calculate overall mean luminance
+        var totalGraySum = 0L
+        for (v in gray) totalGraySum += v
+        val overallMean = if (gray.isNotEmpty()) totalGraySum / gray.size else 128
+        val isDarkSegmentsOnLightBg = overallMean > 120
+
         // Adaptive threshold: 8×8 tile grid
-        // Uses localMean * 0.75 bias — more aggressive to capture bright LCD segments
-        // on colored (blue/green) backlights where the segment/background contrast is lower
         val binary = IntArray(width * height)
         val tileW = (width / 8).coerceAtLeast(4)
         val tileH = (height / 8).coerceAtLeast(4)
@@ -237,9 +241,17 @@ class SevenSegmentAnalyzerModule(reactContext: ReactApplicationContext) :
                 var sum = 0L; var count = 0
                 for (py in y1 until y2) for (px in x1 until x2) { sum += gray[py * width + px]; count++ }
                 val localMean = if (count > 0) (sum / count).toInt() else 128
-                val threshold = (localMean * 0.75).toInt()  // 0.75 bias: handles blue backlit LCDs
-                for (py in y1 until y2) for (px in x1 until x2) {
-                    binary[py * width + px] = if (gray[py * width + px] > threshold) 255 else 0
+
+                if (isDarkSegmentsOnLightBg) {
+                    val threshold = (localMean * 0.88).toInt()
+                    for (py in y1 until y2) for (px in x1 until x2) {
+                        binary[py * width + px] = if (gray[py * width + px] < threshold) 255 else 0
+                    }
+                } else {
+                    val threshold = (localMean * 0.75).toInt()
+                    for (py in y1 until y2) for (px in x1 until x2) {
+                        binary[py * width + px] = if (gray[py * width + px] > threshold) 255 else 0
+                    }
                 }
             }
         }

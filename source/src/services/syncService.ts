@@ -1,5 +1,5 @@
 import NetInfo from '@react-native-community/netinfo';
-import { API_BASE_URL } from '../config/api';
+import { fetchApi } from '../config/api';
 import {
   getAllPendingSync,
   incrementAttempts,
@@ -55,7 +55,7 @@ export const SyncService = {
           .filter(Boolean);
 
         if (usersToSync.length > 0) {
-          const response = await fetch(`${API_BASE_URL}/auth/sync`, {
+          const response = await fetchApi('/auth/sync', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ users: usersToSync }),
@@ -64,7 +64,7 @@ export const SyncService = {
           if (response.ok) {
             const body = (await response.json()) as any;
             const details = body.data?.details ?? [];
-            const detailByLocalId = new Map(details.map((d: any) => [d.local_id, d]));
+            const detailByLocalId = new Map<string, any>(details.map((d: any) => [d.local_id, d]));
 
             for (const item of pendingItems) {
               const detail = detailByLocalId.get(item.entity_local_id);
@@ -98,6 +98,8 @@ export const SyncService = {
       } catch (err) {
         console.warn('[SyncService] User sync error:', err);
       }
+    }
+
     try {
       const pendingRecords = SQLiteService.getPendingMeasurements();
       if (pendingRecords.length > 0) {
@@ -115,8 +117,8 @@ export const SyncService = {
 
           for (const record of pendingRecords) {
             if (syncResult.syncedIds.includes(record.id)) {
-              // Delete temporary SQLite cache record
-              SQLiteService.deleteMeasurement(record.id);
+              // Update status to Synced in SQLite cache
+              SQLiteService.updateSyncStatus(record.id, 'Synced');
 
               // Delete temporary captured image file
               if (record.capturedImagePath) {
@@ -177,8 +179,8 @@ export const SyncService = {
       const success = await WeightAPIService.uploadMeasurement(payload);
 
       if (success) {
-        // 3. Immediately delete temporary SQLite record & captured image file
-        SQLiteService.deleteMeasurement(savedRecord.id);
+        // 3. Mark as Synced in SQLite cache & cleanup captured image file
+        SQLiteService.updateSyncStatus(savedRecord.id, 'Synced');
         if (savedRecord.capturedImagePath) {
           await ImageProcessingService.deleteTempImage(savedRecord.capturedImagePath);
         }

@@ -1,8 +1,4 @@
-import { Platform } from 'react-native';
-
-const API_BASE_URL = Platform.OS === 'android'
-  ? 'http://10.0.2.2:3000/api'
-  : 'http://localhost:3000/api';
+import { fetchApi } from '../config/api';
 
 export interface WeightPayload {
   id: string;
@@ -17,7 +13,7 @@ export const WeightAPIService = {
    */
   async uploadMeasurement(payload: WeightPayload): Promise<boolean> {
     try {
-      const response = await fetch(`${API_BASE_URL}/weight-measurements`, {
+      const response = await fetchApi('/weight-measurements', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,7 +43,7 @@ export const WeightAPIService = {
     syncedIds: string[];
   }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/weight-measurements/sync`, {
+      const response = await fetchApi('/weight-measurements/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,6 +63,35 @@ export const WeightAPIService = {
     } catch (err) {
       console.warn('[WeightAPIService] Network error bulk syncing weight measurements:', err);
       return { success: false, syncedIds: [] };
+    }
+  },
+
+  /**
+   * Fetch latest weight measurement GET /api/weight-measurements
+   */
+  async getLatestMeasurement(): Promise<{ weight: number; captured_at: string } | null> {
+    try {
+      const response = await fetchApi('/weight-measurements', {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const json = await response.json();
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        const latest = json.data[0];
+        return {
+          weight: Number(latest.weight),
+          captured_at: latest.captured_at || latest.created_at,
+        };
+      }
+      return null;
+    } catch (err) {
+      console.warn('[WeightAPIService] Error fetching latest measurement:', err);
+      return null;
     }
   },
 };
