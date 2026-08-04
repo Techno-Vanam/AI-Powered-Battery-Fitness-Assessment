@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import NetInfo from '@react-native-community/netinfo';
-import { API_BASE_URL } from '../config/api';
+import { fetchApi } from '../config/api';
 import {
   createUser,
   getUserByIdentifier,
@@ -147,27 +147,17 @@ export const loginUser = async (
     throw new Error('Invalid ID or password.');
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3500);
+  const response = await fetchApi('/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id_type, id_number, password, role }),
+  });
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id_type, id_number: cleanId, password, role }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    const body = (await response.json()) as {
-      success?: boolean;
-      message?: string;
-      data?: { user: User };
-    };
-
-    if (!response.ok || !body.data?.user) {
-      throw new Error(body.message ?? 'Invalid ID or password.');
-    }
+  const body = (await response.json()) as {
+    success?: boolean;
+    message?: string;
+    data?: { user: User };
+  };
 
     upsertUserLocally(body.data.user);
     return body.data.user;

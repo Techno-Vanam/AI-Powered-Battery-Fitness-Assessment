@@ -1,6 +1,7 @@
 export { default as DashboardHeader } from './DashboardHeader';
 export { default as GreetingCard } from './GreetingCard';
 export { default as ProgressCard } from './ProgressCard';
+export { default as DonutChart } from './DonutChart';
 export { default as QuickActionButton } from './QuickActionButton';
 export { default as QuickActionsRow } from './QuickActionsRow';
 export { default as CurrentTestCard } from './CurrentTestCard';
@@ -16,4 +17,6 @@ export { default as AchievementsRow } from './AchievementsRow';
 export { default as OfflineSyncCentre } from './OfflineSyncCentre';
 export { default as AthleteBottomNav } from './AthleteBottomNav';
 export { default as SectionTitle } from './SectionTitle';
+export { default as AthleteReportCard } from './AthleteReportCard';
+export { default as ReportCardModal } from './ReportCardModal';
 export type { AthleteTab } from './AthleteBottomNav';

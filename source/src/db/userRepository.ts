@@ -193,7 +193,7 @@ export const upsertCachedUser = (userData: User & { password_hash: string }): Us
         userData.is_verified ?? 1,
         userData.consent_given ?? existing.consent_given ?? 1,
         now,
-        existing.local_id,
+        existing.local_id ?? null,
       ]
     );
     return getUserByLocalId(existing.local_id!) as User;

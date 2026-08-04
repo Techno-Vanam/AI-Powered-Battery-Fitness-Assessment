@@ -1,5 +1,5 @@
 import NetInfo from '@react-native-community/netinfo';
-import { API_BASE_URL } from '../config/api';
+import { fetchApi } from '../config/api';
 import {
   getAllPendingSync,
   incrementAttempts,
@@ -10,117 +10,212 @@ import {
   markUserSynced,
 } from '../db/syncQueueRepository';
 import { getUserByLocalId } from '../db/userRepository';
+import { NetworkService } from './NetworkService';
+import { SQLiteService } from './SQLiteService';
+import { WeightAPIService, WeightPayload } from './WeightAPIService';
+import { ImageProcessingService } from './ImageProcessingService';
 
-let isSyncing = false;
+type SyncListener = () => void;
 
-type SyncDetail = {
-  local_id: string;
-  server_id?: string;
-  status: 'synced' | 'updated' | 'conflict' | 'failed';
-  reason?: string;
-};
+let _isSyncing = false;
+const _syncListeners = new Set<SyncListener>();
 
-type SyncResponse = {
-  success?: boolean;
-  data?: {
-    synced: number;
-    updated: number;
-    conflicts: number;
-    failed: number;
-    details: SyncDetail[];
-  };
-};
+export const SyncService = {
+  /**
+   * Registers a callback listener to notify UI when background sync completes
+   */
+  subscribeToSyncEvents(listener: SyncListener): () => void {
+    _syncListeners.add(listener);
+    return () => {
+      _syncListeners.delete(listener);
+    };
+  },
 
-/** Build latest user payload per local_id from sync queue + local DB */
-function buildUsersPayload(pendingItems: ReturnType<typeof getAllPendingSync>) {
-  const byLocalId = new Map<string, object>();
+  /**
+   * Triggers automatic synchronization of pending SQLite records to backend
+   */
+  async syncPendingRecords(): Promise<{ count: number; success: boolean }> {
+    if (_isSyncing) {
+      return { count: 0, success: true };
+    }
 
-  for (const item of pendingItems) {
-    const parsed = JSON.parse(item.payload);
-    const localId = item.entity_local_id;
-    const fromDb = getUserByLocalId(localId);
-    byLocalId.set(localId, {
-      ...(fromDb ?? parsed),
-      local_id: localId,
-      updated_at: new Date().toISOString(),
-    });
-  }
+    const isOnline = await NetworkService.isConnected();
+    if (!isOnline) {
+      return { count: 0, success: false };
+    }
 
-  return Array.from(byLocalId.values());
-}
+    _isSyncing = true;
+    let syncedCount = 0;
 
-export const runSyncJob = async (): Promise<void> => {
-  if (isSyncing) return;
-  isSyncing = true;
-
-  try {
+    // 1. Sync pending user registration queue items
     const pendingItems = getAllPendingSync();
-    if (pendingItems.length === 0) return;
+    if (pendingItems.length > 0) {
+      try {
+        const usersToSync = pendingItems
+          .map(item => getUserByLocalId(item.entity_local_id))
+          .filter(Boolean);
 
-    const users = buildUsersPayload(pendingItems);
-    console.log(`[Sync] Pushing ${users.length} user(s) to cloud…`);
+        if (usersToSync.length > 0) {
+          const response = await fetchApi('/auth/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ users: usersToSync }),
+          });
 
-    const response = await fetch(`${API_BASE_URL}/sync/users`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ users }),
+          if (response.ok) {
+            const body = (await response.json()) as any;
+            const details = body.data?.details ?? [];
+            const detailByLocalId = new Map<string, any>(details.map((d: any) => [d.local_id, d]));
+
+            for (const item of pendingItems) {
+              const detail = detailByLocalId.get(item.entity_local_id);
+
+              if (detail?.status === 'conflict') {
+                markUserConflict(item.entity_local_id);
+                removeSyncItem(item.queue_id);
+                console.warn(`[Sync] Conflict for ${item.entity_local_id}`);
+                continue;
+              }
+
+              if (detail?.status === 'failed') {
+                incrementAttempts(item.queue_id);
+                console.warn(`[Sync] Failed for ${item.entity_local_id}: ${detail.reason}`);
+                continue;
+              }
+
+              if (detail?.status === 'synced' || detail?.status === 'updated') {
+                removeSyncItem(item.queue_id);
+                markUserSynced(item.entity_local_id, detail.server_id);
+                clearLocalOtpAfterSync(item.entity_local_id);
+                console.log(`[Sync] ✓ ${item.entity_local_id} → cloud, kept local cache`);
+                syncedCount++;
+                continue;
+              }
+
+              incrementAttempts(item.queue_id);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[SyncService] User sync error:', err);
+      }
+    }
+
+    try {
+      const pendingRecords = SQLiteService.getPendingMeasurements();
+      if (pendingRecords.length > 0) {
+        const payloads: WeightPayload[] = pendingRecords.map((r) => ({
+          id: r.id,
+          weight: r.weight,
+          ocr_confidence: r.ocrConfidence,
+          captured_at: r.timestamp,
+        }));
+
+        const syncResult = await WeightAPIService.syncPendingMeasurements(payloads);
+
+        if (syncResult.success && syncResult.syncedIds.length > 0) {
+          syncedCount += syncResult.syncedIds.length;
+
+          for (const record of pendingRecords) {
+            if (syncResult.syncedIds.includes(record.id)) {
+              // Update status to Synced in SQLite cache
+              SQLiteService.updateSyncStatus(record.id, 'Synced');
+
+              // Delete temporary captured image file
+              if (record.capturedImagePath) {
+                await ImageProcessingService.deleteTempImage(record.capturedImagePath);
+              }
+            } else {
+              SQLiteService.updateSyncStatus(record.id, 'Pending', true);
+            }
+          }
+
+          // Notify subscribers to refresh UI
+          _syncListeners.forEach((fn) => fn());
+        }
+      }
+    } catch (err) {
+      console.warn('[SyncService] Background sync error:', err);
+    } finally {
+      _isSyncing = false;
+    }
+
+    return { count: syncedCount, success: syncedCount > 0 };
+  },
+
+  /**
+   * Process single measurement workflow according to Online/Offline logic
+   */
+  async processMeasurementWorkflow(measurementData: {
+    id?: string;
+    weight: number;
+    ocrRawText?: string;
+    ocrConfidence: number;
+    capturedImagePath?: string;
+  }): Promise<{ isUploaded: boolean; savedRecord: any }> {
+    // 1. Temporarily save in SQLite
+    const savedRecord = SQLiteService.saveMeasurement({
+      id: measurementData.id,
+      weight: measurementData.weight,
+      ocrRawText: measurementData.ocrRawText,
+      ocrConfidence: measurementData.ocrConfidence,
+      capturedImagePath: measurementData.capturedImagePath,
+      syncStatus: 'Pending',
     });
 
-    if (!response.ok) {
-      console.warn(`[Sync] Server error: ${response.status}`);
-      pendingItems.forEach(item => incrementAttempts(item.queue_id));
-      return;
+    // 2. Check current network connectivity
+    const isOnline = await NetworkService.isConnected();
+
+    if (isOnline) {
+      // Set status to Uploading
+      SQLiteService.updateSyncStatus(savedRecord.id, 'Uploading');
+
+      const payload: WeightPayload = {
+        id: savedRecord.id,
+        weight: savedRecord.weight,
+        ocr_confidence: savedRecord.ocrConfidence,
+        captured_at: savedRecord.timestamp,
+      };
+
+      const success = await WeightAPIService.uploadMeasurement(payload);
+
+      if (success) {
+        // 3. Mark as Synced in SQLite cache & cleanup captured image file
+        SQLiteService.updateSyncStatus(savedRecord.id, 'Synced');
+        if (savedRecord.capturedImagePath) {
+          await ImageProcessingService.deleteTempImage(savedRecord.capturedImagePath);
+        }
+        return { isUploaded: true, savedRecord };
+      } else {
+        // Revert status to Pending for retry
+        SQLiteService.updateSyncStatus(savedRecord.id, 'Pending', true);
+        return { isUploaded: false, savedRecord };
+      }
     }
 
-    const body = (await response.json()) as SyncResponse;
-    const details = body.data?.details ?? [];
-    const detailByLocalId = new Map(details.map(d => [d.local_id, d]));
+    return { isUploaded: false, savedRecord };
+  },
 
-    for (const item of pendingItems) {
-      const detail = detailByLocalId.get(item.entity_local_id);
-
-      if (detail?.status === 'conflict') {
-        markUserConflict(item.entity_local_id);
-        removeSyncItem(item.queue_id);
-        console.warn(`[Sync] Conflict for ${item.entity_local_id}`);
-        continue;
+  /**
+   * Initializes automatic network change listener for background sync
+   */
+  initAutoSyncListener(): () => void {
+    const unsubscribe = NetworkService.subscribe((isConnected) => {
+      if (isConnected) {
+        SyncService.syncPendingRecords();
       }
+    });
 
-      if (detail?.status === 'failed') {
-        incrementAttempts(item.queue_id);
-        console.warn(`[Sync] Failed for ${item.entity_local_id}: ${detail.reason}`);
-        continue;
-      }
+    return unsubscribe;
+  },
+};
 
-      if (detail?.status === 'synced' || detail?.status === 'updated') {
-        removeSyncItem(item.queue_id);
-        markUserSynced(item.entity_local_id, detail.server_id);
-        clearLocalOtpAfterSync(item.entity_local_id);
-        console.log(`[Sync] ✓ ${item.entity_local_id} → cloud, kept local cache`);
-        continue;
-      }
-
-      incrementAttempts(item.queue_id);
-    }
-  } catch (err) {
-    console.warn('[Sync] Job failed:', err);
-  } finally {
-    isSyncing = false;
-  }
+export const runSyncJob = async () => {
+  return SyncService.syncPendingRecords();
 };
 
 export const startSyncListener = (): (() => void) => {
-  const unsubscribe = NetInfo.addEventListener(state => {
-    if (state.isConnected && state.isInternetReachable) {
-      runSyncJob();
-    }
-  });
-
-  NetInfo.fetch().then(state => {
-    if (state.isConnected && state.isInternetReachable) {
-      runSyncJob();
-    }
-  });
-
-  return unsubscribe;
+  return SyncService.initAutoSyncListener();
 };
+
+export default SyncService;

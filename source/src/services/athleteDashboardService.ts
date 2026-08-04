@@ -1,11 +1,54 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import { API_BASE_URL } from '../config/api';
+import { fetchApi } from '../config/api';
 import { MOCK_ATHLETE_DASHBOARD } from '../data/mockAthleteDashboard';
 import type { AthleteDashboardData } from '../types/athleteDashboard';
 
-const CACHE_KEY = '@athlete_dashboard_cache_v1';
+const CACHE_KEY = '@athlete_dashboard_cache_v3';
 const FETCH_TIMEOUT_MS = 2500;
+
+const ALLOWED_TEST_IDS = new Set(['height', 'weight', 'sit_reach', 'vertical_jump', 'sit_ups']);
+const ALLOWED_PERFORMANCE_KEYS = new Set(['height', 'weight', 'bmi', 'flexibility', 'vertical_jump', 'sit_ups']);
+
+export function sanitizeDashboardData(raw: AthleteDashboardData): AthleteDashboardData {
+  if (!raw) return MOCK_ATHLETE_DASHBOARD;
+
+  const tests = (raw.tests || []).filter(
+    t => ALLOWED_TEST_IDS.has(t.id) || ALLOWED_TEST_IDS.has(t.key)
+  );
+  const performance = (raw.performance || []).filter(p => ALLOWED_PERFORMANCE_KEYS.has(p.key));
+  const completedCount = tests.filter(t => t.status === 'completed').length;
+  const totalCount = tests.length || 5;
+
+  const currentTest =
+    raw.currentTest && ALLOWED_TEST_IDS.has(raw.currentTest.testId)
+      ? raw.currentTest
+      : {
+          testId: 'sit_ups',
+          name: 'Sit-Ups',
+          status: 'in_progress' as const,
+          attemptsRemaining: 1,
+          estimatedMinutes: 3,
+        };
+
+  return {
+    ...raw,
+    greeting: {
+      ...raw.greeting,
+      completedTests: completedCount,
+      totalTests: totalCount,
+      statusLabel: `${completedCount}/${totalCount} Tests Completed`,
+    },
+    progress: {
+      completed: completedCount,
+      remaining: Math.max(0, totalCount - completedCount),
+      percent: Math.round((completedCount / (totalCount || 1)) * 100),
+    },
+    currentTest,
+    tests,
+    performance,
+  };
+}
 
 export type DashboardLoadResult = {
   data: AthleteDashboardData;
@@ -60,8 +103,9 @@ export async function fetchAthleteDashboard(): Promise<DashboardLoadResult> {
 
   if (!isOnline) {
     const cached = await readCache();
+    const cleanData = sanitizeDashboardData(cached ?? MOCK_ATHLETE_DASHBOARD);
     return {
-      data: cached ?? MOCK_ATHLETE_DASHBOARD,
+      data: cleanData,
       fromCache: true,
       isOnline: false,
     };
@@ -71,7 +115,7 @@ export async function fetchAthleteDashboard(): Promise<DashboardLoadResult> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-    const response = await fetch(`${API_BASE_URL}/athlete/dashboard`, {
+    const response = await fetchApi('/athlete/dashboard', {
       method: 'GET',
       headers: { Accept: 'application/json' },
       signal: controller.signal,
@@ -83,10 +127,11 @@ export async function fetchAthleteDashboard(): Promise<DashboardLoadResult> {
         success?: boolean;
         data?: AthleteDashboardData;
       };
-      const data = body.data ?? (body as unknown as AthleteDashboardData);
-      if (data?.profile && data?.tests) {
-        await writeCache(data);
-        return { data, fromCache: false, isOnline: true };
+      const rawData = body.data ?? (body as unknown as AthleteDashboardData);
+      if (rawData?.profile && rawData?.tests) {
+        const cleanData = sanitizeDashboardData(rawData);
+        await writeCache(cleanData);
+        return { data: cleanData, fromCache: false, isOnline: true };
       }
     }
   } catch {
@@ -95,11 +140,13 @@ export async function fetchAthleteDashboard(): Promise<DashboardLoadResult> {
 
   const cached = await readCache();
   if (cached) {
-    return { data: cached, fromCache: true, isOnline: true };
+    const cleanData = sanitizeDashboardData(cached);
+    return { data: cleanData, fromCache: true, isOnline: true };
   }
 
-  await writeCache(MOCK_ATHLETE_DASHBOARD);
-  return { data: MOCK_ATHLETE_DASHBOARD, fromCache: false, isOnline: true };
+  const cleanMock = sanitizeDashboardData(MOCK_ATHLETE_DASHBOARD);
+  await writeCache(cleanMock);
+  return { data: cleanMock, fromCache: false, isOnline: true };
 }
 
 export async function syncAthleteDashboardNow(): Promise<DashboardLoadResult> {

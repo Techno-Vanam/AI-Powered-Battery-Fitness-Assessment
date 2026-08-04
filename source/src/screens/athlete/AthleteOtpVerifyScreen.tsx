@@ -7,7 +7,7 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
-import { ShieldCheck, RefreshCw } from 'lucide-react-native';
+import SFSymbol from '../../components/ui/SFSymbol';
 import { verifyOTP, generateMockOTP, getLatestOTP } from '../../db/otpService';
 import { markUserVerified } from '../../db/userRepository';
 import { runSyncJob } from '../../services/syncService';
@@ -148,7 +148,7 @@ const AthleteOtpVerifyScreen = ({ navigation, route }: any) => {
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.iconCircle}>
-            <ShieldCheck size={layout.iconLg} color={colors.athlete.primary} />
+            <SFSymbol name="shield.checkmark" size={layout.iconLg} color={colors.athlete.primary} />
           </View>
           <AppText variant="h2" style={styles.centered}>
             Verify Your ID
@@ -212,7 +212,7 @@ const AthleteOtpVerifyScreen = ({ navigation, route }: any) => {
             </AppText>
           ) : (
             <TouchableOpacity style={styles.resendBtn} onPress={handleResend}>
-              <RefreshCw size={layout.iconSm - 4} color={colors.athlete.primary} />
+              <SFSymbol name="arrow.clockwise" size={layout.iconSm - 4} color={colors.athlete.primary} />
               <AppText variant="bodySm" color={colors.athlete.primary}>
                 Resend OTP
               </AppText>
