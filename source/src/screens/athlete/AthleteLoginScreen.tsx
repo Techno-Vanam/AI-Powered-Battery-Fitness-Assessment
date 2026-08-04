@@ -8,7 +8,7 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { CreditCard, Lock, Eye, EyeOff } from 'lucide-react-native';
+import SFSymbol from '../../components/ui/SFSymbol';
 import NetInfo from '@react-native-community/netinfo';
 import OfflineBadge from '../../components/auth/OfflineBadge';
 import { loginUser } from '../../services/authService';
@@ -101,7 +101,7 @@ const AthleteLoginScreen = ({ navigation }: any) => {
                 placeholder="Select ID type"
                 role="athlete"
                 hasError={!!errors.idType}
-                icon={<CreditCard size={layout.iconSm} color={colors.textMuted} />}
+                icon={<SFSymbol name="creditcard" size={layout.iconSm} color={colors.textMuted} />}
                 onChange={itemValue => {
                   onChange(itemValue);
                   setValue('idNumber', '');
@@ -117,7 +117,7 @@ const AthleteLoginScreen = ({ navigation }: any) => {
             name="idNumber"
             render={({ field: { onChange, value } }) => (
               <InputRow hasError={!!errors.idNumber}>
-                <CreditCard size={layout.iconSm} color={colors.textMuted} />
+                <SFSymbol name="creditcard" size={layout.iconSm} color={colors.textMuted} />
                 <TextInput
                   style={styles.input}
                   placeholder={getIdPlaceholder()}
@@ -138,7 +138,7 @@ const AthleteLoginScreen = ({ navigation }: any) => {
             name="password"
             render={({ field: { onChange, value } }) => (
               <InputRow hasError={!!errors.password}>
-                <Lock size={layout.iconSm} color={colors.textMuted} />
+                <SFSymbol name="lock.fill" size={layout.iconSm} color={colors.textMuted} />
                 <TextInput
                   style={styles.input}
                   placeholder="Your password"
@@ -150,9 +150,9 @@ const AthleteLoginScreen = ({ navigation }: any) => {
                 />
                 <TouchableOpacity onPress={() => setShowPwd(v => !v)}>
                   {showPwd ? (
-                    <EyeOff size={layout.iconSm} color={colors.textMuted} />
+                    <SFSymbol name="eye.slash.fill" size={layout.iconSm} color={colors.textMuted} />
                   ) : (
-                    <Eye size={layout.iconSm} color={colors.textMuted} />
+                    <SFSymbol name="eye.fill" size={layout.iconSm} color={colors.textMuted} />
                   )}
                 </TouchableOpacity>
               </InputRow>

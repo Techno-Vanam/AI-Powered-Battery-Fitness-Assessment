@@ -8,7 +8,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { Check, ChevronDown } from 'lucide-react-native';
+import SFSymbol from './SFSymbol';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, layout, Role, roleColors } from '../../theme';
 import { fontFamily } from '../../theme/fonts';
@@ -79,7 +79,7 @@ export default function Dropdown({
         >
           {selected?.label ?? placeholder}
         </AppText>
-        <ChevronDown size={compact ? 16 : 18} color={colors.textMuted} />
+        <SFSymbol name="chevron.down" size={compact ? 16 : 18} color={colors.textMuted} />
       </TouchableOpacity>
 
       <Modal
@@ -124,7 +124,7 @@ export default function Dropdown({
                       {item.label}
                     </AppText>
                     {active ? (
-                      <Check size={18} color={accent.primary} strokeWidth={2.5} />
+                      <SFSymbol name="checkmark" size={18} color={accent.primary} strokeWidth={2.5} />
                     ) : (
                       <View style={styles.checkSpacer} />
                     )}

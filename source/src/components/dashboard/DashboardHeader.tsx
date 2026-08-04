@@ -1,45 +1,39 @@
 import React from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Bell, Settings, User } from 'lucide-react-native';
+import SFSymbol from '../ui/SFSymbol';
 import AppText from '../ui/AppText';
-import { colors, layout } from '../../theme';
+import { colors } from '../../theme';
 import type { AthleteProfile } from '../../types/athleteDashboard';
 
 type Props = {
   profile: AthleteProfile;
+  onProfilePress?: () => void;
   onNotifications?: () => void;
-  onSettings?: () => void;
 };
 
-export default function DashboardHeader({ profile, onNotifications, onSettings }: Props) {
+export default function DashboardHeader({ profile, onProfilePress, onNotifications }: Props) {
   return (
     <View style={styles.row}>
-      <View style={styles.left}>
+      <TouchableOpacity
+        style={styles.left}
+        onPress={onProfilePress}
+        activeOpacity={0.8}
+      >
         <View style={styles.avatar}>
           {profile.photoUrl ? (
             <Image source={{ uri: profile.photoUrl }} style={styles.photo} />
           ) : (
-            <User size={22} color={colors.textPrimary} />
+            <SFSymbol name="person.crop.circle" size={24} color={colors.textPrimary} />
           )}
         </View>
-        <View style={styles.meta}>
-          <AppText variant="h3" numberOfLines={1} style={styles.name}>
-            {profile.name}
-          </AppText>
-          <AppText variant="caption" color={colors.textMuted} numberOfLines={1}>
-            {profile.athleteId}
-          </AppText>
-          <AppText variant="caption" color={colors.textSecondary} numberOfLines={2}>
-            {profile.age} yrs · {profile.gender} · {profile.institution}
-          </AppText>
-        </View>
-      </View>
+        <AppText variant="h3" numberOfLines={1} style={styles.name}>
+          {profile.name}
+        </AppText>
+      </TouchableOpacity>
+
       <View style={styles.actions}>
         <TouchableOpacity style={styles.iconBtn} onPress={onNotifications} activeOpacity={0.8}>
-          <Bell size={20} color={colors.textPrimary} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconBtn} onPress={onSettings} activeOpacity={0.8}>
-          <Settings size={20} color={colors.textPrimary} />
+          <SFSymbol name="bell.fill" size={20} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -52,6 +46,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
+    paddingVertical: 4,
   },
   left: {
     flex: 1,
@@ -60,18 +55,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#F3F4F6',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   photo: { width: '100%', height: '100%' },
-  meta: { flex: 1, gap: 2 },
-  name: { letterSpacing: -0.3 },
-  actions: { flexDirection: 'row', gap: 8 },
+  name: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    letterSpacing: -0.3,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   iconBtn: {
     width: 42,
     height: 42,
