@@ -86,7 +86,7 @@ export const getUserByLocalId = (local_id: string): User | null => {
     [local_id]
   );
   if (result.rows && result.rows.length > 0) {
-    return result.rows[0] as User;
+    return result.rows[0] as unknown as User;
   }
   return null;
 };
@@ -108,7 +108,7 @@ export const getUserByIdentifier = (
 
   const result = db.executeSync(query, params);
   if (result.rows && result.rows.length > 0) {
-    return result.rows[0] as User;
+    return result.rows[0] as unknown as User;
   }
   return null;
 };
@@ -193,7 +193,7 @@ export const upsertCachedUser = (userData: User & { password_hash: string }): Us
         userData.is_verified ?? 1,
         userData.consent_given ?? existing.consent_given ?? 1,
         now,
-        existing.local_id,
+        existing.local_id ?? null,
       ]
     );
     return getUserByLocalId(existing.local_id!) as User;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { AlertCircle } from 'lucide-react-native';
+import SFSymbol from './SFSymbol';
 import { colors, layout } from '../../theme';
 import AppText from './AppText';
 
@@ -10,7 +10,7 @@ export function FieldError({ message }: Props) {
   if (!message) return null;
   return (
     <View style={styles.row}>
-      <AlertCircle size={layout.iconSm - 6} color={colors.error} />
+      <SFSymbol name="exclamationmark.circle" size={layout.iconSm - 6} color={colors.error} />
       <AppText variant="caption" color={colors.error}>
         {message}
       </AppText>

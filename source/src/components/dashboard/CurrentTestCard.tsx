@@ -17,23 +17,19 @@ export default function CurrentTestCard({ currentTest, onContinue }: Props) {
   return (
     <View style={styles.card}>
       <SectionTitle title={t('dashboard.currentTest')} />
-      <AppText variant="h3">{currentTest.name}</AppText>
-      <AppText variant="bodySm" color={colors.textSecondary}>
-        Status: {currentTest.status.replace('_', ' ')}
-      </AppText>
-      <View style={styles.meta}>
-        <AppText variant="caption" color={colors.textMuted}>
-          {t('dashboard.attemptsLeft')}: {currentTest.attemptsRemaining}
-        </AppText>
-        <AppText variant="caption" color={colors.textMuted}>
-          {t('dashboard.estTime')}: {currentTest.estimatedMinutes} min
-        </AppText>
+      <View style={styles.infoRow}>
+        <View style={styles.textGroup}>
+          <AppText variant="h3" style={styles.testName}>{currentTest.name}</AppText>
+          <AppText variant="caption" color={colors.textSecondary} style={styles.statusText}>
+            Status: {currentTest.status.replace('_', ' ')}
+          </AppText>
+        </View>
+        <TouchableOpacity style={styles.cta} onPress={onContinue} activeOpacity={0.85}>
+          <AppText variant="button" color="#FFFFFF" style={styles.ctaText}>
+            {t('dashboard.continue')}
+          </AppText>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.cta} onPress={onContinue} activeOpacity={0.85}>
-        <AppText variant="button" color="#FFFFFF">
-          {t('dashboard.continue')}
-        </AppText>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -41,23 +37,42 @@ export default function CurrentTestCard({ currentTest, onContinue }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFF7ED',
-    borderRadius: 22,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: '#FED7AA',
-    padding: 16,
-    gap: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 6,
   },
-  meta: {
+  infoRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 4,
+    gap: 12,
+  },
+  textGroup: {
+    flex: 1,
+    gap: 2,
+  },
+  testName: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  statusText: {
+    textTransform: 'capitalize',
+    fontSize: 13,
   },
   cta: {
-    marginTop: 10,
-    height: 48,
-    borderRadius: 24,
+    height: 42,
+    paddingHorizontal: 18,
+    borderRadius: 21,
     backgroundColor: '#111827',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  ctaText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

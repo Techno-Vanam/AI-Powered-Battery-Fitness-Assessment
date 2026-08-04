@@ -11,6 +11,7 @@ import AthleteLoginScreen from '../screens/athlete/AthleteLoginScreen';
 import AthleteRegisterScreen from '../screens/athlete/AthleteRegisterScreen';
 import AthleteOtpVerifyScreen from '../screens/athlete/AthleteOtpVerifyScreen';
 import AthleteHomeScreen from '../screens/athlete/AthleteHomeScreen';
+import AthleteProfileScreen from '../screens/athlete/AthleteProfileScreen';
 import CoachLoginScreen from '../screens/coach/CoachLoginScreen';
 import CoachRegisterScreen from '../screens/coach/CoachRegisterScreen';
 import CoachOtpVerifyScreen from '../screens/coach/CoachOtpVerifyScreen';
@@ -27,6 +28,7 @@ export type RootStackParamList = {
   AthleteRegister: undefined;
   AthleteOtpVerify: { local_id: string; otp: string };
   AthleteHome: undefined;
+  AthleteProfile: { profile?: any };
   CoachLogin: undefined;
   CoachRegister: undefined;
   CoachOtpVerify: { local_id: string; otp: string };
@@ -66,6 +68,7 @@ export function AppNavigator() {
         <Stack.Screen name="AthleteRegister" component={AthleteRegisterScreen} />
         <Stack.Screen name="AthleteOtpVerify" component={AthleteOtpVerifyScreen} />
         <Stack.Screen name="AthleteHome" component={AthleteHomeScreen} />
+        <Stack.Screen name="AthleteProfile" component={AthleteProfileScreen} />
         <Stack.Screen name="CoachLogin" component={CoachLoginScreen} />
         <Stack.Screen name="CoachRegister" component={CoachRegisterScreen} />
         <Stack.Screen name="CoachOtpVerify" component={CoachOtpVerifyScreen} />
