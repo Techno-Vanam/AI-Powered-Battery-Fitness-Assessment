@@ -395,12 +395,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   screen: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
   },
   root: {
     flex: 1,
     width: '100%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
   },
   rootFixed100vh: {
     height: SCREEN_HEIGHT,
@@ -412,8 +412,8 @@ const styles = StyleSheet.create({
     height: '100%',
     maxHeight: SCREEN_HEIGHT - 70,
     overflow: 'hidden',
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: 16,
+    paddingTop: 0,
     paddingBottom: 95,
     justifyContent: 'space-evenly',
     gap: 12,
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
   scroll: {
     flex: 1,
     width: '100%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
   },
   subContent: {
     width: '100%',

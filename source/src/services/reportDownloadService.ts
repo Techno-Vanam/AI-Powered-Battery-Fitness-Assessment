@@ -1,5 +1,5 @@
 import { Alert, NativeModules, PermissionsAndroid, Platform, Share } from 'react-native';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib/dist/pdf-lib.min.js';
 import type { AthleteDashboardData } from '../types/athleteDashboard';
 
 /**
@@ -7,19 +7,8 @@ import type { AthleteDashboardData } from '../types/athleteDashboard';
  */
 function getBlobUtil(): any {
   try {
-    if (
-      NativeModules?.ReactNativeBlobUtil ||
-      NativeModules?.RNBlobUtil ||
-      NativeModules?.BlobUtil
-    ) {
-      const mod = require('react-native-blob-util');
-      return mod.default || mod;
-    }
     const mod = require('react-native-blob-util');
-    const blobUtil = mod.default || mod;
-    if (blobUtil && blobUtil.fs && blobUtil.fs.dirs) {
-      return blobUtil;
-    }
+    return mod.default || mod;
   } catch (e) {
     console.log('BlobUtil load info:', e);
   }

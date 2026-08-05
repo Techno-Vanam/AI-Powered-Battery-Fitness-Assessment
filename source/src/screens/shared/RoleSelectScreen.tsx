@@ -27,7 +27,7 @@ const RoleSelectScreen: React.FC<Props> = ({ navigation }) => {
           {/* Athlete — indigo tint + left accent */}
           <TouchableOpacity
             style={[styles.roleCard, styles.athleteCard]}
-            onPress={() => navigation.navigate('AthleteLogin')}
+            onPress={() => navigation.navigate('AthleteHome')}
             activeOpacity={0.85}
           >
             <View style={styles.athleteAccent} />
