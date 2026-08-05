@@ -3,25 +3,26 @@ import NetInfo from '@react-native-community/netinfo';
 import { fetchApi } from '../config/api';
 import { MOCK_ATHLETE_DASHBOARD } from '../data/mockAthleteDashboard';
 import type { AthleteDashboardData } from '../types/athleteDashboard';
+import {
+  DASHBOARD_PERFORMANCE_KEYS,
+  DASHBOARD_TEST_KEYS,
+} from '../navigation/testRoutes';
 
 const CACHE_KEY = '@athlete_dashboard_cache_v3';
 const FETCH_TIMEOUT_MS = 2500;
-
-const ALLOWED_TEST_IDS = new Set(['height', 'weight', 'sit_reach', 'vertical_jump', 'sit_ups']);
-const ALLOWED_PERFORMANCE_KEYS = new Set(['height', 'weight', 'bmi', 'flexibility', 'vertical_jump', 'sit_ups']);
 
 export function sanitizeDashboardData(raw: AthleteDashboardData): AthleteDashboardData {
   if (!raw) return MOCK_ATHLETE_DASHBOARD;
 
   const tests = (raw.tests || []).filter(
-    t => ALLOWED_TEST_IDS.has(t.id) || ALLOWED_TEST_IDS.has(t.key)
+    t => DASHBOARD_TEST_KEYS.has(t.id) || DASHBOARD_TEST_KEYS.has(t.key)
   );
-  const performance = (raw.performance || []).filter(p => ALLOWED_PERFORMANCE_KEYS.has(p.key));
+  const performance = (raw.performance || []).filter(p => DASHBOARD_PERFORMANCE_KEYS.has(p.key));
   const completedCount = tests.filter(t => t.status === 'completed').length;
   const totalCount = tests.length || 5;
 
   const currentTest =
-    raw.currentTest && ALLOWED_TEST_IDS.has(raw.currentTest.testId)
+    raw.currentTest && DASHBOARD_TEST_KEYS.has(raw.currentTest.testId)
       ? raw.currentTest
       : {
           testId: 'sit_ups',

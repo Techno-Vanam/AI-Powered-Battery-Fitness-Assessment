@@ -13,13 +13,13 @@ export const MOCK_ATHLETE_DASHBOARD: AthleteDashboardData = {
   greeting: {
     lastAssessmentDate: '2026-07-28',
     completedTests: 4,
-    totalTests: 5,
-    statusLabel: '4/5 Tests Completed',
+    totalTests: 6,
+    statusLabel: '4/6 Tests Completed',
   },
   progress: {
-    percent: 80,
+    percent: 67,
     completed: 4,
-    remaining: 1,
+    remaining: 2,
   },
   currentTest: {
     testId: 'sit_ups',
@@ -82,6 +82,19 @@ export const MOCK_ATHLETE_DASHBOARD: AthleteDashboardData = {
       icon: 'arrow-up',
     },
     {
+      id: 'broad_jump',
+      key: 'broad_jump',
+      name: 'Broad Jump',
+      status: 'pending',
+      score: null,
+      confidence: null,
+      attempts: 0,
+      maxAttempts: 3,
+      bestAttempt: null,
+      estimatedMinutes: 5,
+      icon: 'arrow-right',
+    },
+    {
       id: 'sit_ups',
       key: 'sit_ups',
       name: 'Sit-Ups',
@@ -108,6 +121,7 @@ export const MOCK_ATHLETE_DASHBOARD: AthleteDashboardData = {
     { key: 'bmi', label: 'BMI', value: '19.8' },
     { key: 'flexibility', label: 'Flexibility', value: '28', unit: 'cm' },
     { key: 'vertical_jump', label: 'Vertical Jump', value: '42', unit: 'cm' },
+    { key: 'broad_jump', label: 'Broad Jump', value: '—' },
     { key: 'sit_ups', label: 'Sit-Ups', value: '—' },
   ],
   aiInsights: {

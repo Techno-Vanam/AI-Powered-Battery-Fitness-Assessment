@@ -5,17 +5,16 @@ import SectionTitle from './SectionTitle';
 import { layout } from '../../theme';
 import { t } from '../../utils/i18n';
 import type { DashboardTest } from '../../types/athleteDashboard';
+import { DASHBOARD_TEST_KEYS } from '../../navigation/testRoutes';
 
 type Props = {
   tests: DashboardTest[];
   onOpenTest: (test: DashboardTest) => void;
 };
 
-const ALLOWED_TEST_IDS = new Set(['height', 'weight', 'sit_reach', 'vertical_jump', 'sit_ups']);
-
 export default function TestJourneyList({ tests, onOpenTest }: Props) {
   const filteredTests = (tests || []).filter(
-    test => ALLOWED_TEST_IDS.has(test.id) || ALLOWED_TEST_IDS.has(test.key)
+    test => DASHBOARD_TEST_KEYS.has(test.id) || DASHBOARD_TEST_KEYS.has(test.key)
   );
 
   return (

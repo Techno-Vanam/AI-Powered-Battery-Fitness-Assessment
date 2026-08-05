@@ -34,61 +34,10 @@ import {
 } from '../../services/athleteDashboardService';
 import { downloadReportFile, shareReportPDF } from '../../services/reportDownloadService';
 import { MOCK_ATHLETE_DASHBOARD } from '../../data/mockAthleteDashboard';
-import type { AthleteDashboardData, AthleteProfile, DashboardTest, HistoryItem } from '../../types/athleteDashboard';
+import type { AthleteDashboardData, DashboardTest, HistoryItem } from '../../types/athleteDashboard';
+import { navigateToDashboardTest } from '../../navigation/testRoutes';
 import { colors, layout, roleColors } from '../../theme';
 import { t } from '../../utils/i18n';
-
-import type { Athlete } from '../../database/repositories/AthleteRepository';
-
-/** Map dashboard profile → height-flow Athlete model */
-function athleteFromProfile(profile: AthleteProfile): Athlete {
-  const now = Date.now();
-  const birthYear = new Date().getFullYear() - Math.max(1, profile.age || 15);
-  return {
-    id: profile.athleteId,
-    name: profile.name,
-    gender: profile.gender.toLowerCase(),
-    dateOfBirth: `${birthYear}-01-01`,
-    phone: null,
-    heightCategory: null,
-    coachName: null,
-    schoolAcademy: profile.institution,
-    state: null,
-    district: null,
-    createdAt: now,
-    updatedAt: now,
-  };
-}
-
-function isHeightTest(test?: DashboardTest | null): boolean {
-  if (!test) return false;
-  return test.key === 'height' || test.id === 'height';
-}
-
-function isWeightTest(test?: DashboardTest | null): boolean {
-  if (!test) return false;
-  return test.key === 'weight' || test.id === 'weight';
-}
-
-function isSitReachTest(test?: DashboardTest | null): boolean {
-  if (!test) return false;
-  return test.key === 'sit_reach' || test.id === 'sit_reach';
-}
-
-function isVerticalJumpTest(test?: DashboardTest | null): boolean {
-  if (!test) return false;
-  return test.key === 'vertical_jump' || test.id === 'vertical_jump';
-}
-
-function isBroadJumpTest(test?: DashboardTest | null): boolean {
-  if (!test) return false;
-  return test.key === 'broad_jump' || test.id === 'broad_jump';
-}
-
-function numericAthleteId(athleteId: string): number {
-  const digits = athleteId.replace(/\D/g, '');
-  return digits ? parseInt(digits, 10) : 1;
-}
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -162,37 +111,10 @@ const AthleteHomeScreen = ({ navigation }: any) => {
         return;
       }
 
-      if (isHeightTest(target)) {
-        navigation.navigate('HeightTestInstructions', {
-          athlete: athleteFromProfile(data.profile),
-        });
-        return;
+      const opened = navigateToDashboardTest(navigation, target, data.profile);
+      if (!opened) {
+        comingSoon(target.name);
       }
-
-      if (isWeightTest(target)) {
-        navigation.navigate('WeightMeasurementHome');
-        return;
-      }
-
-      if (isSitReachTest(target)) {
-        navigation.navigate('SitAndReachEntry', {
-          athleteId: numericAthleteId(data.profile.athleteId),
-          athleteName: data.profile.name,
-        });
-        return;
-      }
-
-      if (isVerticalJumpTest(target)) {
-        navigation.navigate('JumpSelection');
-        return;
-      }
-
-      if (isBroadJumpTest(target)) {
-        navigation.navigate('JumpCalibration', { testType: 'broad' });
-        return;
-      }
-
-      comingSoon(target.name);
     },
     [comingSoon, data, navigation],
   );
