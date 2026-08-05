@@ -1,11 +1,12 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import {
   Activity, ArrowUp, Circle, MoveHorizontal, Ruler, Scale,
   Timer, Zap, RefreshCw,
 } from 'lucide-react-native';
 import AppText from '../ui/AppText';
 import { colors } from '../../theme';
+import { portalStyles } from '../../theme/portalStyles';
 import { t } from '../../utils/i18n';
 import type { DashboardTest } from '../../types/athleteDashboard';
 
@@ -15,7 +16,7 @@ type Props = {
 };
 
 function TestIcon({ name }: { name: string }) {
-  const color = colors.textPrimary;
+  const color = colors.primary;
   const size = 18;
   switch (name) {
     case 'ruler':
@@ -43,7 +44,7 @@ function TestIcon({ name }: { name: string }) {
 
 function statusColor(status: DashboardTest['status']) {
   if (status === 'completed') return colors.success;
-  if (status === 'in_progress') return '#F59E0B';
+  if (status === 'in_progress') return colors.primary;
   return colors.textMuted;
 }
 
@@ -56,7 +57,7 @@ export default function TestCard({ test, onPress }: Props) {
       : t('dashboard.start');
 
   return (
-    <View style={styles.card}>
+    <View style={[portalStyles.card, styles.card]}>
       <View style={styles.top}>
         <View style={styles.iconBox}>
           <TestIcon name={test.icon} />
@@ -91,13 +92,13 @@ export default function TestCard({ test, onPress }: Props) {
       </View>
 
       <TouchableOpacity
-        style={[styles.cta, done && styles.ctaSecondary]}
+        style={[done ? portalStyles.ctaSecondary : portalStyles.ctaPrimary, styles.cta]}
         onPress={onPress}
         activeOpacity={0.85}
       >
-        <AppText variant="button" color={done ? colors.textPrimary : '#FFFFFF'}>
+        <Text style={[styles.ctaText, done ? styles.ctaTextSecondary : styles.ctaTextPrimary]}>
           {cta}
-        </AppText>
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -105,30 +106,21 @@ export default function TestCard({ test, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    padding: 14,
-    gap: 10,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    elevation: 2,
+    marginBottom: 0,
   },
   top: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    marginBottom: 10,
   },
   iconBox: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#F3F4F6',
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: colors.warningBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -137,17 +129,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    marginBottom: 12,
   },
   cta: {
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#111827',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: '100%',
   },
-  ctaSecondary: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
+  ctaText: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  ctaTextPrimary: {
+    color: colors.textInverse,
+  },
+  ctaTextSecondary: {
+    color: colors.primary,
   },
 });

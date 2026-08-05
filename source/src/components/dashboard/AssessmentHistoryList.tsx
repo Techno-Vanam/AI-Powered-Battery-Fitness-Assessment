@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import SFSymbol from '../ui/SFSymbol';
-import AppText from '../ui/AppText';
-import { colors } from '../../theme';
+import { colors, layout } from '../../theme';
+import { portalStyles } from '../../theme/portalStyles';
 import { t } from '../../utils/i18n';
 import type { HistoryItem } from '../../types/athleteDashboard';
 
@@ -27,20 +27,16 @@ export default function AssessmentHistoryList({
     <View style={styles.container}>
       {!hideHeader && (
         <View style={styles.headerRow}>
-          <AppText variant="h3" style={styles.title}>
-            {t('dashboard.assessmentHistory')}
-          </AppText>
-          {onViewAll && !showAll && (
-            <TouchableOpacity style={styles.viewBtn} onPress={onViewAll} activeOpacity={0.7}>
-              <AppText variant="caption" color="#4F46E5" style={styles.viewBtnText}>
-                View All
-              </AppText>
+          <Text style={portalStyles.sectionHeader}>{t('dashboard.assessmentHistory')}</Text>
+          {onViewAll && !showAll ? (
+            <TouchableOpacity onPress={onViewAll} activeOpacity={0.7}>
+              <Text style={portalStyles.viewAllText}>View All</Text>
             </TouchableOpacity>
-          )}
+          ) : null}
         </View>
       )}
 
-      <View style={styles.list}>
+      <View style={[portalStyles.card, styles.list]}>
         {visibleHistory.map((item, index) => (
           <TouchableOpacity
             key={item.id}
@@ -50,10 +46,10 @@ export default function AssessmentHistoryList({
           >
             <View style={styles.dot} />
             <View style={styles.meta}>
-              <AppText variant="body" style={styles.itemLabel}>{item.label}</AppText>
-              <AppText variant="caption" color={colors.textSecondary} style={styles.itemSub}>
+              <Text style={styles.itemLabel}>{item.label}</Text>
+              <Text style={styles.itemSub}>
                 {new Date(item.date).toLocaleDateString()} · {item.status.replace('_', ' ')}
-              </AppText>
+              </Text>
             </View>
             <SFSymbol name="chevron.right" size={18} color={colors.textMuted} />
           </TouchableOpacity>
@@ -65,33 +61,16 @@ export default function AssessmentHistoryList({
 
 const styles = StyleSheet.create({
   container: {
-    gap: 8,
+    gap: 4,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  title: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  viewBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 14,
-    backgroundColor: '#EEF2FF',
-  },
-  viewBtnText: {
-    fontSize: 12,
-    fontWeight: '600',
+    marginBottom: 0,
   },
   list: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+    padding: 0,
     overflow: 'hidden',
   },
   row: {
@@ -101,7 +80,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(60,60,67,0.18)',
+    borderBottomColor: colors.border,
   },
   rowLast: {
     borderBottomWidth: 0,
@@ -110,14 +89,16 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#111827',
+    backgroundColor: colors.primary,
   },
   meta: { flex: 1, gap: 2 },
   itemLabel: {
     fontSize: 15,
     fontWeight: '600',
+    color: colors.textPrimary,
   },
   itemSub: {
     fontSize: 12,
+    color: colors.textSecondary,
   },
 });

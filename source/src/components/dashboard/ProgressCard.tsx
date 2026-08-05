@@ -2,7 +2,8 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import AppText from '../ui/AppText';
 import DonutChart from './DonutChart';
-import { colors } from '../../theme';
+import { colors, layout } from '../../theme';
+import { portalStyles } from '../../theme/portalStyles';
 import { t } from '../../utils/i18n';
 import type { ProgressInfo } from '../../types/athleteDashboard';
 
@@ -12,8 +13,8 @@ type Props = {
 
 export default function ProgressCard({ progress }: Props) {
   return (
-    <View style={styles.card}>
-      <AppText variant="caption" color={colors.textMuted} style={styles.cardTitle}>
+    <View style={[portalStyles.card, styles.card]}>
+      <AppText variant="caption" color={colors.textSecondary} style={styles.cardTitle}>
         {t('dashboard.overallProgress')}
       </AppText>
 
@@ -29,9 +30,9 @@ export default function ProgressCard({ progress }: Props) {
 
         <View style={styles.statsContainer}>
           <View style={styles.statBox}>
-            <View style={[styles.statDot, { backgroundColor: '#38BDF8' }]} />
+            <View style={[styles.statDot, { backgroundColor: colors.success }]} />
             <View style={styles.statTextRow}>
-              <AppText variant="caption" color={colors.textMuted} style={styles.statLabel}>
+              <AppText variant="caption" color={colors.textSecondary} style={styles.statLabel}>
                 {t('dashboard.completed')}
               </AppText>
               <AppText variant="h3" style={styles.statValue}>
@@ -41,9 +42,9 @@ export default function ProgressCard({ progress }: Props) {
           </View>
 
           <View style={styles.statBox}>
-            <View style={[styles.statDot, { backgroundColor: '#FB923C' }]} />
+            <View style={[styles.statDot, { backgroundColor: colors.primary }]} />
             <View style={styles.statTextRow}>
-              <AppText variant="caption" color={colors.textMuted} style={styles.statLabel}>
+              <AppText variant="caption" color={colors.textSecondary} style={styles.statLabel}>
                 {t('dashboard.remaining')}
               </AppText>
               <AppText variant="h3" style={styles.statValue}>
@@ -59,28 +60,17 @@ export default function ProgressCard({ progress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
     padding: 16,
-    gap: 10,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    elevation: 3,
   },
   cardTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#64748B',
+    marginBottom: 8,
   },
   chartContentRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingVertical: 4,
     gap: 16,
   },
   statsContainer: {
@@ -91,10 +81,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.surfaceSecondary,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: layout.radiusMd,
   },
   statDot: {
     width: 10,

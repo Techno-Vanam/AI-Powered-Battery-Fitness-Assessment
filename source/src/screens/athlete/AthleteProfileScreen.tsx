@@ -8,10 +8,10 @@ import {
   View,
 } from 'react-native';
 import SFSymbol from '../../components/ui/SFSymbol';
-import Screen from '../../components/ui/Screen';
 import AppText from '../../components/ui/AppText';
 import { OfflineSyncCentre } from '../../components/dashboard';
 import { colors } from '../../theme';
+import { portalStyles } from '../../theme/portalStyles';
 import type { AthleteProfile } from '../../types/athleteDashboard';
 
 type Props = {
@@ -49,10 +49,10 @@ export default function AthleteProfileScreen({ navigation, route }: Props) {
   };
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to log out?', [
+    Alert.alert('Switch Role', 'Return to role selection?', [
       { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Log Out',
+        text: 'Switch Role',
         style: 'destructive',
         onPress: () => {
           navigation.reset({ index: 0, routes: [{ name: 'RoleSelect' }] });
@@ -62,9 +62,9 @@ export default function AthleteProfileScreen({ navigation, route }: Props) {
   };
 
   return (
-    <Screen fullWidth edges={['top', 'left', 'right']} style={styles.screen}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+    <View style={portalStyles.screen}>
+      <View style={portalStyles.topBar}>
+        <TouchableOpacity style={portalStyles.bellBtn} onPress={() => navigation.goBack()}>
           <SFSymbol name="arrow.left" size={22} color={colors.textPrimary} />
         </TouchableOpacity>
         <AppText variant="h3" style={styles.headerTitle}>
@@ -79,7 +79,7 @@ export default function AthleteProfileScreen({ navigation, route }: Props) {
       >
         <View style={styles.avatarSection}>
           <View style={styles.avatarCircle}>
-            <SFSymbol name="person.crop.circle" size={40} color="#4F46E5" />
+            <SFSymbol name="person.crop.circle" size={40} color={colors.primary} />
           </View>
           <AppText variant="h2" style={styles.profileName}>
             {name || 'Athlete Name'}
@@ -89,7 +89,7 @@ export default function AthleteProfileScreen({ navigation, route }: Props) {
           </AppText>
         </View>
 
-        <View style={styles.formCard}>
+        <View style={[portalStyles.card, styles.formCard]}>
           <View style={styles.fieldGroup}>
             <AppText variant="caption" color={colors.textMuted} style={styles.label}>
               Full Name
@@ -160,7 +160,7 @@ export default function AthleteProfileScreen({ navigation, route }: Props) {
         </View>
 
         <TouchableOpacity
-          style={[styles.saveBtn, saving && styles.btnDisabled]}
+          style={[portalStyles.ctaPrimary, styles.saveBtn, saving && styles.btnDisabled]}
           onPress={handleSave}
           disabled={saving}
           activeOpacity={0.85}
@@ -184,38 +184,19 @@ export default function AthleteProfileScreen({ navigation, route }: Props) {
           activeOpacity={0.85}
         >
           <SFSymbol name="rectangle.portrait.and.arrow.right" size={18} color="#EF4444" />
-          <AppText variant="button" color="#EF4444">
-            Log Out
+          <AppText variant="button" color="#FFFFFF">
+            Switch Role
           </AppText>
         </TouchableOpacity>
       </ScrollView>
-    </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: '#F8FAFC',
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-  },
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F1F5F9',
-  },
   headerTitle: {
+    flex: 1,
+    textAlign: 'center',
     fontSize: 18,
     color: colors.textPrimary,
   },
@@ -232,9 +213,9 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: colors.primaryLight,
     borderWidth: 2,
-    borderColor: '#4F46E5',
+    borderColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -243,17 +224,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   formCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 16,
     gap: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
   },
   fieldGroup: {
     gap: 6,
@@ -265,27 +236,24 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#64748B',
+    color: colors.textMuted,
     textTransform: 'uppercase',
   },
   input: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.surfaceSecondary,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: colors.border,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#0F172A',
+    color: colors.textPrimary,
   },
   saveBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#111827',
     marginTop: 8,
   },
   btnDisabled: {
@@ -298,8 +266,8 @@ const styles = StyleSheet.create({
     gap: 8,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: colors.errorBg,
     borderWidth: 1,
-    borderColor: '#FCA5A5',
+    borderColor: colors.errorBorder,
   },
 });

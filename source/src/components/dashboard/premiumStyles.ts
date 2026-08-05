@@ -1,25 +1,23 @@
 import { StyleSheet } from 'react-native';
+import { colors } from '../../theme/colors';
+import { layout } from '../../theme/layout';
 
-/** Shared premium card look (fintech reference) */
+/** Shared portal card look aligned with coach dashboard. */
 export const premium = StyleSheet.create({
   page: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 22,
+    backgroundColor: colors.surface,
+    borderRadius: layout.cardRadius,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: colors.border,
     padding: 16,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
-    elevation: 2,
+    ...layout.shadowSubtle,
   },
   softCard: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 22,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: layout.cardRadius,
     padding: 16,
   },
   sectionGap: {
@@ -28,9 +26,9 @@ export const premium = StyleSheet.create({
 });
 
 export const premiumColors = {
-  dock: '#111827',
-  mutedIcon: '#9CA3AF',
-  hairline: 'rgba(60,60,67,0.18)',
-  circleBorder: '#E5E7EB',
-  cards: ['#6C63FF', '#5B9DFF', '#2EC4A6', '#FF8A4C'] as const,
+  dock: colors.primary,
+  mutedIcon: colors.textMuted,
+  hairline: colors.border,
+  circleBorder: colors.border,
+  cards: ['#007AFF', '#5856D6', '#FF9500', '#34C759'] as const,
 };

@@ -3,12 +3,11 @@ import { StyleSheet, View } from 'react-native';
 import AppText from '../ui/AppText';
 import SectionTitle from './SectionTitle';
 import { fontFamily } from '../../theme/fonts';
+import { premiumColors } from './premiumStyles';
 import { t } from '../../utils/i18n';
 import type { PerformanceMetric } from '../../types/athleteDashboard';
 
 type Props = { performance: PerformanceMetric[] };
-
-const PALETTE = ['#6C63FF', '#5B9DFF', '#2EC4A6', '#FF8A4C'];
 
 export default function PerformanceSummary({ performance }: Props) {
   return (
@@ -16,7 +15,7 @@ export default function PerformanceSummary({ performance }: Props) {
       <SectionTitle title={t('dashboard.performanceSummary')} />
       <View style={styles.grid}>
         {performance.map((item, index) => {
-          const bg = PALETTE[index % PALETTE.length];
+          const bg = premiumColors.cards[index % premiumColors.cards.length];
           return (
             <View key={item.key} style={[styles.cell, { backgroundColor: bg }]}>
               <AppText variant="caption" color="rgba(255,255,255,0.85)" numberOfLines={1}>
@@ -47,7 +46,7 @@ const styles = StyleSheet.create({
     flexBasis: '46%',
     minWidth: '46%',
     maxWidth: '48%',
-    borderRadius: 20,
+    borderRadius: 16,
     padding: 16,
     minHeight: 100,
     justifyContent: 'space-between',

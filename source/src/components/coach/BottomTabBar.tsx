@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Home, ClipboardList, Users, BarChart3, User } from 'lucide-react-native';
+import { colors } from '../../theme/colors';
 
 export type TabKey = 'Home' | 'Assessments' | 'Athletes' | 'Analytics' | 'Profile';
 
@@ -25,7 +26,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
     <View style={styles.container}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.key;
-        const color = isActive ? '#7C3AED' : '#64748B';
+        const color = isActive ? colors.primary : '#64748B';
         return (
           <TouchableOpacity
             key={tab.key}
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   activeIconWrapper: {
-    backgroundColor: '#F5F3FF',
+    backgroundColor: '#FFF5E6',
   },
   label: {
     fontSize: 10,

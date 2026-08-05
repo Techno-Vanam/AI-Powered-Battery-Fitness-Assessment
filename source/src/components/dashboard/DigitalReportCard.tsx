@@ -4,6 +4,7 @@ import SFSymbol from '../ui/SFSymbol';
 import AppText from '../ui/AppText';
 import SectionTitle from './SectionTitle';
 import { colors } from '../../theme';
+import { portalStyles } from '../../theme/portalStyles';
 import { t } from '../../utils/i18n';
 
 type Props = {
@@ -26,12 +27,12 @@ export default function DigitalReportCard({ onViewPdf, onDownload, onShare }: Pr
   };
 
   return (
-    <View style={styles.card}>
+    <View style={[portalStyles.card, styles.card]}>
       <SectionTitle title={t('dashboard.digitalReport')} />
       <View style={styles.row}>
         <TouchableOpacity style={styles.action} onPress={onViewPdf} activeOpacity={0.85}>
           <View style={styles.circle}>
-            <SFSymbol name="eye" size={18} color={colors.textPrimary} />
+            <SFSymbol name="eye" size={18} color={colors.primary} />
           </View>
           <AppText variant="caption" color={colors.textLabel}>
             {t('dashboard.viewPdf')}
@@ -46,19 +47,19 @@ export default function DigitalReportCard({ onViewPdf, onDownload, onShare }: Pr
         >
           <View style={[styles.circle, downloading && styles.circleActive]}>
             {downloading ? (
-              <ActivityIndicator size="small" color="#2563EB" />
+              <ActivityIndicator size="small" color={colors.primary} />
             ) : (
-              <SFSymbol name="arrow.down.doc" size={18} color={colors.textPrimary} />
+              <SFSymbol name="arrow.down.doc" size={18} color={colors.primary} />
             )}
           </View>
-          <AppText variant="caption" color={downloading ? '#2563EB' : colors.textLabel}>
+          <AppText variant="caption" color={downloading ? colors.primary : colors.textLabel}>
             {downloading ? 'Saving...' : t('dashboard.download')}
           </AppText>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.action} onPress={onShare} activeOpacity={0.85}>
           <View style={styles.circle}>
-            <SFSymbol name="square.and.arrow.up" size={18} color={colors.textPrimary} />
+            <SFSymbol name="square.and.arrow.up" size={18} color={colors.primary} />
           </View>
           <AppText variant="caption" color={colors.textLabel}>
             {t('dashboard.share')}
@@ -71,22 +72,13 @@ export default function DigitalReportCard({ onViewPdf, onDownload, onShare }: Pr
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    padding: 16,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
-    elevation: 2,
+    gap: 4,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    marginTop: 12,
+    marginTop: 8,
   },
   action: {
     alignItems: 'center',
@@ -96,14 +88,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: colors.warningBorder,
   },
   circleActive: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#BFDBFE',
+    backgroundColor: colors.warningBg,
+    borderColor: colors.warningBorder,
   },
 });

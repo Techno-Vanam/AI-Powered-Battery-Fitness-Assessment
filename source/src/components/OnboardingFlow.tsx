@@ -424,7 +424,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
               <TouchableOpacity
                 onPress={handleNext}
                 activeOpacity={0.85}
-                style={[styles.nextPillButton, { backgroundColor: '#0F172A' }]}
+                style={[styles.nextPillButton, { backgroundColor: '#FF9500' }]}
               >
                 <Text style={styles.nextPillText}>NEXT</Text>
                 <ArrowRightIcon size={14} color="#FFFFFF" />
@@ -435,7 +435,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
               <TouchableOpacity
                 onPress={handleNext}
                 activeOpacity={0.85}
-                style={[styles.startFullPillButton, { backgroundColor: '#0F172A' }]}
+                style={[styles.startFullPillButton, { backgroundColor: '#FF9500' }]}
               >
                 <Text style={styles.startFullPillText}>START EXPERIENCE</Text>
                 <ArrowRightIcon size={15} color="#FFFFFF" />

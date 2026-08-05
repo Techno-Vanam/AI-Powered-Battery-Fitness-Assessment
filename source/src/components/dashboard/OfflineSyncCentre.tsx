@@ -4,6 +4,7 @@ import SFSymbol from '../ui/SFSymbol';
 import AppText from '../ui/AppText';
 import SectionTitle from './SectionTitle';
 import { colors } from '../../theme';
+import { portalStyles } from '../../theme/portalStyles';
 import { t } from '../../utils/i18n';
 import type { SyncCentreInfo } from '../../types/athleteDashboard';
 
@@ -16,7 +17,7 @@ type Props = {
 
 export default function OfflineSyncCentre({ isOnline, sync, syncing, onSyncNow }: Props) {
   return (
-    <View style={styles.card}>
+    <View style={[portalStyles.card, styles.card]}>
       <SectionTitle title={t('dashboard.syncCentre')} />
       <View style={styles.statusRow}>
         {isOnline ? (
@@ -24,10 +25,7 @@ export default function OfflineSyncCentre({ isOnline, sync, syncing, onSyncNow }
         ) : (
           <SFSymbol name="wifi.slash" size={18} color={colors.error} />
         )}
-        <AppText
-          variant="bodySm"
-          color={isOnline ? colors.success : colors.error}
-        >
+        <AppText variant="bodySm" color={isOnline ? colors.success : colors.error}>
           {isOnline ? t('dashboard.online') : t('dashboard.offline')}
         </AppText>
       </View>
@@ -50,12 +48,12 @@ export default function OfflineSyncCentre({ isOnline, sync, syncing, onSyncNow }
       </AppText>
 
       <TouchableOpacity
-        style={[styles.cta, syncing && styles.ctaDisabled]}
+        style={[portalStyles.ctaPrimary, styles.cta, syncing && styles.ctaDisabled]}
         onPress={onSyncNow}
         activeOpacity={0.85}
         disabled={syncing}
       >
-        <AppText variant="button" color="#FFFFFF">
+        <AppText variant="button" color={colors.textInverse}>
           {syncing ? 'Syncing…' : t('dashboard.syncNow')}
         </AppText>
       </TouchableOpacity>
@@ -65,17 +63,7 @@ export default function OfflineSyncCentre({ isOnline, sync, syncing, onSyncNow }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    padding: 16,
     gap: 10,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
-    elevation: 2,
   },
   statusRow: {
     flexDirection: 'row',
@@ -85,11 +73,6 @@ const styles = StyleSheet.create({
   counts: { gap: 4 },
   cta: {
     marginTop: 4,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#111827',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   ctaDisabled: {
     opacity: 0.7,

@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AppText from '../ui/AppText';
-import SectionTitle from './SectionTitle';
 import { colors } from '../../theme';
+import { portalStyles } from '../../theme/portalStyles';
 import { t } from '../../utils/i18n';
 import type { CurrentTestInfo } from '../../types/athleteDashboard';
 
@@ -15,8 +15,8 @@ export default function CurrentTestCard({ currentTest, onContinue }: Props) {
   if (!currentTest) return null;
 
   return (
-    <View style={styles.card}>
-      <SectionTitle title={t('dashboard.currentTest')} />
+    <View style={[portalStyles.card, styles.card]}>
+      <Text style={portalStyles.sectionHeader}>{t('dashboard.currentTest')}</Text>
       <View style={styles.infoRow}>
         <View style={styles.textGroup}>
           <AppText variant="h3" style={styles.testName}>{currentTest.name}</AppText>
@@ -24,10 +24,8 @@ export default function CurrentTestCard({ currentTest, onContinue }: Props) {
             Status: {currentTest.status.replace('_', ' ')}
           </AppText>
         </View>
-        <TouchableOpacity style={styles.cta} onPress={onContinue} activeOpacity={0.85}>
-          <AppText variant="button" color="#FFFFFF" style={styles.ctaText}>
-            {t('dashboard.continue')}
-          </AppText>
+        <TouchableOpacity style={portalStyles.ctaPrimary} onPress={onContinue} activeOpacity={0.85}>
+          <Text style={styles.ctaText}>{t('dashboard.continue')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -36,13 +34,8 @@ export default function CurrentTestCard({ currentTest, onContinue }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFF7ED',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#FED7AA',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 6,
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.warningBorder,
   },
   infoRow: {
     flexDirection: 'row',
@@ -63,16 +56,9 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
     fontSize: 13,
   },
-  cta: {
-    height: 42,
-    paddingHorizontal: 18,
-    borderRadius: 21,
-    backgroundColor: '#111827',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   ctaText: {
     fontSize: 14,
     fontWeight: '600',
+    color: colors.textInverse,
   },
 });
