@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ClipboardList, History, Play, FileText } from 'lucide-react-native';
 import AppText from '../ui/AppText';
-import { colors, layout } from '../../theme';
+import { colors } from '../../theme';
 
 type Props = {
   onStart: () => void;

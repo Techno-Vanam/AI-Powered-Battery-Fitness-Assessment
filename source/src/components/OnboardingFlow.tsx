@@ -7,11 +7,9 @@ import {
   StatusBar,
   ScrollView,
   useWindowDimensions,
-  Platform,
 } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { fontFamily } from '../theme/fonts';
-import { colors, layout, moderateScale } from '../theme';
 
 /* --- Pure React Native Vector Lucide Icons --- */
 

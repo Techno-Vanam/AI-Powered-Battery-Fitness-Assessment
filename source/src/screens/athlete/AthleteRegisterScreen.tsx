@@ -8,12 +8,13 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
   User, Phone, CreditCard, Building2, CheckSquare, Square,
-  AlertCircle, Shield
+  AlertCircle, Shield, ArrowRight, ArrowLeft, ChevronDown
 } from 'lucide-react-native';
 import { registerUser } from '../../services/authService';
 import { createRegisterStyles } from '../../styles/screenStyles';
 import Screen from '../../components/ui/Screen';
 import Dropdown from '../../components/ui/Dropdown';
+import DobPickerBox from '../../components/DobPickerBox';
 
 const idTypeSchema = (idType: string | undefined) => {
   if (idType === 'APAAR') return yup.string().matches(/^\d{12}$/, 'Enter a valid 12-digit APAAR ID').required();
@@ -41,21 +42,21 @@ const schema = yup.object({
       return /^[6-9]\d{9}$/.test(val);
     }),
   idType: yup.string().oneOf(['NSRS', 'APAAR', 'AADHAR'], 'Please select an ID type').required('Please select an ID type'),
-  idNumber: yup.string().when('idType', ([idType], schema) => idTypeSchema(idType)),
+  idNumber: yup.string().when('idType', ([idType]) => idTypeSchema(idType)),
   school: yup.string().min(2, 'Please enter your school or institution').required('Please enter your school or institution'),
   consent: yup.boolean().oneOf([true], 'Please accept the Terms & Conditions to continue').required(),
-  guardianName: yup.string().when('$isMinor', ([isMinor], schema) =>
+  guardianName: yup.string().when('$isMinor', ([isMinor], sSchema) =>
     isMinor
-      ? schema
+      ? sSchema
           .transform(value => (typeof value === 'string' ? value.trim() : value))
           .required('Guardian name is required')
           .matches(/^[A-Za-z.\s'-]+$/, 'Please enter a valid name')
           .min(2, 'Please enter a valid name')
           .max(50, 'Please enter a valid name')
-      : schema.optional()
+      : sSchema.optional()
   ),
-  guardianRelation: yup.string().when('$isMinor', ([isMinor], schema) =>
-    isMinor ? schema.required('Relationship is required') : schema.optional()
+  guardianRelation: yup.string().when('$isMinor', ([isMinor], sSchema) =>
+    isMinor ? sSchema.required('Relationship is required') : sSchema.optional()
   ),
 });
 
@@ -88,11 +89,11 @@ const ID_TYPES = [
 
 const calcAge = (day: string, month: string, year: string): number | null => {
   if (!day || !month || !year) return null;
-  const dob = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  const dob = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10));
   const today = new Date();
   if (isNaN(dob.getTime()) || dob > today) return null;
   // Validate the date round-trips (catches Feb 30, etc.)
-  if (dob.getDate() !== parseInt(day) || dob.getMonth() !== parseInt(month) - 1 || dob.getFullYear() !== parseInt(year)) return null;
+  if (dob.getDate() !== parseInt(day, 10) || dob.getMonth() !== parseInt(month, 10) - 1 || dob.getFullYear() !== parseInt(year, 10)) return null;
   let age = today.getFullYear() - dob.getFullYear();
   const m = today.getMonth() - dob.getMonth();
   if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
@@ -113,6 +114,7 @@ const FieldError: React.FC<{ message?: string }> = ({ message }) =>
 const AthleteRegisterScreen = ({ navigation }: any) => {
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
+  const [_pickerVisible, setPickerVisible] = useState<'idType' | 'guardianRelation' | null>(null);
 
   const { control, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm<FormData>({
     mode: 'onChange',
@@ -136,12 +138,6 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
 
   const age = calcAge(dobDay, dobMonth, dobYear);
   const isMinor = age !== null && age < 18;
-
-  const getIdPlaceholder = () => {
-    if (idType === 'APAAR') return '12-digit APAAR ID';
-    if (idType === 'AADHAR') return '12-digit Aadhar Number';
-    return 'NSRS Number (digits only)';
-  };
 
   const validateField = (field: keyof FormData, value: string) => {
     const normalized = value.trim();
@@ -221,6 +217,7 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
           <View style={styles.header}>
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Join as an athlete and track your journey.</Text>
+          </View>
 
           <View style={styles.form}>
             {/* Full Name */}

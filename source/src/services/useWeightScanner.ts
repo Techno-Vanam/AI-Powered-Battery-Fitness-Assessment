@@ -1,5 +1,4 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Dimensions } from 'react-native';
 import type { Camera } from 'react-native-vision-camera';
 import { OCRService } from './OCRService';
 import {
@@ -103,7 +102,7 @@ export function useWeightScanner() {
         } else {
           snapshot = await camera.takePhoto({ flash: 'off' });
         }
-      } catch (snapErr) {
+      } catch {
         snapshot = await camera.takePhoto({ flash: 'off' });
       }
 
@@ -167,6 +166,7 @@ export function useWeightScanner() {
     }
 
     scheduleNext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function scheduleNext() {

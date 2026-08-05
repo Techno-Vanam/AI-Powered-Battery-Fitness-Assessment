@@ -5,7 +5,6 @@ import {
   Dimensions,
   Modal,
   ScrollView,
-  Share,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -18,7 +17,6 @@ import SFSymbol from '../../components/ui/SFSymbol';
 import {
   AssessmentHistoryList,
   AthleteBottomNav,
-  AthleteReportCard,
   AthleteTab,
   CurrentTestCard,
   DashboardHeader,
@@ -37,7 +35,7 @@ import {
 import { downloadReportFile, shareReportPDF } from '../../services/reportDownloadService';
 import { MOCK_ATHLETE_DASHBOARD } from '../../data/mockAthleteDashboard';
 import type { AthleteDashboardData, DashboardTest, HistoryItem } from '../../types/athleteDashboard';
-import { colors, layout } from '../../theme';
+import { colors, layout, roleColors } from '../../theme';
 import { t } from '../../utils/i18n';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -273,7 +271,7 @@ const styles = StyleSheet.create({
     padding: layout.horizontalPadding,
     borderRadius: layout.radiusLg,
     borderWidth: 1.5,
-    borderColor: colors.primary,
+    borderColor: roleColors('athlete').primary,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,

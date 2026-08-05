@@ -14,7 +14,7 @@ import {
   ZapOff,
   Camera as CameraIcon,
 } from 'lucide-react-native';
-import { Camera, CameraType } from 'react-native-camera-kit';
+import { Camera, useCameraDevice } from 'react-native-vision-camera';
 import AppText from '../../components/ui/AppText';
 import { colors, layout, roleColors } from '../../theme';
 import { CameraService } from '../../services/CameraService';
@@ -23,7 +23,8 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const accent = roleColors('athlete');
 
 export const CameraScreen = ({ navigation }: any) => {
-  const cameraRef = useRef<any>(null);
+  const cameraRef = useRef<Camera>(null);
+  const device = useCameraDevice('back');
 
   const [hasPermission, setHasPermission] = useState<boolean>(false);
   const [flashOn, setFlashOn] = useState<boolean>(false);
@@ -46,7 +47,7 @@ export const CameraScreen = ({ navigation }: any) => {
       const ok = await requestPermission();
       if (!ok) {
         Alert.alert(
-          'Camera Permission Required',
+          'Camera Permission Denied',
           'Camera access is required to scan digital weighing scale displays.'
         );
         return;
@@ -62,13 +63,15 @@ export const CameraScreen = ({ navigation }: any) => {
 
     try {
       // Capture frame directly from the in-app live camera preview
-      const image = await cameraRef.current.capture();
+      const photo = await cameraRef.current.takePhoto({
+        flash: flashOn ? 'on' : 'off',
+      });
       setIsCapturing(false);
 
-      if (image && image.uri) {
-        const fullPath = image.uri.startsWith('file://')
-          ? image.uri
-          : `file://${image.uri}`;
+      if (photo && photo.path) {
+        const fullPath = photo.path.startsWith('file://')
+          ? photo.path
+          : `file://${photo.path}`;
 
         const frameDims = CameraService.getLCDCropFrameDimensions(
           SCREEN_WIDTH,
@@ -91,7 +94,7 @@ export const CameraScreen = ({ navigation }: any) => {
       } else {
         Alert.alert('Capture Error', 'Could not retrieve captured frame.');
       }
-    } catch (err) {
+    } catch {
       setIsCapturing(false);
       Alert.alert('Capture Error', 'Failed to capture frame from in-app camera.');
     }
@@ -105,13 +108,13 @@ export const CameraScreen = ({ navigation }: any) => {
   return (
     <View style={styles.container}>
       {/* Full-Screen In-App Live Camera Viewfinder */}
-      {hasPermission ? (
+      {hasPermission && device ? (
         <Camera
           ref={cameraRef}
           style={StyleSheet.absoluteFill}
-          cameraType={CameraType.Back}
-          flashMode={flashOn ? 'on' : 'off'}
-          focusMode="on"
+          device={device}
+          isActive={true}
+          photo={true}
         />
       ) : (
         <View style={styles.noCameraFallback}>
@@ -219,7 +222,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
   noCameraFallback: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: '#0F172A',
     justifyContent: 'center',
     alignItems: 'center',
@@ -236,7 +239,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   viewfinderBackdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   overlayTop: {
     width: '100%',

@@ -7,13 +7,14 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
-  User, Phone, CreditCard, Building2, CheckSquare, Square,
-  AlertCircle, Briefcase
+  User, Phone, CreditCard, CheckSquare, Square,
+  AlertCircle, Briefcase, ArrowRight, ChevronDown
 } from 'lucide-react-native';
 import { registerUser } from '../../services/authService';
 import { createRegisterStyles } from '../../styles/screenStyles';
 import Screen from '../../components/ui/Screen';
 import Dropdown from '../../components/ui/Dropdown';
+import DobPickerBox from '../../components/DobPickerBox';
 
 const ID_TYPES = [
   { label: 'NSRS', value: 'NSRS' },
@@ -52,7 +53,7 @@ const schema = yup.object({
       return /^[6-9]\d{9}$/.test(val);
     }),
   idType: yup.string().oneOf(['NSRS', 'APAAR', 'AADHAR'], 'Please select an ID type').required('Please select an ID type'),
-  idNumber: yup.string().when('idType', ([idType], schema) => idTypeSchema(idType)),
+  idNumber: yup.string().when('idType', ([idType]) => idTypeSchema(idType)),
   consent: yup.boolean().oneOf([true], 'Please accept the Terms & Conditions to continue').required(),
 });
 
@@ -88,15 +89,17 @@ const CoachRegisterScreen = ({ navigation }: any) => {
     },
   });
 
+  const [_pickerVisible, setPickerVisible] = useState<'designation' | 'idType' | null>(null);
+
   const idType = watch('idType');
   const consent = watch('consent');
   const gender = watch('gender');
+  const designation = watch('designation');
+  const dobDay = watch('dobDay');
+  const dobMonth = watch('dobMonth');
+  const dobYear = watch('dobYear');
 
-  const getIdPlaceholder = () => {
-    if (idType === 'APAAR') return '12-digit APAAR ID';
-    if (idType === 'AADHAR') return '12-digit Aadhar Number';
-    return 'NSRS Number (digits only)';
-  };
+  const selectedDesignationLabel = DESIGNATIONS.find(d => d.value === designation)?.label || 'Select Designation';
 
   const validateField = (field: keyof FormData, value: string) => {
     const normalized = value.trim();
@@ -168,6 +171,7 @@ const CoachRegisterScreen = ({ navigation }: any) => {
           <View style={styles.header}>
             <Text style={styles.title}>Coach Registration</Text>
             <Text style={styles.subtitle}>Register as a coach or physical educator.</Text>
+          </View>
 
             {/* Step Indicator */}
             <View style={styles.stepIndicatorContainer}>
@@ -189,7 +193,6 @@ const CoachRegisterScreen = ({ navigation }: any) => {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
 
           <View style={styles.form}>
             {/* PAGE 1: Personal Info (Until Mobile Number) */}
@@ -293,7 +296,10 @@ const CoachRegisterScreen = ({ navigation }: any) => {
               </>
             )}
 
-            {/* Designation */}
+            {/* PAGE 2: Verification (Designation, ID, Consent) */}
+            {step === 2 && (
+              <>
+                {/* Designation */}
             <View style={styles.group}>
               <Text style={styles.label}>Designation</Text>
               <Controller

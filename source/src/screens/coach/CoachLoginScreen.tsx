@@ -34,7 +34,7 @@ const idNumberSchema = (idType: string | undefined) => {
 
 const schema = yup.object({
   idType: yup.string().oneOf(['NSRS', 'APAAR', 'AADHAR']).required('Please select an ID type'),
-  idNumber: yup.string().when('idType', ([idType], s) => idNumberSchema(idType)),
+  idNumber: yup.string().when('idType', ([idType]) => idNumberSchema(idType)),
   password: yup.string().required('Password is required').min(1),
 });
 
@@ -46,6 +46,7 @@ const CoachLoginScreen = ({ navigation }: any) => {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
+  const [_loginError, setLoginError] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {

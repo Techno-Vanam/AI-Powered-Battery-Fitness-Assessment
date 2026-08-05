@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import NetInfo from '@react-native-community/netinfo';
-import { fetchApi } from '../config/api';
+import { fetchApi, API_BASE_URL } from '../config/api';
 import {
   createUser,
   getUserByIdentifier,
@@ -43,7 +43,7 @@ export interface RegisterPayload
  */
 export const registerUser = async (
   payload: RegisterPayload
-): { local_id: string; otp: string } => {
+): Promise<{ local_id: string; otp: string }> => {
   const existing = getUserByIdentifier(payload.id_type, payload.id_number, payload.role);
   if (existing?.local_id) {
     const otp = generateMockOTP(existing.local_id);
@@ -159,11 +159,8 @@ export const loginUser = async (
     data?: { user: User };
   };
 
-    upsertUserLocally(body.data.user);
-    return body.data.user;
-  } catch (err: any) {
-    clearTimeout(timeoutId);
-    throw new Error(err.message === 'Account setup incomplete. Please complete registration first.' ? err.message : 'Invalid ID or password.');
+  if (!body.success || !body.data?.user) {
+    throw new Error(body.message || 'Invalid ID or password.');
   }
 
   const cloudUser = body.data.user;

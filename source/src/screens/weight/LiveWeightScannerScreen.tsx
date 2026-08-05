@@ -3,7 +3,6 @@ import React, {
   useEffect,
   useState,
   useCallback,
-  useMemo,
 } from 'react';
 import {
   View,
@@ -12,7 +11,6 @@ import {
   Animated,
   Dimensions,
   StatusBar,
-  Easing,
   Platform,
 } from 'react-native';
 import {
@@ -20,10 +18,9 @@ import {
   useCameraDevice,
   useCameraPermission,
 } from 'react-native-vision-camera';
-import { ChevronLeft, Zap, ZapOff, RotateCcw, CheckCircle } from 'lucide-react-native';
+import { ChevronLeft, Zap, ZapOff, RotateCcw } from 'lucide-react-native';
 import AppText from '../../components/ui/AppText';
 import { colors, layout, roleColors } from '../../theme';
-import { CameraService } from '../../services/CameraService';
 import { useWeightScanner } from '../../services/useWeightScanner';
 
 import ResizableROIOverlay, { ROIRect } from '../../components/ui/ResizableROIOverlay';
@@ -54,7 +51,7 @@ export const LiveWeightScannerScreen = ({ navigation }: any) => {
   const device = useCameraDevice('back');
   const { hasPermission, requestPermission } = useCameraPermission();
 
-  const [isCameraReady, setIsCameraReady] = useState(false);
+  const [_isCameraReady, setIsCameraReady] = useState(false);
   const [isFlashOn, setIsFlashOn] = useState(false);
   const [currentRoi, setCurrentRoi] = useState<ROIRect>(DEFAULT_CROP_RECT);
 
@@ -91,7 +88,7 @@ export const LiveWeightScannerScreen = ({ navigation }: any) => {
     } else {
       stableGlowAnim.setValue(0);
     }
-  }, [scanState.status]);
+  }, [scanState.status, stableGlowAnim]);
 
   // Status dot pulse
   useEffect(() => {
@@ -109,19 +106,19 @@ export const LiveWeightScannerScreen = ({ navigation }: any) => {
       pulseAnim.setValue(1);
     }
     return () => pulseLoop.current?.stop();
-  }, [scanState.status]);
+  }, [scanState.status, pulseAnim]);
 
   // ── Permission + start scanning ────────────────────────────────────────────
   useEffect(() => {
     if (!hasPermission) {
       requestPermission();
     }
-  }, [hasPermission]);
+  }, [hasPermission, requestPermission]);
 
   // Start scanning once camera permission is granted
   useEffect(() => {
     if (hasPermission) {
-      const t = setTimeout(() => startScanning(cameraRef, DEFAULT_CROP_RECT), 500);
+      const t = setTimeout(() => startScanning(cameraRef as any, DEFAULT_CROP_RECT), 500);
       return () => clearTimeout(t);
     }
   }, [hasPermission, startScanning]);
@@ -145,7 +142,7 @@ export const LiveWeightScannerScreen = ({ navigation }: any) => {
 
   // ── Reset / rescan ─────────────────────────────────────────────────────────
   const handleRescan = useCallback(() => {
-    resetScanning(cameraRef, currentRoi);
+    resetScanning(cameraRef as any, currentRoi);
   }, [resetScanning, currentRoi]);
 
   const handleBack = useCallback(() => {
@@ -349,8 +346,6 @@ export const LiveWeightScannerScreen = ({ navigation }: any) => {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const CORNER_SIZE = 22;
-const CORNER_THICKNESS = 3;
 const BOTTOM_PANEL_HEIGHT = 280;
 
 const styles = StyleSheet.create({

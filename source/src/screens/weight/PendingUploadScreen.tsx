@@ -17,15 +17,11 @@ import {
 } from 'lucide-react-native';
 import Screen from '../../components/ui/Screen';
 import AppText from '../../components/ui/AppText';
-import Button from '../../components/ui/Button';
 import { colors, layout, roleColors } from '../../theme';
-import { createScreenStyles } from '../../styles/screenStyles';
 import { SQLiteService, WeightMeasurementRecord } from '../../services/SQLiteService';
 import { SyncService } from '../../services/syncService';
 import { NetworkService } from '../../services/NetworkService';
 
-
-const screenStyles = createScreenStyles();
 const accent = roleColors('athlete');
 
 export const PendingUploadScreen = ({ navigation }: any) => {
@@ -141,7 +137,7 @@ export const PendingUploadScreen = ({ navigation }: any) => {
   );
 
   return (
-    <Screen contentStyle={screenStyles.content}>
+    <Screen>
       {/* Header */}
       <View style={styles.topBar}>
         <TouchableOpacity
