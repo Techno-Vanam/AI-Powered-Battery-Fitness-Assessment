@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
   User, Phone, CreditCard, CheckSquare, Square,
-  AlertCircle, Briefcase, ArrowRight
+  AlertCircle, Briefcase, ArrowRight, Building2
 } from 'lucide-react-native';
 import { registerUser } from '../../services/authService';
 import { createRegisterStyles } from '../../styles/screenStyles';
@@ -89,11 +89,18 @@ const CoachRegisterScreen = ({ navigation }: any) => {
     },
   });
 
+  const idType = watch('idType');
   const consent = watch('consent');
   const gender = watch('gender');
   const dobDay = watch('dobDay');
   const dobMonth = watch('dobMonth');
   const dobYear = watch('dobYear');
+
+  const getIdPlaceholder = (type: string) => {
+    if (type === 'APAAR') return '12-digit APAAR ID';
+    if (type === 'AADHAR') return '12-digit Aadhar Number';
+    return 'NSRS Number (digits only)';
+  };
 
   const validateField = (field: keyof FormData, value: string) => {
     const normalized = value.trim();
@@ -122,8 +129,14 @@ const CoachRegisterScreen = ({ navigation }: any) => {
     void trigger(field as any);
   };
 
+  const onInvalid = (errs: any) => {
+    const firstKey = Object.keys(errs)[0];
+    const firstError = errs[firstKey]?.message || 'Please fill in all required fields.';
+    Alert.alert('Validation Error', firstError);
+  };
+
   const handleNextStep = async () => {
-    const fieldsToValidate: Array<keyof FormData> = ['coachName', 'gender', 'phone'];
+    const fieldsToValidate: Array<keyof FormData> = ['coachName', 'organizationName', 'gender', 'phone'];
     if (dobDay || dobMonth || dobYear) {
       fieldsToValidate.push('dobDay', 'dobMonth', 'dobYear');
     }
@@ -216,6 +229,31 @@ const CoachRegisterScreen = ({ navigation }: any) => {
                     )}
                   />
                   <FieldError message={errors.coachName?.message} />
+                </View>
+
+                {/* Organization / School Name */}
+                <View style={styles.group}>
+                  <Text style={styles.label}>Organization / School</Text>
+                  <Controller
+                    control={control}
+                    name="organizationName"
+                    render={({ field: { onChange, value } }) => (
+                      <View style={[styles.inputRow, errors.organizationName && styles.inputError]}>
+                        <Building2 size={18} color="#94A3B8" />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="e.g. Sports Academy / School Name"
+                          placeholderTextColor="#94A3B8"
+                          value={value}
+                          onChangeText={text => {
+                            onChange(text);
+                            validateField('organizationName', text);
+                          }}
+                        />
+                      </View>
+                    )}
+                  />
+                  <FieldError message={errors.organizationName?.message} />
                 </View>
 
                 {/* Date of Birth Box Module */}
@@ -344,6 +382,32 @@ const CoachRegisterScreen = ({ navigation }: any) => {
                   <FieldError message={errors.idType?.message} />
                 </View>
 
+                {/* ID Number */}
+                <View style={styles.group}>
+                  <Text style={styles.label}>ID Number</Text>
+                  <Controller
+                    control={control}
+                    name="idNumber"
+                    render={({ field: { onChange, value } }) => (
+                      <View style={[styles.inputRow, errors.idNumber && styles.inputError]}>
+                        <CreditCard size={18} color="#94A3B8" />
+                        <TextInput
+                          style={styles.input}
+                          placeholder={getIdPlaceholder(idType)}
+                          placeholderTextColor="#94A3B8"
+                          keyboardType={idType === 'NSRS' ? 'default' : 'number-pad'}
+                          value={value}
+                          onChangeText={text => {
+                            onChange(text);
+                            validateField('idNumber', text);
+                          }}
+                        />
+                      </View>
+                    )}
+                  />
+                  <FieldError message={errors.idNumber?.message} />
+                </View>
+
                 {/* Consent */}
                 <View style={styles.group}>
                   <View style={styles.consentRow}>
@@ -376,7 +440,7 @@ const CoachRegisterScreen = ({ navigation }: any) => {
                 {/* Submit Button */}
                 <TouchableOpacity
                   style={[styles.button, (loading || !consent) && styles.buttonDisabled]}
-                  onPress={handleSubmit(onSubmit as any)}
+                  onPress={handleSubmit(onSubmit as any, onInvalid)}
                   disabled={loading || !consent}
                 >
                   {loading
