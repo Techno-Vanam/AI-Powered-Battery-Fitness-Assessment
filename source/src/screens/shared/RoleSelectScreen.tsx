@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Activity, ClipboardList, ChevronRight } from 'lucide-react-native';
+import SFSymbol from '../../components/ui/SFSymbol';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
 import Screen from '../../components/ui/Screen';
@@ -33,7 +33,7 @@ const RoleSelectScreen: React.FC<Props> = ({ navigation }) => {
             <View style={styles.athleteAccent} />
             <View style={styles.cardBody}>
               <View style={[styles.iconBox, styles.athleteIcon]}>
-                <Activity size={layout.iconLg} color={colors.athlete.primary} strokeWidth={2.2} />
+                <SFSymbol name="chart.bar.fill" size={layout.iconLg} color={colors.athlete.primary} strokeWidth={2.2} />
               </View>
               <View style={styles.cardContent}>
                 <View style={[styles.badge, styles.athleteBadge]}>
@@ -49,7 +49,7 @@ const RoleSelectScreen: React.FC<Props> = ({ navigation }) => {
                 </AppText>
               </View>
               <View style={[styles.arrowCircle, styles.athleteArrow]}>
-                <ChevronRight size={20} color={colors.athlete.primary} />
+                <SFSymbol name="chevron.right" size={20} color={colors.athlete.primary} />
               </View>
             </View>
           </TouchableOpacity>
@@ -63,7 +63,7 @@ const RoleSelectScreen: React.FC<Props> = ({ navigation }) => {
             <View style={styles.coachAccent} />
             <View style={styles.cardBody}>
               <View style={[styles.iconBox, styles.coachIcon]}>
-                <ClipboardList size={layout.iconLg - 2} color="#FFFFFF" strokeWidth={2.2} />
+                <SFSymbol name="list.bullet.rectangle" size={layout.iconLg - 2} color="#FFFFFF" strokeWidth={2.2} />
               </View>
               <View style={styles.cardContent}>
                 <View style={[styles.badge, styles.coachBadge]}>
@@ -79,7 +79,7 @@ const RoleSelectScreen: React.FC<Props> = ({ navigation }) => {
                 </AppText>
               </View>
               <View style={[styles.arrowCircle, styles.coachArrow]}>
-                <ChevronRight size={20} color={colors.coach.accent} />
+                <SFSymbol name="chevron.right" size={20} color={colors.coach.accent} />
               </View>
             </View>
           </TouchableOpacity>

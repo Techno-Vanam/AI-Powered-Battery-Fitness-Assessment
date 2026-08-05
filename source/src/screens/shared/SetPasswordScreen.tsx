@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, Alert, ActivityIndicator } fro
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Eye, EyeOff, Lock, XCircle } from 'lucide-react-native';
+import SFSymbol from '../../components/ui/SFSymbol';
 import { setUserPassword } from '../../services/authService';
 import { createRegisterStyles } from '../../styles/screenStyles';
 import FieldError from '../../components/ui/FieldError';
@@ -73,7 +73,7 @@ const SetPasswordScreen = ({ navigation, route }: any) => {
     <Screen scroll keyboard>
       <View style={styles.headerCentered}>
         <View style={styles.iconCircle}>
-          <Lock size={28} color="#4F46E5" />
+          <SFSymbol name="lock.fill" size={28} color="#4F46E5" />
         </View>
         <Text style={styles.title}>Set Your Password</Text>
         <Text style={styles.subtitle}>Create a secure password to protect your account.</Text>
@@ -87,7 +87,7 @@ const SetPasswordScreen = ({ navigation, route }: any) => {
             name="password"
             render={({ field: { onChange, value } }) => (
               <View style={[styles.inputRow, errors.password && styles.inputError]}>
-                <Lock size={18} color="#94A3B8" />
+                <SFSymbol name="lock.fill" size={18} color="#94A3B8" />
                 <TextInput
                   style={styles.input}
                   placeholder="Min. 8 characters"
@@ -98,7 +98,7 @@ const SetPasswordScreen = ({ navigation, route }: any) => {
                   autoCapitalize="none"
                 />
                 <TouchableOpacity onPress={() => setShowPwd(v => !v)}>
-                  {showPwd ? <EyeOff size={18} color="#94A3B8" /> : <Eye size={18} color="#94A3B8" />}
+                  {showPwd ? <SFSymbol name="eye.slash.fill" size={18} color="#94A3B8" /> : <SFSymbol name="eye.fill" size={18} color="#94A3B8" />}
                 </TouchableOpacity>
               </View>
             )}
@@ -126,7 +126,7 @@ const SetPasswordScreen = ({ navigation, route }: any) => {
             name="confirmPassword"
             render={({ field: { onChange, value } }) => (
               <View style={[styles.inputRow, errors.confirmPassword && styles.inputError]}>
-                <Lock size={18} color="#94A3B8" />
+                <SFSymbol name="lock.fill" size={18} color="#94A3B8" />
                 <TextInput
                   style={styles.input}
                   placeholder="Re-enter your password"
@@ -137,7 +137,7 @@ const SetPasswordScreen = ({ navigation, route }: any) => {
                   autoCapitalize="none"
                 />
                 <TouchableOpacity onPress={() => setShowConfirm(v => !v)}>
-                  {showConfirm ? <EyeOff size={18} color="#94A3B8" /> : <Eye size={18} color="#94A3B8" />}
+                  {showConfirm ? <SFSymbol name="eye.slash.fill" size={18} color="#94A3B8" /> : <SFSymbol name="eye.fill" size={18} color="#94A3B8" />}
                 </TouchableOpacity>
               </View>
             )}
@@ -152,7 +152,7 @@ const SetPasswordScreen = ({ navigation, route }: any) => {
             { text: 'Contains a number', pass: /\d/.test(password) },
           ].map(r => (
             <View key={r.text} style={styles.ruleRow}>
-              {r.pass ? <CheckCircle size={14} color="#22C55E" /> : <XCircle size={14} color="#CBD5E1" />}
+              {r.pass ? <SFSymbol name="checkmark.circle.fill" size={14} color="#22C55E" /> : <SFSymbol name="xmark.circle" size={14} color="#CBD5E1" />}
               <Text style={[styles.ruleText, r.pass && styles.rulePass]}>{r.text}</Text>
             </View>
           ))}

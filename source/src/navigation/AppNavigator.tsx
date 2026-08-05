@@ -4,16 +4,48 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AppProvider, useApp, MainTabType } from '../context/AppContext';
 import { BottomTabBar } from '../components/navigation/BottomTabBar';
 
-// Auth Screens
+// Auth & Shared Screens (HEAD)
 import { SplashScreen } from '../screens/auth/SplashScreen';
 import { CoachLoginScreen } from '../screens/coach/CoachLoginScreen';
 import { CoachOtpVerifyScreen } from '../screens/coach/CoachOtpVerifyScreen';
 import { ForgotPasswordScreen } from '../screens/shared/ForgotPasswordScreen';
 
-// Home Stack Screens
+// Home Stack Screens (HEAD)
 import { CoachHomeScreen } from '../screens/coach/CoachHomeScreen';
 import { NotificationsScreen } from '../screens/home/NotificationsScreen';
 import { SessionHistoryScreen } from '../screens/home/SessionHistoryScreen';
+
+// Additional Flow & Screen Imports (feature/athlete-dashboard)
+import { OnboardingFlow } from '../components/OnboardingFlow';
+import RoleSelectScreen from '../screens/shared/RoleSelectScreen';
+import AthleteLoginScreen from '../screens/athlete/AthleteLoginScreen';
+import AthleteRegisterScreen from '../screens/athlete/AthleteRegisterScreen';
+import AthleteOtpVerifyScreen from '../screens/athlete/AthleteOtpVerifyScreen';
+import AthleteHomeScreen from '../screens/athlete/AthleteHomeScreen';
+import AthleteProfileScreen from '../screens/athlete/AthleteProfileScreen';
+import CoachRegisterScreen from '../screens/coach/CoachRegisterScreen';
+import ResetPasswordScreen from '../screens/shared/ResetPasswordScreen';
+import SetPasswordScreen from '../screens/shared/SetPasswordScreen';
+import TermsAndConditionsScreen from '../screens/shared/TermsAndConditionsScreen';
+
+export type RootStackParamList = {
+  Onboarding: undefined;
+  RoleSelect: undefined;
+  AthleteLogin: undefined;
+  AthleteRegister: undefined;
+  AthleteOtpVerify: { local_id: string; otp: string };
+  AthleteHome: undefined;
+  AthleteProfile: { profile?: any };
+  CoachLogin: undefined;
+  CoachRegister: undefined;
+  CoachOtpVerify: { local_id: string; otp: string };
+  CoachHome: undefined;
+  ForgotPassword: undefined;
+  ResetPassword: { local_id: string };
+  SetPassword: { local_id: string; role: 'athlete' | 'coach' };
+  TermsAndConditions: { onAccept?: () => void };
+};
+
 
 // Athletes Stack Screens
 import { AthleteListScreen } from '../screens/athletes/AthleteListScreen';
