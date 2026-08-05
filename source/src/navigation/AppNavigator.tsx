@@ -35,6 +35,14 @@ import SitAndReachEntryScreen from '../screens/SitAndReach/SitAndReachEntryScree
 import SitAndReachHistoryScreen from '../screens/SitAndReach/SitAndReachHistoryScreen';
 import SitAndReachCorrectScreen from '../screens/SitAndReach/SitAndReachCorrectScreen';
 import type { Athlete } from '../database/repositories/AthleteRepository';
+import { JumpSelectionScreen } from '../modules/jumpAssessment/screens/JumpSelectionScreen';
+import { JumpCalibrationScreen } from '../modules/jumpAssessment/screens/JumpCalibrationScreen';
+import { VerticalJumpScreen } from '../modules/jumpAssessment/screens/VerticalJumpScreen';
+import { BroadJumpScreen } from '../modules/jumpAssessment/screens/BroadJumpScreen';
+import { JumpFrameAnalysisScreen } from '../modules/jumpAssessment/screens/JumpFrameAnalysisScreen';
+import { JumpResultScreen } from '../modules/jumpAssessment/screens/JumpResultScreen';
+import { JumpHistoryScreen } from '../modules/jumpAssessment/screens/JumpHistoryScreen';
+import { SKIP_LOGIN_FOR_TESTING } from '../config/devFlags';
 
 export type RootStackParamList = {
   Onboarding: undefined;
@@ -84,6 +92,13 @@ export type RootStackParamList = {
     athleteId: number;
     athleteName: string;
   };
+  JumpSelection: undefined;
+  JumpCalibration: { testType: 'vertical' | 'broad' };
+  VerticalJump: { pixelsPerCm?: number };
+  BroadJump: { pixelsPerCm?: number };
+  JumpFrameAnalysis: { testType?: 'vertical' | 'broad'; videoUri?: string };
+  JumpResult: { testType: 'vertical' | 'broad'; metrics: unknown; method?: 'airtime' | 'live' };
+  JumpHistory: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -102,7 +117,7 @@ export function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Onboarding"
+        initialRouteName={SKIP_LOGIN_FOR_TESTING ? 'JumpSelection' : 'Onboarding'}
         screenOptions={{ headerShown: false, animation: 'fade' }}
       >
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
@@ -146,6 +161,13 @@ export function AppNavigator() {
         <Stack.Screen name="SitAndReachEntry" component={SitAndReachEntryScreen} />
         <Stack.Screen name="SitAndReachHistory" component={SitAndReachHistoryScreen} />
         <Stack.Screen name="SitAndReachCorrect" component={SitAndReachCorrectScreen} />
+        <Stack.Screen name="JumpSelection" component={JumpSelectionScreen} />
+        <Stack.Screen name="JumpCalibration" component={JumpCalibrationScreen} />
+        <Stack.Screen name="VerticalJump" component={VerticalJumpScreen} />
+        <Stack.Screen name="BroadJump" component={BroadJumpScreen} />
+        <Stack.Screen name="JumpFrameAnalysis" component={JumpFrameAnalysisScreen} />
+        <Stack.Screen name="JumpResult" component={JumpResultScreen} />
+        <Stack.Screen name="JumpHistory" component={JumpHistoryScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

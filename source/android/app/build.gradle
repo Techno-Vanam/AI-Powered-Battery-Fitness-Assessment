@@ -31,7 +31,10 @@ android {
                 cppFlags "-std=c++17 -frtti -fexceptions"
                 abiFilters 'arm64-v8a'
                 arguments "-DCMAKE_OBJECT_PATH_MAX=100",
-                          "-DCMAKE_USE_RELATIVE_PATHS=TRUE"
+                          "-DCMAKE_USE_RELATIVE_PATHS=TRUE",
+                          "-DANDROID_LD=lld",
+                          "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF",
+                          "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG=OFF"
             }
         }
     }
@@ -91,5 +94,21 @@ dependencies {
         implementation("com.facebook.react:hermes-android")
     } else {
         implementation 'io.github.react-native-community:jsc-android:2026004.+'
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force "androidx.media3:media3-database:1.8.0"
+        force "androidx.media3:media3-datasource:1.8.0"
+        force "androidx.media3:media3-datasource-okhttp:1.8.0"
+        force "androidx.media3:media3-decoder:1.8.0"
+        force "androidx.media3:media3-exoplayer:1.8.0"
+        force "androidx.media3:media3-exoplayer-dash:1.8.0"
+        force "androidx.media3:media3-exoplayer-hls:1.8.0"
+        force "androidx.media3:media3-exoplayer-smoothstreaming:1.8.0"
+        force "androidx.media3:media3-extractor:1.8.0"
+        force "androidx.media3:media3-session:1.8.0"
+        force "androidx.media3:media3-ui:1.8.0"
     }
 }
