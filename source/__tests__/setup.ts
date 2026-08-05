@@ -154,7 +154,7 @@ jest.mock('lucide-react-native', () => {
   return new Proxy(
     {},
     {
-      get: function (target, prop) {
+      get: function (_target, _prop) {
         return () => null; // return a dummy component for any icon imported
       },
     }

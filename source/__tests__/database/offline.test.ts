@@ -195,8 +195,6 @@ jest.mock('react-native-fs', () => ({
 import { AthleteRepository } from '../../src/database/repositories/AthleteRepository';
 import { HeightRepository } from '../../src/database/repositories/HeightRepository';
 import { SyncRepository } from '../../src/database/repositories/SyncRepository';
-import { VideoRepository } from '../../src/database/repositories/VideoRepository';
-import { processQueueItem } from '../../src/sync/UploadWorker';
 import * as Database from '../../src/database/Database';
 
 // Inject mock DB into the singleton
