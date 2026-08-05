@@ -22,7 +22,7 @@ import AthleteLoginScreen from '../screens/athlete/AthleteLoginScreen';
 import AthleteRegisterScreen from '../screens/athlete/AthleteRegisterScreen';
 import AthleteOtpVerifyScreen from '../screens/athlete/AthleteOtpVerifyScreen';
 import AthleteHomeScreen from '../screens/athlete/AthleteHomeScreen';
-import AthleteProfileScreen from '../screens/athlete/AthleteProfileScreen';
+import AthleteSelfProfileScreen from '../screens/athlete/AthleteProfileScreen';
 import CoachRegisterScreen from '../screens/coach/CoachRegisterScreen';
 import ResetPasswordScreen from '../screens/shared/ResetPasswordScreen';
 import SetPasswordScreen from '../screens/shared/SetPasswordScreen';
