@@ -162,10 +162,36 @@ jest.mock('lucide-react-native', () => {
 });
 
 // @op-engineering/op-sqlite
-jest.mock('@op-engineering/op-sqlite', () => ({
-  open: jest.fn(() => ({
-    execute: jest.fn(),
-    executeSync: jest.fn(),
-    close: jest.fn(),
-  })),
+jest.mock('@op-engineering/op-sqlite', () => {
+  const emptyResult = { rows: [] };
+  return {
+    open: jest.fn(() => ({
+      execute: jest.fn(async () => emptyResult),
+      executeSync: jest.fn(() => emptyResult),
+      close: jest.fn(),
+    })),
+  };
+}, { virtual: true });
+
+// @react-native-ml-kit/text-recognition (optional OCR fallback; native module not in Jest)
+jest.mock('@react-native-ml-kit/text-recognition', () => ({
+  __esModule: true,
+  default: {
+    recognize: jest.fn(async () => ({ text: '' })),
+  },
 }), { virtual: true });
+
+// react-native-image-picker
+jest.mock('react-native-image-picker', () => ({
+  launchImageLibrary: jest.fn(async () => ({ didCancel: true, assets: [] })),
+  launchCamera: jest.fn(async () => ({ didCancel: true, assets: [] })),
+}), { virtual: true });
+
+// react-native-video
+jest.mock('react-native-video', () => {
+  const React = require('react');
+  return {
+    __esModule: true,
+    default: React.forwardRef(() => null),
+  };
+}, { virtual: true });
