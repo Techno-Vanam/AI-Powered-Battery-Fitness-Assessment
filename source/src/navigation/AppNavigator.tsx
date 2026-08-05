@@ -31,6 +31,9 @@ import { HeightResultScreen } from '../screens/HeightResultScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import SyncStatusScreen from '../screens/SyncStatusScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import SitAndReachEntryScreen from '../screens/SitAndReach/SitAndReachEntryScreen';
+import SitAndReachHistoryScreen from '../screens/SitAndReach/SitAndReachHistoryScreen';
+import SitAndReachCorrectScreen from '../screens/SitAndReach/SitAndReachCorrectScreen';
 import type { Athlete } from '../database/repositories/AthleteRepository';
 
 export type RootStackParamList = {
@@ -50,9 +53,14 @@ export type RootStackParamList = {
   TermsAndConditions: { onAccept?: () => void };
   WeightMeasurementHome: undefined;
   WeightLiveScanner: undefined;
-  WeightOCRResult: { weight: number | null; confidence: number; rawText: string; imagePath: string | null; recognitionMethod?: string };
+  WeightOCRResult: {
+    weight: number | null;
+    confidence: number;
+    rawText: string;
+    imagePath: string | null;
+    recognitionMethod?: string;
+  };
   WeightPendingUploads: undefined;
-  // Height assessment flow (from features/height)
   AthleteRegistration: { athleteId?: string; athlete?: Athlete } | undefined;
   AthleteList: { selectForTest?: boolean } | undefined;
   HeightTestInstructions: { athlete: Athlete };
@@ -68,6 +76,13 @@ export type RootStackParamList = {
     timestamp: number;
     attemptCount: number;
     canRetry: boolean;
+  };
+  SitAndReachEntry: { athleteId: number; athleteName: string };
+  SitAndReachHistory: { athleteId: number; athleteName: string };
+  SitAndReachCorrect: {
+    test: { id: number; trial_1: string; trial_2: string; trial_3: string };
+    athleteId: number;
+    athleteName: string;
   };
 };
 
@@ -116,13 +131,9 @@ export function AppNavigator() {
         />
         <Stack.Screen name="WeightOCRResult" component={OCRResultScreen} />
         <Stack.Screen name="WeightPendingUploads" component={PendingUploadScreen} />
-
         <Stack.Screen name="AthleteRegistration" component={AthleteRegistrationScreen} />
         <Stack.Screen name="AthleteList" component={AthleteListScreen} />
-        <Stack.Screen
-          name="HeightTestInstructions"
-          component={HeightTestInstructionsScreen}
-        />
+        <Stack.Screen name="HeightTestInstructions" component={HeightTestInstructionsScreen} />
         <Stack.Screen
           name="Camera"
           component={CameraScreen}
@@ -132,6 +143,9 @@ export function AppNavigator() {
         <Stack.Screen name="History" component={HistoryScreen} />
         <Stack.Screen name="SyncStatus" component={SyncStatusScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
+        <Stack.Screen name="SitAndReachEntry" component={SitAndReachEntryScreen} />
+        <Stack.Screen name="SitAndReachHistory" component={SitAndReachHistoryScreen} />
+        <Stack.Screen name="SitAndReachCorrect" component={SitAndReachCorrectScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

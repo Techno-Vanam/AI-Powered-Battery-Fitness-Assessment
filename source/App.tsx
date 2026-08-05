@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 import React from 'react';
 import { StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -7,6 +8,7 @@ import { createTables } from './src/db/schema';
 import { openDatabase } from './src/database/database';
 import { startSyncListener } from './src/services/syncService';
 import { SyncManager } from './src/sync/SyncManager';
+import { initAutoSync, syncPendingSitAndReach } from './src/services/sitAndReachService';
 import { colors } from './src/theme';
 import { fontFamily } from './src/theme/fonts';
 
@@ -37,6 +39,8 @@ function App() {
   React.useEffect(() => {
     createTables();
     const stopUserSync = startSyncListener();
+    const stopSitAndReachSync = initAutoSync();
+    syncPendingSitAndReach();
 
     let cancelled = false;
     (async () => {
@@ -53,6 +57,7 @@ function App() {
     return () => {
       cancelled = true;
       stopUserSync();
+      stopSitAndReachSync();
       SyncManager.stop();
     };
   }, []);

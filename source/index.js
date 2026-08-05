@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 import { AppRegistry } from 'react-native';
 import App from './App';
 const { name: appName } = require('./app.json');
@@ -5,7 +6,6 @@ const { name: appName } = require('./app.json');
 AppRegistry.registerComponent(appName, () => App);
 
 // Register headless sync only after the RN runtime is up.
-// Top-level native imports can trigger PlatformConstants before TurboModules are ready.
 try {
   const BackgroundFetch = require('react-native-background-fetch').default;
   const { headlessTask } = require('./src/sync/BackgroundSync');

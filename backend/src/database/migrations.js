@@ -184,6 +184,29 @@ export const migrations = [
     created_at  TEXT NOT NULL
   )`,
 
-  `CREATE INDEX IF NOT EXISTS idx_pending_tasks_coach ON pending_tasks (coach_id)`
+  `CREATE INDEX IF NOT EXISTS idx_pending_tasks_coach ON pending_tasks (coach_id)`,
+
+  // sit_and_reach_tests (SQLite-compatible)
+  `CREATE TABLE IF NOT EXISTS sit_and_reach_tests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    athlete_id INTEGER NOT NULL,
+    tester_id INTEGER NOT NULL,
+    session_date TEXT NOT NULL,
+    trial_1 REAL NOT NULL,
+    trial_2 REAL NOT NULL,
+    trial_3 REAL NOT NULL,
+    score REAL NOT NULL,
+    unit TEXT NOT NULL DEFAULT 'cm',
+    notes TEXT,
+    is_superseded INTEGER NOT NULL DEFAULT 0,
+    superseded_by INTEGER,
+    correction_of INTEGER,
+    idempotency_key TEXT UNIQUE,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    CHECK (trial_1 BETWEEN -50 AND 100 AND trial_2 BETWEEN -50 AND 100 AND trial_3 BETWEEN -50 AND 100)
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_sr_athlete_active_history
+    ON sit_and_reach_tests (athlete_id, is_superseded, created_at DESC)`,
 ];
 

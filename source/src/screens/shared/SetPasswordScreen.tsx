@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, Alert, ActivityIndicator } fro
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { Eye, EyeOff, Lock } from 'lucide-react-native';
 import SFSymbol from '../../components/ui/SFSymbol';
 import { setUserPassword } from '../../services/authService';
 import { createRegisterStyles } from '../../styles/screenStyles';
