@@ -57,7 +57,7 @@ const RoleSelectScreen: React.FC<Props> = ({ navigation }) => {
           {/* Coach — green tint + filled icon */}
           <TouchableOpacity
             style={[styles.roleCard, styles.coachCard]}
-            onPress={() => navigation.navigate('CoachLogin')}
+            onPress={() => navigation.navigate('CoachHome')}
             activeOpacity={0.85}
           >
             <View style={styles.coachAccent} />
@@ -85,26 +85,7 @@ const RoleSelectScreen: React.FC<Props> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.bottom}>
-          <AppText variant="bodySm" color={colors.textSecondary}>
-            New here?
-          </AppText>
-          <View style={styles.registerLinks}>
-            <TouchableOpacity onPress={() => navigation.navigate('AthleteRegister')}>
-              <AppText variant="bodySm" color={colors.athlete.primary} style={styles.link}>
-                Register as Athlete
-              </AppText>
-            </TouchableOpacity>
-            <AppText variant="bodySm" color={colors.textMuted}>
-              {' | '}
-            </AppText>
-            <TouchableOpacity onPress={() => navigation.navigate('CoachRegister')}>
-              <AppText variant="bodySm" color={colors.coach.primary} style={styles.link}>
-                Register as Coach
-              </AppText>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <View style={styles.bottom} />
       </View>
     </Screen>
   );

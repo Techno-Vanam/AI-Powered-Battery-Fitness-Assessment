@@ -1,13 +1,3 @@
-import { fetchApi } from '../config/api';
-import {
-  getAllPendingSync,
-  incrementAttempts,
-  removeSyncItem,
-  clearLocalOtpAfterSync,
-  markUserSynced,
-  markUserConflict,
-} from '../db/syncQueueRepository';
-import { getUserByLocalId } from '../db/userRepository';
 import { NetworkService } from './NetworkService';
 import { SQLiteService } from './SQLiteService';
 import { WeightAPIService, WeightPayload } from './WeightAPIService';
@@ -44,60 +34,6 @@ export const SyncService = {
 
     _isSyncing = true;
     let syncedCount = 0;
-
-    // 1. Sync pending user registration queue items
-    const pendingItems = getAllPendingSync();
-    if (pendingItems.length > 0) {
-      try {
-        const usersToSync = pendingItems
-          .map(item => getUserByLocalId(item.entity_local_id))
-          .filter(Boolean);
-
-        if (usersToSync.length > 0) {
-          const response = await fetchApi('/auth/sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ users: usersToSync }),
-          });
-
-          if (response.ok) {
-            const body = (await response.json()) as any;
-            const details = body.data?.details ?? [];
-            const detailByLocalId = new Map<string, any>(details.map((d: any) => [d.local_id, d]));
-
-            for (const item of pendingItems) {
-              const detail = detailByLocalId.get(item.entity_local_id);
-
-              if (detail?.status === 'conflict') {
-                markUserConflict(item.entity_local_id);
-                removeSyncItem(item.queue_id);
-                console.warn(`[Sync] Conflict for ${item.entity_local_id}`);
-                continue;
-              }
-
-              if (detail?.status === 'failed') {
-                incrementAttempts(item.queue_id);
-                console.warn(`[Sync] Failed for ${item.entity_local_id}: ${detail.reason}`);
-                continue;
-              }
-
-              if (detail?.status === 'synced' || detail?.status === 'updated') {
-                removeSyncItem(item.queue_id);
-                markUserSynced(item.entity_local_id, detail.server_id);
-                clearLocalOtpAfterSync(item.entity_local_id);
-                console.log(`[Sync] ✓ ${item.entity_local_id} → cloud, kept local cache`);
-                syncedCount++;
-                continue;
-              }
-
-              incrementAttempts(item.queue_id);
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('[SyncService] User sync error:', err);
-      }
-    }
 
     try {
       const pendingRecords = SQLiteService.getPendingMeasurements();

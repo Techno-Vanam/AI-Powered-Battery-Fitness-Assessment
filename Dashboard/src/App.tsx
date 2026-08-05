@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { LoginView } from './components/LoginView';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { AnalyticsView } from './components/AnalyticsView';
@@ -10,8 +9,7 @@ import { apiService } from './services/apiService';
 import { Athlete, HeightTest, SyncLog, ReportSummary, ActiveTab } from './types';
 
 export const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [username, setUsername] = useState<string>('coach_vikram');
+  const [username] = useState<string>('coach');
   const [activeTab, setActiveTab] = useState<ActiveTab>('analytics');
 
   const [athletes, setAthletes] = useState<Athlete[]>([]);
@@ -45,19 +43,8 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      loadData();
-    }
-  }, [isAuthenticated]);
-
-  const handleLoginSuccess = (user: string) => {
-    setUsername(user);
-    setIsAuthenticated(true);
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-  };
+    loadData();
+  }, []);
 
   const handleAddAthlete = async (athleteData: Omit<Athlete, 'id' | 'createdAt' | 'updatedAt'>) => {
     const created = await apiService.createAthlete(athleteData);
@@ -71,20 +58,14 @@ export const App: React.FC = () => {
     setSyncLogs(prev => [newLog, ...prev]);
   };
 
-  if (!isAuthenticated) {
-    return <LoginView onLoginSuccess={handleLoginSuccess} />;
-  }
-
   return (
     <div className="dashboard-layout">
-      {/* Navigation Sidebar */}
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onLogout={handleLogout}
+        onLogout={() => {}}
       />
 
-      {/* Main Content Area */}
       <div className="main-content">
         <Header
           activeTab={activeTab}

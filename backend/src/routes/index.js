@@ -1,5 +1,4 @@
 ﻿import { Router } from 'express';
-import authRoutes from './authRoutes.js';
 import syncRoutes from './syncRoutes.js';
 import weightRoutes from './weightRoutes.js';
 import testRoutes from './testRoutes.js';
@@ -20,7 +19,6 @@ router.get('/health', (_req, res) => {
   });
 });
 
-router.use('/auth', authRoutes);
 router.use('/sync', syncRoutes);
 router.use('/weight-measurements', weightRoutes);
 router.use('/athletes', athleteRouter);
