@@ -1,10 +1,10 @@
-/**
+﻿/**
  * All DDL statements executed once at startup.
- * Order matters — tables with foreign keys come after their parents.
+ * Order matters ΓÇö tables with foreign keys come after their parents.
  */
 
 export const migrations = [
-  // ── users ────────────────────────────────────────────────────────────────
+  // ΓöÇΓöÇ users ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   `CREATE TABLE IF NOT EXISTS users (
     local_id          TEXT    PRIMARY KEY,
     server_id         TEXT    UNIQUE,
@@ -29,7 +29,7 @@ export const migrations = [
     UNIQUE (id_type, id_number)
   )`,
 
-  // ── users indexes ─────────────────────────────────────────────────────────
+  // ΓöÇΓöÇ users indexes ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   `CREATE INDEX IF NOT EXISTS idx_users_id_type_id_number
     ON users (id_type, id_number)`,
 
@@ -39,7 +39,7 @@ export const migrations = [
   `CREATE INDEX IF NOT EXISTS idx_users_sync_status
     ON users (sync_status)`,
 
-  // ── otp_verifications ─────────────────────────────────────────────────────
+  // ΓöÇΓöÇ otp_verifications ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   `CREATE TABLE IF NOT EXISTS otp_verifications (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     user_local_id TEXT    NOT NULL REFERENCES users (local_id) ON DELETE CASCADE,
@@ -55,7 +55,7 @@ export const migrations = [
   `CREATE INDEX IF NOT EXISTS idx_otp_expires_at
     ON otp_verifications (expires_at)`,
 
-  // ── sync_queue ────────────────────────────────────────────────────────────
+  // ΓöÇΓöÇ sync_queue ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   `CREATE TABLE IF NOT EXISTS sync_queue (
     queue_id        INTEGER PRIMARY KEY AUTOINCREMENT,
     entity_type     TEXT    NOT NULL,
@@ -72,7 +72,47 @@ export const migrations = [
   `CREATE INDEX IF NOT EXISTS idx_sync_queue_created_at
     ON sync_queue (created_at)`,
 
-  // ── weight_measurements ───────────────────────────────────────────────────
+  // ΓöÇΓöÇ athletes (height offline sync) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  `CREATE TABLE IF NOT EXISTS athletes (
+    id              TEXT PRIMARY KEY,
+    name            TEXT NOT NULL,
+    gender          TEXT,
+    date_of_birth   TEXT,
+    phone           TEXT,
+    height_category TEXT,
+    coach_name      TEXT,
+    school_academy  TEXT,
+    state           TEXT,
+    district        TEXT,
+    created_at      INTEGER NOT NULL,
+    updated_at      INTEGER NOT NULL,
+    synced_at       TEXT
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_athletes_name ON athletes (name)`,
+
+  // ΓöÇΓöÇ height_measurements (AI camera test sync) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  `CREATE TABLE IF NOT EXISTS height_measurements (
+    measurement_id      TEXT PRIMARY KEY,
+    athlete_id          TEXT NOT NULL,
+    team_id             TEXT,
+    session_id          TEXT,
+    height_cm           REAL NOT NULL,
+    confidence          REAL NOT NULL,
+    device_model        TEXT NOT NULL,
+    timestamp           INTEGER NOT NULL,
+    calibration_method  TEXT NOT NULL,
+    synced_at           TEXT NOT NULL,
+    FOREIGN KEY (athlete_id) REFERENCES athletes (id)
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_height_measurements_athlete_id
+    ON height_measurements (athlete_id)`,
+
+  `CREATE INDEX IF NOT EXISTS idx_height_measurements_timestamp
+    ON height_measurements (timestamp)`,
+
+  // -- weight_measurements (OCR scale sync) -----------------------------------
   `CREATE TABLE IF NOT EXISTS weight_measurements (
     id             TEXT    PRIMARY KEY,
     weight         REAL    NOT NULL,
@@ -85,4 +125,3 @@ export const migrations = [
   `CREATE INDEX IF NOT EXISTS idx_weight_captured_at
     ON weight_measurements (captured_at)`,
 ];
-

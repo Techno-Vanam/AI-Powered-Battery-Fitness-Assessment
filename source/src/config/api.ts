@@ -1,5 +1,13 @@
+/**
+ * Dev API host.
+ * Physical device (USB): use localhost + `adb reverse tcp:3010 tcp:3010`
+ * (Port 3000 is often reserved by Windows Hyper-V.)
+ */
+const DEV_HOST = 'localhost';
+const DEV_PORT = 3010;
+
 export const API_BASE_URL = __DEV__
-  ? `http://localhost:3000/api`
+  ? `http://${DEV_HOST}:${DEV_PORT}/api`
   : 'https://your-production-api.com/api';
 
 /**
@@ -14,9 +22,9 @@ export async function fetchApi(endpoint: string, init?: RequestInit): Promise<Re
   }
 
   const candidateUrls = [
-    `http://localhost:3000/api${path}`,
-    `http://10.0.2.2:3000/api${path}`,
-    `http://172.17.26.142:3000/api${path}`,
+    `http://localhost:${DEV_PORT}/api${path}`,
+    `http://10.0.2.2:${DEV_PORT}/api${path}`,
+    `http://172.17.26.142:${DEV_PORT}/api${path}`,
   ];
 
   let lastErr: any = null;

@@ -3,7 +3,9 @@ import { StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { createTables } from './src/db/schema';
+import { openDatabase } from './src/database/database';
 import { startSyncListener } from './src/services/syncService';
+import { SyncManager } from './src/sync/SyncManager';
 import { colors } from './src/theme';
 import { fontFamily } from './src/theme/fonts';
 
@@ -33,8 +35,25 @@ applyGlobalFonts();
 function App() {
   React.useEffect(() => {
     createTables();
-    const stopSync = startSyncListener();
-    return () => stopSync();
+    const stopUserSync = startSyncListener();
+
+    let cancelled = false;
+    (async () => {
+      try {
+        await openDatabase();
+        if (!cancelled) {
+          SyncManager.start();
+        }
+      } catch (e) {
+        console.warn('[App] Height DB / SyncManager start failed:', e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      stopUserSync();
+      SyncManager.stop();
+    };
   }, []);
 
   return (

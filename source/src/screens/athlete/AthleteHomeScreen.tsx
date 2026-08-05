@@ -34,9 +34,41 @@ import {
 } from '../../services/athleteDashboardService';
 import { downloadReportFile, shareReportPDF } from '../../services/reportDownloadService';
 import { MOCK_ATHLETE_DASHBOARD } from '../../data/mockAthleteDashboard';
-import type { AthleteDashboardData, DashboardTest, HistoryItem } from '../../types/athleteDashboard';
+import type { AthleteDashboardData, AthleteProfile, DashboardTest, HistoryItem } from '../../types/athleteDashboard';
 import { colors, layout, roleColors } from '../../theme';
 import { t } from '../../utils/i18n';
+
+import type { Athlete } from '../../database/repositories/AthleteRepository';
+
+/** Map dashboard profile → height-flow Athlete model */
+function athleteFromProfile(profile: AthleteProfile): Athlete {
+  const now = Date.now();
+  const birthYear = new Date().getFullYear() - Math.max(1, profile.age || 15);
+  return {
+    id: profile.athleteId,
+    name: profile.name,
+    gender: profile.gender.toLowerCase(),
+    dateOfBirth: `${birthYear}-01-01`,
+    phone: null,
+    heightCategory: null,
+    coachName: null,
+    schoolAcademy: profile.institution,
+    state: null,
+    district: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function isHeightTest(test?: DashboardTest | null): boolean {
+  if (!test) return false;
+  return test.key === 'height' || test.id === 'height';
+}
+
+function isWeightTest(test?: DashboardTest | null): boolean {
+  if (!test) return false;
+  return test.key === 'weight' || test.id === 'weight';
+}
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 

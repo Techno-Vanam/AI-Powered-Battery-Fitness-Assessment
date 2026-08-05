@@ -1,0 +1,16 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdk rootProject.ext.compileSdkVersion
+    namespace "org.opencv"
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+    }
+}
+
+dependencies {
+    // Official OpenCV Android AAR from Maven Central (no local libs/*.aar required)
+    api 'org.opencv:opencv:4.10.0'
+}

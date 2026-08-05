@@ -98,3 +98,11 @@ temp/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+Dashboard/node_modules/
+Backend/target/
+Backend/uploads/
+
+
+# OpenCV AAR (download locally or use Maven; too large for GitHub)
+source/android/app/libs/*.aar

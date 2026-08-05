@@ -1,4 +1,4 @@
-package com.sports
+﻿package com.sports
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -6,6 +6,10 @@ import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
+import com.sports.aruco.ArucoPackage
+import com.sports.pose.PosePackage
+import com.sports.sync.SyncWorker
+import com.sports.SevenSegmentAnalyzerPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -14,8 +18,9 @@ class MainApplication : Application(), ReactApplication {
       context = applicationContext,
       packageList =
         PackageList(this).packages.apply {
-          // Seven-Segment LCD pixel detection native module
           add(SevenSegmentAnalyzerPackage())
+          add(ArucoPackage())
+          add(PosePackage())
         },
     )
   }
@@ -23,5 +28,6 @@ class MainApplication : Application(), ReactApplication {
   override fun onCreate() {
     super.onCreate()
     loadReactNative(this)
+    SyncWorker.schedule(this)
   }
 }

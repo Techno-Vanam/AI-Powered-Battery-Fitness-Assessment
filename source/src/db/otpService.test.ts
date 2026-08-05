@@ -2,7 +2,8 @@ import { generateMockOTP, getLatestOTP, verifyOTP } from './otpService';
 
 jest.mock('./schema', () => ({
   getDBConnection: jest.fn(() => ({
-    execute: jest.fn(),
+    execute:     jest.fn(),
+    executeSync: jest.fn(),
   })),
 }));
 
