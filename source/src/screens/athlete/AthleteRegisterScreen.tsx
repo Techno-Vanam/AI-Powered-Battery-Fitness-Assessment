@@ -466,9 +466,9 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
             {step === 2 && (
               <>
                 {/* Back Button to Page 1 */}
-                <TouchableOpacity style={styles.backStepBtn} onPress={() => setStep(1)}>
+                <TouchableOpacity style={styles.backRow} onPress={() => setStep(1)}>
                   <ArrowLeft size={16} color="#4F46E5" />
-                  <Text style={styles.backStepText}>← Back to Personal Details</Text>
+                  <Text style={styles.backText}>Back to Personal Details</Text>
                 </TouchableOpacity>
 
                 {/* ID Type */}

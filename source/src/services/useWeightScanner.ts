@@ -75,7 +75,7 @@ export function useWeightScanner() {
 
   // Internal refs
   const isActive = useRef(false);
-  const cameraRefRef = useRef<React.RefObject<Camera> | null>(null);
+  const cameraRefRef = useRef<React.RefObject<Camera | null> | null>(null);
   const cropRectRef = useRef<CropRect | null>(null);
   const frameHistoryRef = useRef<TimestampedReading[]>([]);
   const scanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -181,7 +181,7 @@ export function useWeightScanner() {
   }, []);
 
   const startScanning = useCallback(
-    (cameraRef: React.RefObject<Camera>, cropRect: CropRect) => {
+    (cameraRef: React.RefObject<Camera | null>, cropRect: CropRect) => {
       frameHistoryRef.current = [];
       cameraRefRef.current = cameraRef;
       cropRectRef.current = cropRect;
@@ -207,7 +207,7 @@ export function useWeightScanner() {
   }, []);
 
   const resetScanning = useCallback(
-    (cameraRef: React.RefObject<Camera>, cropRect: CropRect) => {
+    (cameraRef: React.RefObject<Camera | null>, cropRect: CropRect) => {
       stopScanning();
       setTimeout(() => startScanning(cameraRef, cropRect), 100);
     },
