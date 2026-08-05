@@ -70,6 +70,26 @@ function isWeightTest(test?: DashboardTest | null): boolean {
   return test.key === 'weight' || test.id === 'weight';
 }
 
+function isSitReachTest(test?: DashboardTest | null): boolean {
+  if (!test) return false;
+  return test.key === 'sit_reach' || test.id === 'sit_reach';
+}
+
+function isVerticalJumpTest(test?: DashboardTest | null): boolean {
+  if (!test) return false;
+  return test.key === 'vertical_jump' || test.id === 'vertical_jump';
+}
+
+function isBroadJumpTest(test?: DashboardTest | null): boolean {
+  if (!test) return false;
+  return test.key === 'broad_jump' || test.id === 'broad_jump';
+}
+
+function numericAthleteId(athleteId: string): number {
+  const digits = athleteId.replace(/\D/g, '');
+  return digits ? parseInt(digits, 10) : 1;
+}
+
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 /**
@@ -127,9 +147,54 @@ const AthleteHomeScreen = ({ navigation }: any) => {
 
   const openAssessment = useCallback(
     (test?: DashboardTest) => {
-      comingSoon(test?.name ?? t('dashboard.continueAssessment'));
+      if (!data) {
+        comingSoon();
+        return;
+      }
+
+      const target =
+        test ??
+        data.tests.find(t => t.key === data.currentTest.testId || t.id === data.currentTest.testId) ??
+        null;
+
+      if (!target) {
+        comingSoon(data.currentTest.name);
+        return;
+      }
+
+      if (isHeightTest(target)) {
+        navigation.navigate('HeightTestInstructions', {
+          athlete: athleteFromProfile(data.profile),
+        });
+        return;
+      }
+
+      if (isWeightTest(target)) {
+        navigation.navigate('WeightMeasurementHome');
+        return;
+      }
+
+      if (isSitReachTest(target)) {
+        navigation.navigate('SitAndReachEntry', {
+          athleteId: numericAthleteId(data.profile.athleteId),
+          athleteName: data.profile.name,
+        });
+        return;
+      }
+
+      if (isVerticalJumpTest(target)) {
+        navigation.navigate('JumpSelection');
+        return;
+      }
+
+      if (isBroadJumpTest(target)) {
+        navigation.navigate('JumpCalibration', { testType: 'broad' });
+        return;
+      }
+
+      comingSoon(target.name);
     },
-    [comingSoon],
+    [comingSoon, data, navigation],
   );
 
   const onTabChange = useCallback((tab: AthleteTab) => {
