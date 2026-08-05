@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
   User, Phone, CreditCard, CheckSquare, Square,
-  AlertCircle, Briefcase, ArrowRight, ChevronDown
+  AlertCircle, Briefcase, ArrowRight, Building2
 } from 'lucide-react-native';
 import { registerUser } from '../../services/authService';
 import { createRegisterStyles } from '../../styles/screenStyles';
@@ -89,17 +89,18 @@ const CoachRegisterScreen = ({ navigation }: any) => {
     },
   });
 
-  const [_pickerVisible, setPickerVisible] = useState<'designation' | 'idType' | null>(null);
-
   const idType = watch('idType');
   const consent = watch('consent');
   const gender = watch('gender');
-  const designation = watch('designation');
   const dobDay = watch('dobDay');
   const dobMonth = watch('dobMonth');
   const dobYear = watch('dobYear');
 
-  const selectedDesignationLabel = DESIGNATIONS.find(d => d.value === designation)?.label || 'Select Designation';
+  const getIdPlaceholder = (type: string) => {
+    if (type === 'APAAR') return '12-digit APAAR ID';
+    if (type === 'AADHAR') return '12-digit Aadhar Number';
+    return 'NSRS Number (digits only)';
+  };
 
   const validateField = (field: keyof FormData, value: string) => {
     const normalized = value.trim();
@@ -128,8 +129,14 @@ const CoachRegisterScreen = ({ navigation }: any) => {
     void trigger(field as any);
   };
 
+  const onInvalid = (errs: any) => {
+    const firstKey = Object.keys(errs)[0];
+    const firstError = errs[firstKey]?.message || 'Please fill in all required fields.';
+    Alert.alert('Validation Error', firstError);
+  };
+
   const handleNextStep = async () => {
-    const fieldsToValidate: Array<keyof FormData> = ['coachName', 'gender', 'phone'];
+    const fieldsToValidate: Array<keyof FormData> = ['coachName', 'organizationName', 'gender', 'phone'];
     if (dobDay || dobMonth || dobYear) {
       fieldsToValidate.push('dobDay', 'dobMonth', 'dobYear');
     }
@@ -171,6 +178,7 @@ const CoachRegisterScreen = ({ navigation }: any) => {
           <View style={styles.header}>
             <Text style={styles.title}>Coach Registration</Text>
             <Text style={styles.subtitle}>Register as a coach or physical educator.</Text>
+          </View>
 
             {/* Step Indicator */}
             <View style={styles.stepIndicatorContainer}>
@@ -192,7 +200,6 @@ const CoachRegisterScreen = ({ navigation }: any) => {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
 
           <View style={styles.form}>
             {/* PAGE 1: Personal Info (Until Mobile Number) */}
@@ -222,6 +229,31 @@ const CoachRegisterScreen = ({ navigation }: any) => {
                     )}
                   />
                   <FieldError message={errors.coachName?.message} />
+                </View>
+
+                {/* Organization / School Name */}
+                <View style={styles.group}>
+                  <Text style={styles.label}>Organization / School</Text>
+                  <Controller
+                    control={control}
+                    name="organizationName"
+                    render={({ field: { onChange, value } }) => (
+                      <View style={[styles.inputRow, errors.organizationName && styles.inputError]}>
+                        <Building2 size={18} color="#94A3B8" />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="e.g. Sports Academy / School Name"
+                          placeholderTextColor="#94A3B8"
+                          value={value}
+                          onChangeText={text => {
+                            onChange(text);
+                            validateField('organizationName', text);
+                          }}
+                        />
+                      </View>
+                    )}
+                  />
+                  <FieldError message={errors.organizationName?.message} />
                 </View>
 
                 {/* Date of Birth Box Module */}
@@ -296,89 +328,85 @@ const CoachRegisterScreen = ({ navigation }: any) => {
               </>
             )}
 
-            {/* PAGE 2: Professional Info & Verification */}
+            {/* PAGE 2: Verification (Designation, ID, Consent) */}
             {step === 2 && (
               <>
                 {/* Designation */}
                 <View style={styles.group}>
-              <Text style={styles.label}>Designation</Text>
-              <Controller
-                control={control}
-                name="designation"
-                render={({ field: { onChange, value } }) => (
-                  <Dropdown
-                    items={DESIGNATIONS}
-                    value={value}
-                    title="Select Designation"
-                    placeholder="Select designation"
-                    role="coach"
-                    hasError={!!errors.designation}
-                    icon={<Briefcase size={18} color="#94A3B8" />}
-                    onChange={itemValue => {
-                      onChange(itemValue);
-                      void trigger('designation');
-                    }}
-                  />
-                )}
-              />
-              <FieldError message={errors.designation?.message} />
-            </View>
-
-                {/* Designation */}
-                <View style={styles.group}>
                   <Text style={styles.label}>Designation</Text>
-                  <TouchableOpacity
-                    style={[styles.inputRow, errors.designation && styles.inputError]}
-                    onPress={() => setPickerVisible('designation')}
-                  >
-                    <Briefcase size={18} color="#94A3B8" />
-                    <Text style={[styles.input, { paddingVertical: 0, color: '#0F172A', fontWeight: '600' }]}>
-                      {selectedDesignationLabel}
-                    </Text>
-                    <ChevronDown size={18} color="#94A3B8" />
-                  </TouchableOpacity>
+                  <Controller
+                    control={control}
+                    name="designation"
+                    render={({ field: { onChange, value } }) => (
+                      <Dropdown
+                        items={DESIGNATIONS}
+                        value={value}
+                        title="Select Designation"
+                        placeholder="Select designation"
+                        role="coach"
+                        hasError={!!errors.designation}
+                        icon={<Briefcase size={18} color="#94A3B8" />}
+                        onChange={itemValue => {
+                          onChange(itemValue);
+                          void trigger('designation');
+                        }}
+                      />
+                    )}
+                  />
                   <FieldError message={errors.designation?.message} />
                 </View>
 
                 {/* ID Type */}
                 <View style={styles.group}>
                   <Text style={styles.label}>ID Type</Text>
-                  <TouchableOpacity
-                    style={[styles.inputRow, errors.idType && styles.inputError]}
-                    onPress={() => setPickerVisible('idType')}
-                  >
-                    <CreditCard size={18} color="#94A3B8" />
-                    <Text style={[styles.input, { paddingVertical: 0, color: '#0F172A', fontWeight: '600' }]}>{idType}</Text>
-                    <ChevronDown size={18} color="#94A3B8" />
-                  </TouchableOpacity>
+                  <Controller
+                    control={control}
+                    name="idType"
+                    render={({ field: { onChange, value } }) => (
+                      <Dropdown
+                        items={ID_TYPES}
+                        value={value}
+                        title="Select ID Type"
+                        placeholder="Select ID type"
+                        role="coach"
+                        hasError={!!errors.idType}
+                        icon={<CreditCard size={18} color="#94A3B8" />}
+                        onChange={itemValue => {
+                          onChange(itemValue);
+                          setValue('idNumber', '');
+                          void trigger('idType');
+                        }}
+                      />
+                    )}
+                  />
                   <FieldError message={errors.idType?.message} />
                 </View>
 
-            {/* ID Type */}
-            <View style={styles.group}>
-              <Text style={styles.label}>ID Type</Text>
-              <Controller
-                control={control}
-                name="idType"
-                render={({ field: { onChange, value } }) => (
-                  <Dropdown
-                    items={ID_TYPES}
-                    value={value}
-                    title="Select ID Type"
-                    placeholder="Select ID type"
-                    role="coach"
-                    hasError={!!errors.idType}
-                    icon={<CreditCard size={18} color="#94A3B8" />}
-                    onChange={itemValue => {
-                      onChange(itemValue);
-                      setValue('idNumber', '');
-                      void trigger('idType');
-                    }}
+                {/* ID Number */}
+                <View style={styles.group}>
+                  <Text style={styles.label}>ID Number</Text>
+                  <Controller
+                    control={control}
+                    name="idNumber"
+                    render={({ field: { onChange, value } }) => (
+                      <View style={[styles.inputRow, errors.idNumber && styles.inputError]}>
+                        <CreditCard size={18} color="#94A3B8" />
+                        <TextInput
+                          style={styles.input}
+                          placeholder={getIdPlaceholder(idType)}
+                          placeholderTextColor="#94A3B8"
+                          keyboardType={idType === 'NSRS' ? 'default' : 'number-pad'}
+                          value={value}
+                          onChangeText={text => {
+                            onChange(text);
+                            validateField('idNumber', text);
+                          }}
+                        />
+                      </View>
+                    )}
                   />
-                )}
-              />
-              <FieldError message={errors.idType?.message} />
-            </View>
+                  <FieldError message={errors.idNumber?.message} />
+                </View>
 
                 {/* Consent */}
                 <View style={styles.group}>
@@ -412,7 +440,7 @@ const CoachRegisterScreen = ({ navigation }: any) => {
                 {/* Submit Button */}
                 <TouchableOpacity
                   style={[styles.button, (loading || !consent) && styles.buttonDisabled]}
-                  onPress={handleSubmit(onSubmit as any)}
+                  onPress={handleSubmit(onSubmit as any, onInvalid)}
                   disabled={loading || !consent}
                 >
                   {loading

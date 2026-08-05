@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import NetInfo from '@react-native-community/netinfo';
-import { API_BASE_URL, fetchApi } from '../config/api';
+import { fetchApi, API_BASE_URL } from '../config/api';
 import {
   createUser,
   getUserByIdentifier,
@@ -159,8 +159,8 @@ export const loginUser = async (
     data?: { user: User };
   };
 
-  if (!response.ok || !body.data?.user) {
-    throw new Error(body.message ?? 'Invalid ID or password.');
+  if (!body.success || !body.data?.user) {
+    throw new Error(body.message || 'Invalid ID or password.');
   }
 
   const cloudUser = body.data.user;

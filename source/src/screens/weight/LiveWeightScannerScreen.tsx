@@ -118,7 +118,7 @@ export const LiveWeightScannerScreen = ({ navigation }: any) => {
   // Start scanning once camera permission is granted
   useEffect(() => {
     if (hasPermission) {
-      const t = setTimeout(() => startScanning(cameraRef, DEFAULT_CROP_RECT), 500);
+      const t = setTimeout(() => startScanning(cameraRef as any, DEFAULT_CROP_RECT), 500);
       return () => clearTimeout(t);
     }
   }, [hasPermission, startScanning]);
@@ -142,7 +142,7 @@ export const LiveWeightScannerScreen = ({ navigation }: any) => {
 
   // ── Reset / rescan ─────────────────────────────────────────────────────────
   const handleRescan = useCallback(() => {
-    resetScanning(cameraRef, currentRoi);
+    resetScanning(cameraRef as any, currentRoi);
   }, [resetScanning, currentRoi]);
 
   const handleBack = useCallback(() => {

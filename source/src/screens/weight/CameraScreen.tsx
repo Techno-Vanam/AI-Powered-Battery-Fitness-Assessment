@@ -23,7 +23,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const accent = roleColors('athlete');
 
 export const CameraScreen = ({ navigation }: any) => {
-  const cameraRef = useRef<any>(null);
+  const cameraRef = useRef<Camera>(null);
   const device = useCameraDevice('back');
 
   const [hasPermission, setHasPermission] = useState<boolean>(false);
@@ -47,7 +47,7 @@ export const CameraScreen = ({ navigation }: any) => {
       const ok = await requestPermission();
       if (!ok) {
         Alert.alert(
-          'Camera Permission Required',
+          'Camera Permission Denied',
           'Camera access is required to scan digital weighing scale displays.'
         );
         return;
@@ -63,13 +63,15 @@ export const CameraScreen = ({ navigation }: any) => {
 
     try {
       // Capture frame directly from the in-app live camera preview
-      const image = await cameraRef.current.capture();
+      const photo = await cameraRef.current.takePhoto({
+        flash: flashOn ? 'on' : 'off',
+      });
       setIsCapturing(false);
 
-      if (image && image.uri) {
-        const fullPath = image.uri.startsWith('file://')
-          ? image.uri
-          : `file://${image.uri}`;
+      if (photo && photo.path) {
+        const fullPath = photo.path.startsWith('file://')
+          ? photo.path
+          : `file://${photo.path}`;
 
         const frameDims = CameraService.getLCDCropFrameDimensions(
           SCREEN_WIDTH,
@@ -112,7 +114,7 @@ export const CameraScreen = ({ navigation }: any) => {
           style={StyleSheet.absoluteFill}
           device={device}
           isActive={true}
-          torch={flashOn ? 'on' : 'off'}
+          photo={true}
         />
       ) : (
         <View style={styles.noCameraFallback}>

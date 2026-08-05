@@ -95,7 +95,7 @@ export const ResizableROIOverlay: React.FC<ResizableROIOverlayProps> = ({
   ).current;
 
   // ── Corner Resize Responders ───────────────────────────────────────────────
-  const resizeStartPos = useRef({ touchX: 0, touchY: 0, x: initialRect.x, y: initialRect.y, width: initialRect.width, height: initialRect.height });
+  const resizeStartPos = useRef({ touchX: 0, touchY: 0, ...initialRect });
 
   const createCornerResponder = (corner: 'tl' | 'tr' | 'bl' | 'br') =>
     PanResponder.create({
@@ -105,10 +105,7 @@ export const ResizableROIOverlay: React.FC<ResizableROIOverlayProps> = ({
         resizeStartPos.current = {
           touchX: evt.nativeEvent.pageX,
           touchY: evt.nativeEvent.pageY,
-          x: rectRef.current.x,
-          y: rectRef.current.y,
-          width: rectRef.current.width,
-          height: rectRef.current.height,
+          ...rectRef.current,
         };
       },
       onPanResponderMove: (evt) => {

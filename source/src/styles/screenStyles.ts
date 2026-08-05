@@ -520,6 +520,7 @@ export function createRegisterStyles(role: Role) {
         alignItems: 'center',
         justifyContent: 'center',
         marginVertical: layout.fieldGap,
+        gap: 8,
       },
       stepBadge: {
         paddingHorizontal: 12,
@@ -541,13 +542,25 @@ export function createRegisterStyles(role: Role) {
       stepLine: {
         flex: 1,
         height: 2,
-        backgroundColor: colors.border,
-        marginHorizontal: 8,
+        backgroundColor: colors.borderLight,
       },
       btnRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: layout.fieldGap,
+        justifyContent: 'center',
+        gap: 8,
+      },
+      backStepBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 10,
+        gap: 6,
+      },
+      backStepText: {
+        fontFamily: fontFamily('600'),
+        fontSize: moderateScale(14),
+        color: colors.textSecondary,
       },
     }),
   };
