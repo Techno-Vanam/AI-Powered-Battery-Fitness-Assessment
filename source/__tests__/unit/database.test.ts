@@ -29,20 +29,24 @@ describe('Unit Tests - Database Repositories & Execution', () => {
 
   test('HeightRepository CRUD operations', async () => {
     const record = await HeightRepository.insert({
+      measurementId: '550e8400-e29b-41d4-a716-446655440000',
       athleteId: 'ath-1',
+      teamId: null,
+      sessionId: null,
       heightCm: 175.5,
-      heightPixels: 700,
-      markerScale: 0.25,
-      markerConfidence: 85,
-      poseConfidence: 85,
-      overallConfidence: 85,
-      deviceId: 'dev-1',
+      confidence: 85,
+      deviceModel: 'Test Device',
+      timestamp: Date.now(),
+      calibrationMethod: 'aruco_15cm',
+      stableFrameCount: 10,
+      videoDurationSec: 15,
+      pixelsPerCm: 10,
     });
     expect(record).toBeDefined();
-    expect(record.id).toBeDefined();
+    expect(record.measurementId).toBeDefined();
 
-    await HeightRepository.updateSyncStatus(record.id, 'uploaded');
-    await HeightRepository.delete(record.id);
+    await HeightRepository.updateSyncStatus(record.measurementId, 'uploaded');
+    await HeightRepository.delete(record.measurementId);
   });
 
   test('VideoRepository CRUD operations', async () => {
@@ -63,7 +67,7 @@ describe('Unit Tests - Database Repositories & Execution', () => {
     const queueItem = await SyncRepository.enqueue('athletes', 'rec-100', 'INSERT');
     expect(queueItem).toBeDefined();
 
-    const pending = await SyncRepository.getPending(5);
+    const pending = await SyncRepository.getPending();
     expect(Array.isArray(pending)).toBe(true);
 
     await SyncRepository.incrementRetry(queueItem.id);

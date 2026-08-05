@@ -4,13 +4,12 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios';
+import { API_BASE_URL } from '../config/api';
 
-const BASE_URL = 'https://api.yourserver.com/v1'; // replace with real endpoint
 const TIMEOUT_MS = 15_000;
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1_000;
 
-// Token store — set this after auth is implemented in a future phase
 let _bearerToken: string | null = null;
 
 export function setApiToken(token: string | null): void {
@@ -22,7 +21,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 const instance: AxiosInstance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: API_BASE_URL,
   timeout: TIMEOUT_MS,
   headers: { 'Content-Type': 'application/json' },
 });

@@ -14,6 +14,7 @@ describe('Integration Tests - Offline Storage & Cloud Sync', () => {
       recordId: 'non-existent-id',
       operation: 'INSERT',
       retryCount: 0,
+      lastAttempt: null,
       createdAt: Date.now(),
     };
 
@@ -28,6 +29,7 @@ describe('Integration Tests - Offline Storage & Cloud Sync', () => {
       recordId: 'missing-athlete-id',
       operation: 'INSERT',
       retryCount: 0,
+      lastAttempt: null,
       createdAt: Date.now(),
     };
 

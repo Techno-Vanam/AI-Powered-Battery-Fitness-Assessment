@@ -7,7 +7,7 @@ import {
   request,
   openSettings,
 } from 'react-native-permissions';
-import type { PermissionState, PermissionStatus } from '@types/camera';
+import type { PermissionState, PermissionStatus } from '@app-types/camera';
 
 const CAMERA_PERMISSION =
   Platform.OS === 'android' ? PERMISSIONS.ANDROID.CAMERA : PERMISSIONS.IOS.CAMERA;

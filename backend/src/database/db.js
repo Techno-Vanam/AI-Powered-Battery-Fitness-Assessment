@@ -22,13 +22,29 @@ export function getDB() {
 export async function initialiseDB() {
   if (_client) return _client;
 
-  if (env.TURSO_DATABASE_URL && env.TURSO_AUTH_TOKEN) {
-    _client = createClient({
-      url: env.TURSO_DATABASE_URL,
-      authToken: env.TURSO_AUTH_TOKEN,
-    });
-    console.log('[DB] Connected to Turso (libSQL cloud)');
-  } else {
+  const useTurso = Boolean(env.TURSO_DATABASE_URL && env.TURSO_AUTH_TOKEN);
+
+  if (useTurso) {
+    try {
+      _client = createClient({
+        url: env.TURSO_DATABASE_URL,
+        authToken: env.TURSO_AUTH_TOKEN,
+      });
+      // Probe connection before committing to Turso
+      await _client.execute('SELECT 1');
+      console.log('[DB] Connected to Turso (libSQL cloud)');
+    } catch (err) {
+      console.warn('[DB] Turso failed — falling back to local SQLite:', err.message);
+      try {
+        _client?.close?.();
+      } catch {
+        // ignore
+      }
+      _client = null;
+    }
+  }
+
+  if (!_client) {
     const dir = dirname(env.DB_PATH);
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });

@@ -33,7 +33,7 @@ export function useHistoryViewModel(initialAthleteId?: string) {
   const deleteRecord = useCallback(
     async (id: string) => {
       await HeightTestUseCases.deleteMeasurement(id);
-      if (selectedRecord?.test.id === id) {
+      if (selectedRecord?.test.measurementId === id) {
         setSelectedRecord(null);
       }
       loadHistory();

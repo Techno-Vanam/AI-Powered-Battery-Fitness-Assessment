@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import type { CameraStats } from '@types/camera';
+import type { CameraStats } from '@app-types/camera';
 
 interface Props {
   stats: CameraStats;

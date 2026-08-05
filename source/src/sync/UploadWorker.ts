@@ -22,7 +22,8 @@ export async function processQueueBatch(): Promise<number> {
     return 0; // Abort early if offline to save battery
   }
 
-  const items = await SyncRepository.getPending(MAX_BATCH_SIZE);
+  const pending = await SyncRepository.getPending();
+  const items = pending.slice(0, MAX_BATCH_SIZE);
   let processedCount = 0;
 
   for (const item of items) {
@@ -31,7 +32,9 @@ export async function processQueueBatch(): Promise<number> {
       processedCount++;
     }
     // Small inter-item delay to keep UI responsive
-    await new Promise(r => setTimeout(r, BATCH_DELAY_MS));
+    await new Promise<void>(resolve => {
+      setTimeout(() => resolve(), BATCH_DELAY_MS);
+    });
   }
 
   return processedCount;
@@ -79,21 +82,23 @@ async function uploadHeightTest(item: SyncQueueItem): Promise<WorkerResult> {
     return 'skip';
   }
 
-  const athleteExists = await AthleteApi.exists(test.athleteId);
-  if (!athleteExists) {
-    await SyncRepository.incrementRetry(item.id);
-    return 'retry';
+  // Ensure athlete exists on server first (upload from local if needed)
+  const athlete = await AthleteRepository.findById(test.athleteId);
+  if (athlete) {
+    const athleteExists = await AthleteApi.exists(athlete.id);
+    if (!athleteExists) {
+      await AthleteApi.upload(athlete);
+    }
   }
 
-  await HeightRepository.updateSyncStatus(test.id, 'uploading');
+  await HeightRepository.updateSyncStatus(test.measurementId, 'uploading');
 
-  const alreadyExists = await HeightApi.exists(test.id);
+  const alreadyExists = await HeightApi.exists(test.measurementId);
   if (!alreadyExists) {
     await HeightApi.upload(test);
   }
 
-  await HeightRepository.updateSyncStatus(test.id, 'uploaded');
-  await HeightRepository.delete(test.id);
+  await HeightRepository.delete(test.measurementId);
   await SyncRepository.delete(item.id);
   return 'success';
 }

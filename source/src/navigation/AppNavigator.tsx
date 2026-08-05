@@ -54,13 +54,12 @@ export type RootStackParamList = {
   Settings: undefined;
   HeightResult: {
     athlete: Athlete;
+    measurementId: string;
     heightCm: number;
     confidence: number;
-    markerScale: number;
-    markerConfidence: number;
-    poseConfidence: number;
     timestamp: number;
-    testId: string;
+    attemptCount: number;
+    canRetry: boolean;
   };
 };
 

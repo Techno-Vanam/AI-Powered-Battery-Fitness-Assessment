@@ -1,10 +1,15 @@
 import { AppRegistry } from 'react-native';
-import BackgroundFetch from 'react-native-background-fetch';
 import App from './App';
 const { name: appName } = require('./app.json');
-import { headlessTask } from './src/sync/BackgroundSync';
 
 AppRegistry.registerComponent(appName, () => App);
 
-// Android headless task — runs sync when app is not in foreground
-BackgroundFetch.registerHeadlessTask(headlessTask);
+// Register headless sync only after the RN runtime is up.
+// Top-level native imports can trigger PlatformConstants before TurboModules are ready.
+try {
+  const BackgroundFetch = require('react-native-background-fetch').default;
+  const { headlessTask } = require('./src/sync/BackgroundSync');
+  BackgroundFetch.registerHeadlessTask(headlessTask);
+} catch (e) {
+  console.warn('[index] BackgroundFetch headless task not registered:', e);
+}

@@ -16,7 +16,7 @@ module.exports = {
             '@hooks': './src/hooks',
             '@navigation': './src/navigation',
             '@screens': './src/screens',
-            '@types': './src/types',
+            '@app-types': './src/types',
             '@utils': './src/utils',
             '@vision': './src/vision',
             '@height': './src/height',

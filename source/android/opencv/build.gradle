@@ -10,12 +10,7 @@ android {
     }
 }
 
-// The OpenCV AAR must be placed at android/opencv/libs/opencv-4.10.0.aar
-// Download from: https://github.com/opencv/opencv/releases (Android pack)
-repositories {
-    flatDir { dirs 'libs' }
-}
-
 dependencies {
-    api(name: 'opencv-4.10.0', ext: 'aar')
+    // Official OpenCV Android AAR from Maven Central (no local libs/*.aar required)
+    api 'org.opencv:opencv:4.10.0'
 }

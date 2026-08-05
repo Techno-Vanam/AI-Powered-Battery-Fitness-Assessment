@@ -5,7 +5,7 @@ import {
   useCameraPermission,
 } from 'react-native-vision-camera';
 import { selectBestFormat, formatResolution } from '@utils/cameraUtils';
-import type { CameraConfig, CameraStats } from '@types/camera';
+import type { CameraConfig, CameraStats } from '@app-types/camera';
 
 const TARGET_FPS = 30;
 
@@ -80,7 +80,7 @@ export function useCamera() {
   }, []);
 
   /**
-   * Called from the frame processor worklet via runOnJS.
+   * Called from the frame processor worklet via worklets-core useRunOnJS.
    * Increments frame counter used for FPS calculation.
    */
   const onFrameProcessed = useCallback(() => {

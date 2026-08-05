@@ -11,6 +11,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types/camera';
 import { ScreenHeader } from '../components/FormComponents';
 import { AthleteUseCases } from '../domain/usecases/AthleteUseCases';
+import { DEFAULT_MARKER_SIZE_CM, MIN_VIDEO_DURATION_SEC, MAX_VIDEO_DURATION_SEC } from '@height/config/heightTestConfig';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'HeightTestInstructions'>;
 
@@ -21,9 +22,10 @@ export function HeightTestInstructionsScreen({ navigation, route }: Props) {
     : null;
 
   const [checkedItems, setCheckedItems] = useState<{ [key: string]: boolean }>({
-    marker: true,
-    posture: true,
-    camera: true,
+    marker: false,
+    posture: false,
+    camera: false,
+    offline: false,
   });
 
   const toggleCheck = (key: string) => {
@@ -40,12 +42,11 @@ export function HeightTestInstructionsScreen({ navigation, route }: Props) {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <ScreenHeader
-          title="Height Test Prep"
-          subtitle="Follow instructions for optimal computer vision accuracy"
+          title="Height Test — AI Camera"
+          subtitle="Offline on-device measurement with ArUco calibration"
           onBack={() => navigation.goBack()}
         />
 
-        {/* Selected Athlete Banner */}
         <View style={styles.athleteBanner}>
           <View style={styles.athleteAvatar}>
             <Text style={styles.athleteAvatarText}>
@@ -55,215 +56,129 @@ export function HeightTestInstructionsScreen({ navigation, route }: Props) {
           <View style={styles.athleteInfo}>
             <Text style={styles.athleteName}>{athlete.name}</Text>
             <Text style={styles.athleteSub}>
-              ID: {athlete.id} • {athlete.gender} {age ? `(${age} yrs)` : ''}
-            </Text>
-            <Text style={styles.athleteCat}>
-              Category: {athlete.heightCategory ?? 'General'} • {athlete.schoolAcademy}
+              ID: {athlete.id} · {athlete.gender} {age ? `(${age} yrs)` : ''}
             </Text>
           </View>
         </View>
 
-        {/* Checklist Step 1 */}
-        <TouchableOpacity
-          style={[styles.stepCard, checkedItems.marker && styles.stepCardActive]}
-          onPress={() => toggleCheck('marker')}
-          activeOpacity={0.8}
-        >
-          <View style={styles.stepHeader}>
-            <Text style={styles.stepIcon}>📐</Text>
-            <View style={styles.stepTitleBox}>
-              <Text style={styles.stepTitle}>Step 1: ArUco Marker Placement</Text>
-              <Text style={styles.stepDesc}>
-                Place the standard 21 cm (4x4_50) ArUco marker flat on the floor directly next to the athlete's feet.
-              </Text>
-            </View>
-            <View style={[styles.checkbox, checkedItems.marker && styles.checkboxActive]}>
-              <Text style={styles.checkText}>{checkedItems.marker ? '✓' : ''}</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Setup checklist</Text>
 
-        {/* Checklist Step 2 */}
-        <TouchableOpacity
-          style={[styles.stepCard, checkedItems.posture && styles.stepCardActive]}
-          onPress={() => toggleCheck('posture')}
-          activeOpacity={0.8}
-        >
-          <View style={styles.stepHeader}>
-            <Text style={styles.stepIcon}>🧍</Text>
-            <View style={styles.stepTitleBox}>
-              <Text style={styles.stepTitle}>Step 2: Athlete Posture</Text>
-              <Text style={styles.stepDesc}>
-                Athlete should stand barefoot, upright against a plain wall with heels, buttocks, and upper back aligned. Keep head level.
-              </Text>
-            </View>
-            <View style={[styles.checkbox, checkedItems.posture && styles.checkboxActive]}>
-              <Text style={styles.checkText}>{checkedItems.posture ? '✓' : ''}</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
+          <CheckRow
+            label={`Print ArUco marker (${DEFAULT_MARKER_SIZE_CM}×${DEFAULT_MARKER_SIZE_CM} cm default)`}
+            sub="Tape marker on wall at same depth as athlete's back/heels"
+            checked={checkedItems.marker}
+            onToggle={() => toggleCheck('marker')}
+          />
+          <CheckRow
+            label="Subject stands upright, full body in frame"
+            sub="Bare feet, arms relaxed, facing camera"
+            checked={checkedItems.posture}
+            onToggle={() => toggleCheck('posture')}
+          />
+          <CheckRow
+            label={`Record ${MIN_VIDEO_DURATION_SEC}–${MAX_VIDEO_DURATION_SEC} second video`}
+            sub="Rear camera, stable phone at chest height"
+            checked={checkedItems.camera}
+            onToggle={() => toggleCheck('camera')}
+          />
+          <CheckRow
+            label="Offline processing — no video upload"
+            sub="AI runs on device; only numeric result syncs"
+            checked={checkedItems.offline}
+            onToggle={() => toggleCheck('offline')}
+          />
+        </View>
 
-        {/* Checklist Step 3 */}
-        <TouchableOpacity
-          style={[styles.stepCard, checkedItems.camera && styles.stepCardActive]}
-          onPress={() => toggleCheck('camera')}
-          activeOpacity={0.8}
-        >
-          <View style={styles.stepHeader}>
-            <Text style={styles.stepIcon}>📷</Text>
-            <View style={styles.stepTitleBox}>
-              <Text style={styles.stepTitle}>Step 3: Camera & Frame Alignment</Text>
-              <Text style={styles.stepDesc}>
-                Position device 2 to 3 metres away in portrait orientation. Ensure both head top vertex and ground marker are in frame.
-              </Text>
-            </View>
-            <View style={[styles.checkbox, checkedItems.camera && styles.checkboxActive]}>
-              <Text style={styles.checkText}>{checkedItems.camera ? '✓' : ''}</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {/* Action Button */}
         <TouchableOpacity
           style={[styles.startBtn, !allChecked && styles.startBtnDisabled]}
           onPress={handleStartCamera}
-          activeOpacity={0.85}
+          disabled={!allChecked}
         >
-          <Text style={styles.startBtnText}>📷 Open Camera & Begin Measurement</Text>
+          <Text style={styles.startBtnText}>Open Camera</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+function CheckRow({
+  label,
+  sub,
+  checked,
+  onToggle,
+}: {
+  label: string;
+  sub: string;
+  checked: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <TouchableOpacity style={styles.checkRow} onPress={onToggle} activeOpacity={0.8}>
+      <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+        {checked && <Text style={styles.checkMark}>✓</Text>}
+      </View>
+      <View style={styles.checkText}>
+        <Text style={styles.checkLabel}>{label}</Text>
+        <Text style={styles.checkSub}>{sub}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#090d16',
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 40,
-  },
+  container: { flex: 1, backgroundColor: '#090d16' },
+  scrollContent: { padding: 20, paddingBottom: 40 },
   athleteBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#111827',
-    borderRadius: 18,
+    backgroundColor: '#141b2d',
+    borderRadius: 14,
     padding: 16,
-    borderWidth: 1,
-    borderColor: '#1f2937',
-    marginBottom: 24,
+    marginBottom: 20,
+    gap: 14,
   },
   athleteAvatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#2563eb',
+    backgroundColor: '#22c55e',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 14,
   },
-  athleteAvatarText: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '900',
-  },
-  athleteInfo: {
-    flex: 1,
-  },
-  athleteName: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  athleteSub: {
-    color: '#60a5fa',
-    fontSize: 13,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  athleteCat: {
-    color: '#9ca3af',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  stepCard: {
-    backgroundColor: '#111827',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#1f2937',
-    marginBottom: 14,
-  },
-  stepCardActive: {
-    borderColor: '#3b82f6',
-    backgroundColor: 'rgba(30, 58, 138, 0.25)',
-  },
-  stepHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  stepIcon: {
-    fontSize: 26,
-    marginRight: 12,
-    marginTop: 2,
-  },
-  stepTitleBox: {
-    flex: 1,
-    marginRight: 10,
-  },
-  stepTitle: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  stepDesc: {
-    color: '#9ca3af',
-    fontSize: 13,
-    lineHeight: 19,
-  },
-  checkbox: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 2,
-    borderColor: '#4b5563',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  checkboxActive: {
-    backgroundColor: '#2563eb',
-    borderColor: '#3b82f6',
-  },
-  checkText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '900',
-  },
-  startBtn: {
-    backgroundColor: '#2563eb',
+  athleteAvatarText: { color: '#fff', fontSize: 20, fontWeight: '700' },
+  athleteInfo: { flex: 1 },
+  athleteName: { color: '#fff', fontSize: 17, fontWeight: '700' },
+  athleteSub: { color: '#94a3b8', fontSize: 13, marginTop: 2 },
+  card: {
+    backgroundColor: '#141b2d',
     borderRadius: 14,
-    paddingVertical: 18,
+    padding: 16,
+    marginBottom: 24,
+    gap: 12,
+  },
+  cardTitle: { color: '#fff', fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  checkRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#475569',
     alignItems: 'center',
-    marginTop: 12,
-    shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 14,
-    elevation: 8,
+    justifyContent: 'center',
   },
-  startBtnDisabled: {
-    backgroundColor: '#1f2937',
-    shadowOpacity: 0,
-    elevation: 0,
+  checkboxChecked: { backgroundColor: '#22c55e', borderColor: '#22c55e' },
+  checkMark: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  checkText: { flex: 1 },
+  checkLabel: { color: '#e2e8f0', fontSize: 14, fontWeight: '600' },
+  checkSub: { color: '#64748b', fontSize: 12, marginTop: 2 },
+  startBtn: {
+    backgroundColor: '#22c55e',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
   },
-  startBtnText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '800',
-  },
+  startBtnDisabled: { opacity: 0.4 },
+  startBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

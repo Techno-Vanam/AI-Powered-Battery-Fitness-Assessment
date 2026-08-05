@@ -29,8 +29,7 @@ class SyncWorker(
 
     private fun emitSyncEvent() {
         val reactApp = context.applicationContext as? ReactApplication ?: return
-        val reactHost = reactApp.reactHost
-        val reactContext: ReactContext = reactHost.currentReactContext ?: return
+        val reactContext: ReactContext = reactApp.reactHost?.currentReactContext ?: return
         reactContext
             .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
             ?.emit("onBackgroundSync", null)

@@ -71,12 +71,53 @@ jest.mock('react-native-vision-camera', () => ({
   useCameraDevice: jest.fn(() => ({ id: 'back', name: 'Back Camera' })),
   useCameraFormat: jest.fn(() => ({ videoWidth: 1280, videoHeight: 720 })),
   useCameraPermission: jest.fn(() => ({ hasPermission: true, requestPermission: jest.fn() })),
-  useFrameProcessor: jest.fn((cb: any) => cb),
+  useFrameProcessor: jest.fn(() => undefined),
+  useCodeScanner: jest.fn(() => undefined),
+  VisionCameraProxy: {
+    initFrameProcessorPlugin: jest.fn(() => null),
+  },
+}), { virtual: true });
+
+// react-native-fast-tflite (on-device pose — native module not available in Jest)
+jest.mock('react-native-fast-tflite', () => ({
+  useTensorflowModel: jest.fn(() => ({
+    state: 'loaded',
+    model: { runSync: jest.fn(() => [new Float32Array(51)]) },
+  })),
+}), { virtual: true });
+
+// react-native-nitro-modules (peer dep for fast-tflite)
+jest.mock('react-native-nitro-modules', () => ({
+  NitroModules: {
+    box: jest.fn((model: unknown) => ({
+      unbox: () => model,
+    })),
+  },
+}), { virtual: true });
+
+// vision-camera-resize-plugin
+jest.mock('vision-camera-resize-plugin', () => ({
+  useResizePlugin: jest.fn(() => ({
+    resize: jest.fn(() => ({
+      buffer: new Uint8Array(192 * 192 * 3),
+      byteOffset: 0,
+      byteLength: 192 * 192 * 3,
+    })),
+  })),
 }), { virtual: true });
 
 // react-native-reanimated
 jest.mock('react-native-reanimated', () => ({
   runOnJS: (fn: any) => (...args: any[]) => fn(...args),
+  useSharedValue: jest.fn((initial: unknown) => ({ value: initial })),
+}), { virtual: true });
+
+// react-native-worklets-core (Vision Camera frame processors)
+jest.mock('react-native-worklets-core', () => ({
+  useRunOnJS: (fn: any) => fn,
+  Worklets: {
+    createRunOnJS: (fn: any) => fn,
+  },
 }), { virtual: true });
 
 // @react-navigation/native & stack
@@ -108,3 +149,23 @@ jest.mock('react-native-svg', () => {
   };
 }, { virtual: true });
 
+// lucide-react-native
+jest.mock('lucide-react-native', () => {
+  return new Proxy(
+    {},
+    {
+      get: function (target, prop) {
+        return () => null; // return a dummy component for any icon imported
+      },
+    }
+  );
+});
+
+// @op-engineering/op-sqlite
+jest.mock('@op-engineering/op-sqlite', () => ({
+  open: jest.fn(() => ({
+    execute: jest.fn(),
+    executeSync: jest.fn(),
+    close: jest.fn(),
+  })),
+}), { virtual: true });

@@ -16,7 +16,18 @@ export interface Athlete {
   updatedAt: number;
 }
 
-export type AthleteInput = Omit<Athlete, 'createdAt' | 'updatedAt'> & { id?: string };
+export type AthleteInput = {
+  id?: string;
+  name: string;
+  gender: string;
+  dateOfBirth?: string | null;
+  phone?: string | null;
+  heightCategory?: string | null;
+  coachName?: string | null;
+  schoolAcademy?: string | null;
+  state?: string | null;
+  district?: string | null;
+};
 
 function rowToAthlete(row: any): Athlete {
   return {

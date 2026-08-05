@@ -1,4 +1,4 @@
-import type { CameraDevice, CameraFormat } from 'react-native-vision-camera';
+import type { CameraDevice, CameraDeviceFormat } from 'react-native-vision-camera';
 import type { Athlete } from '../database/repositories/AthleteRepository';
 
 export type PermissionStatus = 'granted' | 'denied' | 'blocked' | 'unavailable' | 'checking';
@@ -18,7 +18,7 @@ export interface CameraStats {
 
 export interface CameraConfig {
   device: CameraDevice | undefined;
-  format: CameraFormat | undefined;
+  format: CameraDeviceFormat | undefined;
   isReady: boolean;
   error: string | null;
 }
@@ -26,6 +26,7 @@ export interface CameraConfig {
 export type RootStackParamList = {
   Splash: undefined;
   Home: undefined;
+  AthleteHome: undefined;
   AthleteRegistration: { athleteId?: string; athlete?: Athlete } | undefined;
   AthleteList: { selectForTest?: boolean } | undefined;
   HeightTestInstructions: { athlete: Athlete };
@@ -35,13 +36,12 @@ export type RootStackParamList = {
   Settings: undefined;
   HeightResult: {
     athlete: Athlete;
+    measurementId: string;
     heightCm: number;
     confidence: number;
-    markerScale: number;
-    markerConfidence: number;
-    poseConfidence: number;
     timestamp: number;
-    testId: string;
+    attemptCount: number;
+    canRetry: boolean;
   };
 };
 

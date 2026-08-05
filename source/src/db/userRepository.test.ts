@@ -8,16 +8,15 @@ jest.mock('./schema', () => ({
 describe('userRepository local lookup', () => {
   it('reads a user from the database through the sync execution path', () => {
     const mockExecuteSync = jest.fn().mockReturnValue({
-      rows: {
-        length: 1,
-        item: () => ({
+      rows: [
+        {
           local_id: 'user-1',
           id_type: 'NSRS',
           id_number: '123456',
           password_hash: null,
           role: 'athlete',
-        }),
-      },
+        },
+      ],
     });
 
     (getDBConnection as jest.Mock).mockReturnValue({ executeSync: mockExecuteSync });

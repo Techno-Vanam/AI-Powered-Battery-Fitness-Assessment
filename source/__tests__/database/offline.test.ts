@@ -36,11 +36,19 @@ function makeDb() {
 
     if (s.startsWith('INSERT INTO HEIGHT_TESTS')) {
       tables.height_tests.push({
-        id: params[0], athleteId: params[1], heightCm: params[2],
-        heightPixels: params[3], markerScale: params[4],
-        markerConfidence: params[5], poseConfidence: params[6],
-        overallConfidence: params[7], deviceId: params[8],
-        createdAt: params[9], syncStatus: 'pending',
+        measurementId: params[0],
+        athleteId: params[1],
+        teamId: params[2],
+        sessionId: params[3],
+        heightCm: params[4],
+        confidence: params[5],
+        deviceModel: params[6],
+        timestamp: params[7],
+        calibrationMethod: params[8],
+        stableFrameCount: params[9],
+        videoDurationSec: params[10],
+        pixelsPerCm: params[11],
+        syncStatus: 'pending',
       });
       return [{ rows: { length: 0, item: () => null } }];
     }
@@ -73,8 +81,8 @@ function makeDb() {
       return [{ rows: { length: rows.length, item: (i: number) => rows[i] } }];
     }
 
-    if (s.startsWith('SELECT * FROM HEIGHT_TESTS WHERE ID')) {
-      const rows = tables.height_tests.filter(r => r.id === params[0]);
+    if (s.startsWith('SELECT * FROM HEIGHT_TESTS WHERE MEASUREMENTID')) {
+      const rows = tables.height_tests.filter(r => r.measurementId === params[0]);
       return [{ rows: { length: rows.length, item: (i: number) => rows[i] } }];
     }
 
@@ -101,7 +109,7 @@ function makeDb() {
     }
 
     if (s.startsWith('UPDATE HEIGHT_TESTS SET SYNCSTATUS')) {
-      const idx = tables.height_tests.findIndex(r => r.id === params[1]);
+      const idx = tables.height_tests.findIndex(r => r.measurementId === params[1]);
       if (idx >= 0) tables.height_tests[idx].syncStatus = params[0];
       return [{ rows: { length: 0, item: () => null } }];
     }
@@ -115,8 +123,8 @@ function makeDb() {
       return [{ rows: { length: 0, item: () => null } }];
     }
 
-    if (s.startsWith('DELETE FROM HEIGHT_TESTS WHERE ID')) {
-      tables.height_tests = tables.height_tests.filter(r => r.id !== params[0]);
+    if (s.startsWith('DELETE FROM HEIGHT_TESTS WHERE MEASUREMENTID')) {
+      tables.height_tests = tables.height_tests.filter(r => r.measurementId !== params[0]);
       return [{ rows: { length: 0, item: () => null } }];
     }
 
@@ -227,39 +235,61 @@ describe('AthleteRepository.insert', () => {
 describe('HeightRepository.insert', () => {
   it('inserts height test with pending syncStatus', async () => {
     const test = await HeightRepository.insert({
+      measurementId: '550e8400-e29b-41d4-a716-446655440001',
       athleteId: 'athlete-1',
+      teamId: null,
+      sessionId: null,
       heightCm: 175.5,
-      heightPixels: 1200,
-      markerScale: 0.0175,
-      markerConfidence: 92,
-      poseConfidence: 88,
-      overallConfidence: 90,
-      deviceId: 'device-abc',
+      confidence: 90,
+      deviceModel: 'device-abc',
+      timestamp: Date.now(),
+      calibrationMethod: 'aruco_15cm',
+      stableFrameCount: 12,
+      videoDurationSec: 15,
+      pixelsPerCm: 10,
     });
-    expect(test.id).toBeTruthy();
+    expect(test.measurementId).toBeTruthy();
     expect(test.syncStatus).toBe('pending');
     expect(test.heightCm).toBe(175.5);
   });
 
   it('updateSyncStatus changes status', async () => {
     const test = await HeightRepository.insert({
-      athleteId: 'athlete-1', heightCm: 180, heightPixels: 1300,
-      markerScale: 0.018, markerConfidence: 90, poseConfidence: 85,
-      overallConfidence: 87, deviceId: 'device-abc',
+      measurementId: '550e8400-e29b-41d4-a716-446655440002',
+      athleteId: 'athlete-1',
+      teamId: null,
+      sessionId: null,
+      heightCm: 180,
+      confidence: 87,
+      deviceModel: 'device-abc',
+      timestamp: Date.now(),
+      calibrationMethod: 'aruco_15cm',
+      stableFrameCount: 10,
+      videoDurationSec: 12,
+      pixelsPerCm: 10,
     });
-    await HeightRepository.updateSyncStatus(test.id, 'uploading');
-    const updated = await HeightRepository.findById(test.id);
+    await HeightRepository.updateSyncStatus(test.measurementId, 'uploading');
+    const updated = await HeightRepository.findById(test.measurementId);
     expect(updated!.syncStatus).toBe('uploading');
   });
 
   it('delete removes the record', async () => {
     const test = await HeightRepository.insert({
-      athleteId: 'athlete-1', heightCm: 165, heightPixels: 1100,
-      markerScale: 0.016, markerConfidence: 80, poseConfidence: 75,
-      overallConfidence: 77, deviceId: 'device-abc',
+      measurementId: '550e8400-e29b-41d4-a716-446655440003',
+      athleteId: 'athlete-1',
+      teamId: null,
+      sessionId: null,
+      heightCm: 165,
+      confidence: 77,
+      deviceModel: 'device-abc',
+      timestamp: Date.now(),
+      calibrationMethod: 'aruco_15cm',
+      stableFrameCount: 8,
+      videoDurationSec: 11,
+      pixelsPerCm: 10,
     });
-    await HeightRepository.delete(test.id);
-    const found = await HeightRepository.findById(test.id);
+    await HeightRepository.delete(test.measurementId);
+    const found = await HeightRepository.findById(test.measurementId);
     expect(found).toBeNull();
   });
 });
@@ -319,9 +349,19 @@ describe('UploadWorker — delete after upload', () => {
       dateOfBirth: null, phone: null, createdAt: Date.now(), updatedAt: Date.now(),
     });
     mockDb._tables.height_tests.push({
-      id: 'ht-1', athleteId: 'ath-1', heightCm: 170, heightPixels: 1150,
-      markerScale: 0.017, markerConfidence: 88, poseConfidence: 82,
-      overallConfidence: 85, deviceId: 'dev-1', createdAt: Date.now(), syncStatus: 'pending',
+      measurementId: 'ht-1',
+      athleteId: 'ath-1',
+      teamId: null,
+      sessionId: null,
+      heightCm: 170,
+      confidence: 85,
+      deviceModel: 'dev-1',
+      timestamp: Date.now(),
+      calibrationMethod: 'aruco_15cm',
+      stableFrameCount: 10,
+      videoDurationSec: 15,
+      pixelsPerCm: 10,
+      syncStatus: 'pending',
     });
     const { SyncRepository } = require('../../src/database/repositories/SyncRepository');
     const qItem = await SyncRepository.enqueue('height_tests', 'ht-1');
@@ -338,7 +378,7 @@ describe('UploadWorker — delete after upload', () => {
     const result = await worker(qItem);
 
     expect(result).toBe('success');
-    expect(mockDb._tables.height_tests.find(r => r.id === 'ht-1')).toBeUndefined();
+    expect(mockDb._tables.height_tests.find(r => r.measurementId === 'ht-1')).toBeUndefined();
     expect(mockDb._tables.sync_queue.find(r => r.id === qItem.id)).toBeUndefined();
   });
 });
@@ -347,7 +387,7 @@ describe('UploadWorker — delete after upload', () => {
 describe('SyncManager internet recovery', () => {
   it('calls triggerSync when NetInfo reports online', async () => {
     const { SyncManager } = require('../../src/sync/SyncManager');
-    const spy = jest.spyOn(SyncManager, 'triggerSync').mockResolvedValue();
+    const spy = jest.spyOn(SyncManager, 'triggerSync').mockResolvedValue(undefined);
 
     SyncManager.start();
 

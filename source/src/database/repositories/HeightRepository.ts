@@ -4,33 +4,38 @@ import { v4 as uuidv4 } from 'uuid';
 export type SyncStatus = 'pending' | 'uploading' | 'uploaded' | 'failed' | 'retrying';
 
 export interface HeightTest {
-  id: string;
+  /** Client-generated UUID — idempotent sync key. */
+  measurementId: string;
   athleteId: string;
+  teamId: string | null;
+  sessionId: string | null;
   heightCm: number;
-  heightPixels: number;
-  markerScale: number;
-  markerConfidence: number;
-  poseConfidence: number;
-  overallConfidence: number;
-  deviceId: string;
-  createdAt: number;
+  confidence: number;
+  deviceModel: string;
+  timestamp: number;
+  calibrationMethod: string;
+  stableFrameCount: number;
+  videoDurationSec: number;
+  pixelsPerCm: number;
   syncStatus: SyncStatus;
 }
 
-export type HeightTestInput = Omit<HeightTest, 'id' | 'createdAt' | 'syncStatus'>;
+export type HeightTestInput = Omit<HeightTest, 'syncStatus'>;
 
 function rowToHeightTest(row: any): HeightTest {
   return {
-    id: row.id,
+    measurementId: row.measurementId,
     athleteId: row.athleteId,
+    teamId: row.teamId ?? null,
+    sessionId: row.sessionId ?? null,
     heightCm: row.heightCm,
-    heightPixels: row.heightPixels,
-    markerScale: row.markerScale,
-    markerConfidence: row.markerConfidence,
-    poseConfidence: row.poseConfidence,
-    overallConfidence: row.overallConfidence,
-    deviceId: row.deviceId,
-    createdAt: row.createdAt,
+    confidence: row.confidence,
+    deviceModel: row.deviceModel,
+    timestamp: row.timestamp,
+    calibrationMethod: row.calibrationMethod,
+    stableFrameCount: row.stableFrameCount ?? 0,
+    videoDurationSec: row.videoDurationSec ?? 0,
+    pixelsPerCm: row.pixelsPerCm ?? 0,
     syncStatus: row.syncStatus as SyncStatus,
   };
 }
@@ -38,25 +43,37 @@ function rowToHeightTest(row: any): HeightTest {
 export const HeightRepository = {
   async insert(input: HeightTestInput): Promise<HeightTest> {
     const db = getDatabase();
-    const id = uuidv4();
-    const now = Date.now();
+    const measurementId = input.measurementId || uuidv4();
     await db.executeSql(
       `INSERT INTO height_tests
-         (id, athleteId, heightCm, heightPixels, markerScale, markerConfidence,
-          poseConfidence, overallConfidence, deviceId, createdAt, syncStatus)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending');`,
+         (measurementId, athleteId, teamId, sessionId, heightCm, confidence,
+          deviceModel, timestamp, calibrationMethod, stableFrameCount,
+          videoDurationSec, pixelsPerCm, syncStatus)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending');`,
       [
-        id, input.athleteId, input.heightCm, input.heightPixels,
-        input.markerScale, input.markerConfidence, input.poseConfidence,
-        input.overallConfidence, input.deviceId, now,
+        measurementId,
+        input.athleteId,
+        input.teamId,
+        input.sessionId,
+        input.heightCm,
+        input.confidence,
+        input.deviceModel,
+        input.timestamp,
+        input.calibrationMethod,
+        input.stableFrameCount,
+        input.videoDurationSec,
+        input.pixelsPerCm,
       ],
     );
-    return { id, ...input, createdAt: now, syncStatus: 'pending' };
+    return { ...input, measurementId, syncStatus: 'pending' };
   },
 
-  async findById(id: string): Promise<HeightTest | null> {
+  async findById(measurementId: string): Promise<HeightTest | null> {
     const db = getDatabase();
-    const [res] = await db.executeSql('SELECT * FROM height_tests WHERE id = ?;', [id]);
+    const [res] = await db.executeSql(
+      'SELECT * FROM height_tests WHERE measurementId = ?;',
+      [measurementId],
+    );
     if (res.rows.length === 0) return null;
     return rowToHeightTest(res.rows.item(0));
   },
@@ -64,7 +81,7 @@ export const HeightRepository = {
   async getByAthlete(athleteId: string): Promise<HeightTest[]> {
     const db = getDatabase();
     const [res] = await db.executeSql(
-      'SELECT * FROM height_tests WHERE athleteId = ? ORDER BY createdAt DESC;',
+      'SELECT * FROM height_tests WHERE athleteId = ? ORDER BY timestamp DESC;',
       [athleteId],
     );
     const rows: HeightTest[] = [];
@@ -75,7 +92,7 @@ export const HeightRepository = {
   async getAll(limit = 200, offset = 0): Promise<HeightTest[]> {
     const db = getDatabase();
     const [res] = await db.executeSql(
-      'SELECT * FROM height_tests ORDER BY createdAt DESC LIMIT ? OFFSET ?;',
+      'SELECT * FROM height_tests ORDER BY timestamp DESC LIMIT ? OFFSET ?;',
       [limit, offset],
     );
     const rows: HeightTest[] = [];
@@ -86,23 +103,23 @@ export const HeightRepository = {
   async getPending(): Promise<HeightTest[]> {
     const db = getDatabase();
     const [res] = await db.executeSql(
-      "SELECT * FROM height_tests WHERE syncStatus IN ('pending','failed','retrying') ORDER BY createdAt ASC;",
+      "SELECT * FROM height_tests WHERE syncStatus IN ('pending','failed','retrying') ORDER BY timestamp ASC;",
     );
     const rows: HeightTest[] = [];
     for (let i = 0; i < res.rows.length; i++) rows.push(rowToHeightTest(res.rows.item(i)));
     return rows;
   },
 
-  async updateSyncStatus(id: string, status: SyncStatus): Promise<void> {
+  async updateSyncStatus(measurementId: string, status: SyncStatus): Promise<void> {
     const db = getDatabase();
     await db.executeSql(
-      'UPDATE height_tests SET syncStatus = ? WHERE id = ?;',
-      [status, id],
+      'UPDATE height_tests SET syncStatus = ? WHERE measurementId = ?;',
+      [status, measurementId],
     );
   },
 
-  async delete(id: string): Promise<void> {
+  async delete(measurementId: string): Promise<void> {
     const db = getDatabase();
-    await db.executeSql('DELETE FROM height_tests WHERE id = ?;', [id]);
+    await db.executeSql('DELETE FROM height_tests WHERE measurementId = ?;', [measurementId]);
   },
 };

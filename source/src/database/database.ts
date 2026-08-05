@@ -4,7 +4,7 @@ import SQLite from 'react-native-sqlite-storage';
 SQLite.enablePromise(true);
 
 const DB_NAME    = 'sports_fitness.db';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 // Encryption key — in production, derive this from device-bound secure storage
 // (e.g. Android Keystore). For this phase it is a fixed key.
@@ -30,17 +30,19 @@ const DDL_ATHLETES = `
 
 const DDL_HEIGHT_TESTS = `
   CREATE TABLE IF NOT EXISTS height_tests (
-    id               TEXT PRIMARY KEY NOT NULL,
-    athleteId        TEXT NOT NULL,
-    heightCm         REAL NOT NULL,
-    heightPixels     INTEGER NOT NULL,
-    markerScale      REAL NOT NULL,
-    markerConfidence REAL NOT NULL,
-    poseConfidence   REAL NOT NULL,
-    overallConfidence REAL NOT NULL,
-    deviceId         TEXT NOT NULL,
-    createdAt        INTEGER NOT NULL,
-    syncStatus       TEXT NOT NULL DEFAULT 'pending',
+    measurementId      TEXT PRIMARY KEY NOT NULL,
+    athleteId          TEXT NOT NULL,
+    teamId             TEXT,
+    sessionId          TEXT,
+    heightCm           REAL NOT NULL,
+    confidence         REAL NOT NULL,
+    deviceModel        TEXT NOT NULL,
+    timestamp          INTEGER NOT NULL,
+    calibrationMethod  TEXT NOT NULL,
+    stableFrameCount   INTEGER NOT NULL DEFAULT 0,
+    videoDurationSec   REAL NOT NULL DEFAULT 0,
+    pixelsPerCm        REAL NOT NULL DEFAULT 0,
+    syncStatus         TEXT NOT NULL DEFAULT 'pending',
     FOREIGN KEY (athleteId) REFERENCES athletes(id)
   );
 `;
@@ -139,6 +141,9 @@ async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
   if (currentVersion < 2) {
     await applyMigrationV2(db);
   }
+  if (currentVersion < 3) {
+    await applyMigrationV3(db);
+  }
 }
 
 async function applyMigrationV1(db: SQLite.SQLiteDatabase): Promise<void> {
@@ -156,7 +161,6 @@ async function applyMigrationV1(db: SQLite.SQLiteDatabase): Promise<void> {
 }
 
 async function applyMigrationV2(db: SQLite.SQLiteDatabase): Promise<void> {
-  // Add new fields to athletes table if running from v1 schema
   const cols = [
     'ALTER TABLE athletes ADD COLUMN heightCategory TEXT;',
     'ALTER TABLE athletes ADD COLUMN coachName TEXT;',
@@ -175,6 +179,23 @@ async function applyMigrationV2(db: SQLite.SQLiteDatabase): Promise<void> {
     });
     tx.executeSql(
       'INSERT INTO schema_version (version, appliedAt) VALUES (2, ?);',
+      [Date.now()],
+    );
+  });
+}
+
+async function applyMigrationV3(db: SQLite.SQLiteDatabase): Promise<void> {
+  await db.transaction(tx => {
+    tx.executeSql('DROP TABLE IF EXISTS height_tests;');
+    tx.executeSql(DDL_HEIGHT_TESTS);
+    tx.executeSql(
+      'CREATE INDEX IF NOT EXISTS idx_height_tests_athlete ON height_tests(athleteId);',
+    );
+    tx.executeSql(
+      'CREATE INDEX IF NOT EXISTS idx_height_tests_sync ON height_tests(syncStatus);',
+    );
+    tx.executeSql(
+      'INSERT INTO schema_version (version, appliedAt) VALUES (3, ?);',
       [Date.now()],
     );
   });

@@ -71,4 +71,44 @@ export const migrations = [
 
   `CREATE INDEX IF NOT EXISTS idx_sync_queue_created_at
     ON sync_queue (created_at)`,
+
+  // ── athletes (height offline sync) ────────────────────────────────────────
+  `CREATE TABLE IF NOT EXISTS athletes (
+    id              TEXT PRIMARY KEY,
+    name            TEXT NOT NULL,
+    gender          TEXT,
+    date_of_birth   TEXT,
+    phone           TEXT,
+    height_category TEXT,
+    coach_name      TEXT,
+    school_academy  TEXT,
+    state           TEXT,
+    district        TEXT,
+    created_at      INTEGER NOT NULL,
+    updated_at      INTEGER NOT NULL,
+    synced_at       TEXT
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_athletes_name ON athletes (name)`,
+
+  // ── height_measurements (AI camera test sync) ───────────────────────────────
+  `CREATE TABLE IF NOT EXISTS height_measurements (
+    measurement_id      TEXT PRIMARY KEY,
+    athlete_id          TEXT NOT NULL,
+    team_id             TEXT,
+    session_id          TEXT,
+    height_cm           REAL NOT NULL,
+    confidence          REAL NOT NULL,
+    device_model        TEXT NOT NULL,
+    timestamp           INTEGER NOT NULL,
+    calibration_method  TEXT NOT NULL,
+    synced_at           TEXT NOT NULL,
+    FOREIGN KEY (athlete_id) REFERENCES athletes (id)
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_height_measurements_athlete_id
+    ON height_measurements (athlete_id)`,
+
+  `CREATE INDEX IF NOT EXISTS idx_height_measurements_timestamp
+    ON height_measurements (timestamp)`,
 ];

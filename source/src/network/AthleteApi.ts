@@ -14,7 +14,13 @@ export const AthleteApi = {
       gender: athlete.gender,
       dateOfBirth: athlete.dateOfBirth,
       phone: athlete.phone,
+      heightCategory: athlete.heightCategory,
+      coachName: athlete.coachName,
+      schoolAcademy: athlete.schoolAcademy,
+      state: athlete.state,
+      district: athlete.district,
       createdAt: athlete.createdAt,
+      updatedAt: athlete.updatedAt,
     });
     return data;
   },

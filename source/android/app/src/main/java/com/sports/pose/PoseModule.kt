@@ -11,7 +11,6 @@ import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerOptions
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import com.mrousavy.camera.frameprocessors.Frame
 import com.mrousavy.camera.frameprocessors.FrameProcessorPlugin
@@ -55,7 +54,7 @@ class PoseModule(private val reactContext: ReactApplicationContext) :
                 .setDelegate(Delegate.GPU)          // GPU first; falls back to CPU automatically
                 .build()
 
-            val options = PoseLandmarkerOptions.builder()
+            val options = PoseLandmarker.PoseLandmarkerOptions.builder()
                 .setBaseOptions(baseOptions)
                 .setRunningMode(RunningMode.LIVE_STREAM)
                 .setNumPoses(NUM_POSES)
@@ -76,7 +75,7 @@ class PoseModule(private val reactContext: ReactApplicationContext) :
                     .setModelAssetPath(MODEL_ASSET)
                     .setDelegate(Delegate.CPU)
                     .build()
-                val options = PoseLandmarkerOptions.builder()
+                val options = PoseLandmarker.PoseLandmarkerOptions.builder()
                     .setBaseOptions(baseOptions)
                     .setRunningMode(RunningMode.LIVE_STREAM)
                     .setNumPoses(NUM_POSES)
@@ -221,9 +220,9 @@ class PoseModule(private val reactContext: ReactApplicationContext) :
 
 // ─── Vision Camera Frame Processor Plugin ────────────────────────────────────
 class PoseFrameProcessorPlugin(
-    proxy: VisionCameraProxy,
-    options: Map<String, Any>?
-) : FrameProcessorPlugin(proxy, options) {
+    private val proxy: VisionCameraProxy,
+    @Suppress("UNUSED_PARAMETER") options: Map<String, Any>?,
+) : FrameProcessorPlugin() {
 
     private val module: PoseModule? by lazy {
         try {

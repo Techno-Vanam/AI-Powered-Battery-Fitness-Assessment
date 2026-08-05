@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types/camera';
-import { MARKER_PHYSICAL_CM } from '../vision/aruco/Types';
+import { DEFAULT_MARKER_SIZE_CM } from '@height/config/heightTestConfig';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
@@ -59,7 +59,7 @@ export function SettingsScreen({ navigation }: Props) {
 
           <View style={styles.settingRow}>
             <Text style={styles.label}>Known Marker Height</Text>
-            <Text style={styles.valueText}>{MARKER_PHYSICAL_CM} cm</Text>
+            <Text style={styles.valueText}>{DEFAULT_MARKER_SIZE_CM} cm</Text>
           </View>
 
           <View style={styles.divider} />

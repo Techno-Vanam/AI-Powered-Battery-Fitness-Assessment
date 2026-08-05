@@ -14,6 +14,7 @@ describe('Unit Tests - Sync Module', () => {
       recordId: 'rec-1',
       operation: 'INSERT',
       retryCount: 0,
+      lastAttempt: null,
       createdAt: Date.now(),
     };
     const res = await processQueueItem(item);

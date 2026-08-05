@@ -32,9 +32,40 @@ import {
   syncAthleteDashboardNow,
 } from '../../services/athleteDashboardService';
 import { MOCK_ATHLETE_DASHBOARD } from '../../data/mockAthleteDashboard';
-import type { AthleteDashboardData, DashboardTest, HistoryItem } from '../../types/athleteDashboard';
+import type {
+  AthleteDashboardData,
+  AthleteProfile,
+  DashboardTest,
+  HistoryItem,
+} from '../../types/athleteDashboard';
+import type { Athlete } from '../../database/repositories/AthleteRepository';
 import { colors, layout } from '../../theme';
 import { t } from '../../utils/i18n';
+
+/** Map dashboard profile → height-flow Athlete model */
+function athleteFromProfile(profile: AthleteProfile): Athlete {
+  const now = Date.now();
+  const birthYear = new Date().getFullYear() - Math.max(1, profile.age || 15);
+  return {
+    id: profile.athleteId,
+    name: profile.name,
+    gender: profile.gender.toLowerCase(),
+    dateOfBirth: `${birthYear}-01-01`,
+    phone: null,
+    heightCategory: null,
+    coachName: null,
+    schoolAcademy: profile.institution,
+    state: null,
+    district: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function isHeightTest(test?: DashboardTest | null): boolean {
+  if (!test) return false;
+  return test.key === 'height' || test.id === 'height';
+}
 
 /**
  * Athlete Dashboard (Home) — sections 1–15 in order.
@@ -76,11 +107,26 @@ const AthleteHomeScreen = ({ navigation }: any) => {
     Alert.alert(label ?? 'Info', t('dashboard.comingSoon'));
   }, []);
 
+  const startHeightTest = useCallback(() => {
+    if (!data?.profile) {
+      comingSoon(t('dashboard.startAssessment'));
+      return;
+    }
+    navigation.navigate('HeightTestInstructions', {
+      athlete: athleteFromProfile(data.profile),
+    });
+  }, [comingSoon, data?.profile, navigation]);
+
   const openAssessment = useCallback(
     (test?: DashboardTest) => {
-      comingSoon(test?.name ?? t('dashboard.continueAssessment'));
+      // Height is the only battery test wired today; Continue / Start also open it.
+      if (!test || isHeightTest(test)) {
+        startHeightTest();
+        return;
+      }
+      comingSoon(test.name);
     },
-    [comingSoon],
+    [comingSoon, startHeightTest],
   );
 
   const onTabChange = useCallback(
@@ -165,17 +211,28 @@ const AthleteHomeScreen = ({ navigation }: any) => {
             {/* 4. Quick Actions */}
             <QuickActionsRow
               onContinue={() => openAssessment()}
-              onStart={() => comingSoon(t('dashboard.startAssessment'))}
-              onResults={() => comingSoon(t('dashboard.viewResults'))}
+              onStart={startHeightTest}
+              onResults={() =>
+                navigation.navigate('History', { athleteId: data.profile.athleteId })
+              }
               onReport={() => comingSoon(t('dashboard.viewReport'))}
-              onHistory={() => comingSoon(t('dashboard.assessmentHistory'))}
+              onHistory={() =>
+                navigation.navigate('History', { athleteId: data.profile.athleteId })
+              }
             />
 
             {/* 5. Current Test Card (only if incomplete) */}
             {incomplete ? (
               <CurrentTestCard
                 currentTest={data.currentTest}
-                onContinue={() => openAssessment()}
+                onContinue={() => {
+                  const current = data.tests.find(
+                    t =>
+                      t.key === data.currentTest?.testId ||
+                      t.id === data.currentTest?.testId,
+                  );
+                  openAssessment(current);
+                }}
               />
             ) : null}
 
@@ -229,7 +286,7 @@ const AthleteHomeScreen = ({ navigation }: any) => {
         <AthleteBottomNav
           active={activeTab}
           onChange={onTabChange}
-          onCenterPress={() => comingSoon(t('dashboard.startAssessment'))}
+          onCenterPress={startHeightTest}
         />
       </View>
     </Screen>

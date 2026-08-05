@@ -117,7 +117,7 @@ export default function HistoryScreen({ navigation, route }: Props) {
         {/* Measurements List */}
         <FlatList
           data={history}
-          keyExtractor={item => item.test.id}
+          keyExtractor={item => item.test.measurementId}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -150,13 +150,13 @@ export default function HistoryScreen({ navigation, route }: Props) {
                   </View>
 
                   <Text style={styles.dateText}>
-                    📅 {new Date(item.test.createdAt).toLocaleString()}
+                    📅 {new Date(item.test.timestamp).toLocaleString()}
                   </Text>
 
                   <View style={styles.badgeRow}>
                     <StatusBadge status={item.test.syncStatus} />
                     <Text style={styles.confidenceText}>
-                      Confidence: {(item.test.overallConfidence * 100).toFixed(0)}%
+                      Confidence: {item.test.confidence.toFixed(0)}%
                     </Text>
                   </View>
                 </View>
@@ -166,7 +166,7 @@ export default function HistoryScreen({ navigation, route }: Props) {
                   <Text style={styles.unitText}>cm</Text>
                   <TouchableOpacity
                     style={styles.deleteTouch}
-                    onPress={() => handleDelete(item.test.id)}
+                    onPress={() => handleDelete(item.test.measurementId)}
                   >
                     <Text style={styles.deleteIcon}>🗑️</Text>
                   </TouchableOpacity>
@@ -229,24 +229,24 @@ export default function HistoryScreen({ navigation, route }: Props) {
                     value={selectedRecord.test.syncStatus.toUpperCase()}
                   />
                   <DetailRow
-                    label="Overall Confidence"
-                    value={`${(selectedRecord.test.overallConfidence * 100).toFixed(0)}%`}
+                    label="Confidence"
+                    value={`${selectedRecord.test.confidence.toFixed(0)}%`}
                   />
                   <DetailRow
-                    label="Pose Lock Confidence"
-                    value={`${(selectedRecord.test.poseConfidence * 100).toFixed(0)}%`}
+                    label="Calibration"
+                    value={selectedRecord.test.calibrationMethod}
                   />
                   <DetailRow
-                    label="Marker Scale Confidence"
-                    value={`${(selectedRecord.test.markerConfidence * 100).toFixed(0)}%`}
+                    label="Device"
+                    value={selectedRecord.test.deviceModel}
                   />
                   <DetailRow
-                    label="Record ID"
-                    value={selectedRecord.test.id}
+                    label="Measurement ID"
+                    value={selectedRecord.test.measurementId}
                   />
                   <DetailRow
                     label="Timestamp"
-                    value={new Date(selectedRecord.test.createdAt).toLocaleString()}
+                    value={new Date(selectedRecord.test.timestamp).toLocaleString()}
                   />
                 </ScrollView>
 

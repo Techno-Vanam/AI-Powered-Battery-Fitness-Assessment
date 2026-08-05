@@ -1,23 +1,19 @@
-# OpenCV Android AAR
+# OpenCV Android
 
-Place the OpenCV Android AAR here:
+This module pulls OpenCV from Maven Central:
 
-    android/opencv/libs/opencv-4.10.0.aar
+```gradle
+api 'org.opencv:opencv:4.10.0'
+```
 
-## Download
+No local `opencv-4.10.0.aar` is required for the Gradle build.
 
-1. Go to https://github.com/opencv/opencv/releases/tag/4.10.0
-2. Download `opencv-4.10.0-android-sdk.zip`
-3. Unzip it.
-4. Copy `OpenCV-android-sdk/sdk/OpenCV-android-sdk.aar`
-   and rename it to `opencv-4.10.0.aar`, then place it in this folder.
+## Optional: native C++ SDK (ArUco headers)
 
-## OpenCV Android SDK (for C++ headers — optional but recommended for full native build)
+For full native ArUco CMake linking, download the Android SDK and set:
 
-Set the environment variable before building:
+```powershell
+$env:OPENCV_ANDROID_SDK="C:\path\to\OpenCV-android-sdk"
+```
 
-    export OPENCV_ANDROID_SDK=/path/to/OpenCV-android-sdk
-
-This allows CMake to link against `libopencv_java4.so` directly.
-If the variable is not set, the build still compiles but ArUco detection
-will be disabled at runtime (stub JNI returns `detected: false`).
+If unset, the app still builds; ArUco JNI falls back to a stub when headers/libs are missing.

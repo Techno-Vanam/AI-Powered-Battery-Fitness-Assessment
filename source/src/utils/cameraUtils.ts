@@ -1,14 +1,14 @@
-import type { CameraDevice, CameraFormat } from 'react-native-vision-camera';
+import type { CameraDevice, CameraDeviceFormat } from 'react-native-vision-camera';
 
 const TARGET_WIDTH = 1280;
 const TARGET_HEIGHT = 720;
 const TARGET_FPS = 30;
 
 /**
- * Selects the best CameraFormat from a device that matches 720p @ 30fps.
+ * Selects the best CameraDeviceFormat from a device that matches 720p @ 30fps.
  * Falls back to the closest available format if exact match is not found.
  */
-export function selectBestFormat(device: CameraDevice): CameraFormat | undefined {
+export function selectBestFormat(device: CameraDevice): CameraDeviceFormat | undefined {
   const formats = device.formats;
   if (!formats || formats.length === 0) return undefined;
 
@@ -34,7 +34,7 @@ export function selectBestFormat(device: CameraDevice): CameraFormat | undefined
   return scored[0]?.format ?? formats[0];
 }
 
-export function formatResolution(format: CameraFormat | undefined): string {
+export function formatResolution(format: CameraDeviceFormat | undefined): string {
   if (!format) return 'Unknown';
   return `${format.videoWidth}×${format.videoHeight}`;
 }
