@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import {
   createNativeStackNavigator,
@@ -14,7 +14,7 @@ import AthleteHomeScreen from '../screens/athlete/AthleteHomeScreen';
 import CoachLoginScreen from '../screens/coach/CoachLoginScreen';
 import CoachRegisterScreen from '../screens/coach/CoachRegisterScreen';
 import CoachOtpVerifyScreen from '../screens/coach/CoachOtpVerifyScreen';
-import CoachHomeScreen from '../screens/coach/CoachHomeScreen';
+import CoachHomeNavScreen from '../screens/coach/CoachHomeNavScreen';
 import ForgotPasswordScreen from '../screens/shared/ForgotPasswordScreen';
 import ResetPasswordScreen from '../screens/shared/ResetPasswordScreen';
 import SetPasswordScreen from '../screens/shared/SetPasswordScreen';
@@ -103,7 +103,7 @@ export function AppNavigator() {
         <Stack.Screen name="CoachLogin" component={CoachLoginScreen} />
         <Stack.Screen name="CoachRegister" component={CoachRegisterScreen} />
         <Stack.Screen name="CoachOtpVerify" component={CoachOtpVerifyScreen} />
-        <Stack.Screen name="CoachHome" component={CoachHomeScreen} />
+        <Stack.Screen name="CoachHome" component={CoachHomeNavScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         <Stack.Screen name="SetPassword" component={SetPasswordScreen} />

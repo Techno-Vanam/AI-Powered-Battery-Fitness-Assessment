@@ -3,784 +3,682 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sports App - Global Poppins Font & Lucide Vectors</title>
+  <title>AI Fitness Assessment Coach App — Apple-Style UI/UX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
     }
 
     body {
-      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #F1F5F9;
-      color: #0F172A;
+      background: #F2F2F7;
+      color: #000000;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding: 16px;
     }
 
-    .top-navbar {
+    .top-header {
+      width: 100%;
+      max-width: 440px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      width: 100%;
-      max-width: 1200px;
-      padding: 16px 24px;
-      z-index: 10;
+      margin-bottom: 12px;
     }
 
-    .brand-title {
+    .app-title {
       font-size: 16px;
-      font-weight: 800;
-      letter-spacing: -0.3px;
+      font-weight: 700;
+      color: #000000;
       display: flex;
       align-items: center;
       gap: 8px;
-      color: #0F172A;
     }
 
-    .view-switcher {
-      display: flex;
-      background: #E2E8F0;
-      padding: 4px;
-      border-radius: 20px;
-      gap: 4px;
-    }
-
-    .view-btn {
-      border: none;
-      background: transparent;
-      padding: 8px 16px;
-      border-radius: 16px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #64748B;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .view-btn.active {
+    .device-container {
+      width: 100%;
+      max-width: 440px;
+      height: 860px;
       background: #FFFFFF;
-      color: #0F172A;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    /* PHONE / TABLET FRAME SIMULATOR */
-    .device-mockup-frame {
-      width: clamp(340px, 90vw, 420px);
-      height: clamp(680px, 92vh, 840px);
-      background: #FFFFFF;
-      border-radius: 44px;
-      border: 10px solid #1E293B;
-      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
-      position: relative;
+      border-radius: 40px;
+      border: 8px solid #000000;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.12);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      margin-bottom: 30px;
-      transition: all 0.3s ease;
+      position: relative;
     }
 
-    .device-mockup-frame.tablet-mode {
-      width: clamp(540px, 85vw, 680px);
-      height: 780px;
-      border-radius: 36px;
-    }
-
-    .device-mockup-frame.hidden {
-      display: none;
-    }
-
-    /* Phone Status Bar (TOP) */
-    .phone-status-bar {
+    /* iOS Status Bar */
+    .status-bar {
       height: 44px;
-      width: 100%;
       background: #FFFFFF;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 24px;
-      font-size: 13px;
-      font-weight: 800;
-      color: #0F172A;
-      z-index: 20;
-      position: relative;
+      padding: 0 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border-bottom: 1px solid #E5E5EA;
     }
 
-    .dynamic-island {
+    .app-content {
+      flex: 1;
+      overflow-y: auto;
+      background: #FFFFFF;
+    }
+
+    /* Bottom Floating Oval 5-Tab Bar */
+    .bottom-tab-bar {
       position: absolute;
-      top: 8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100px;
-      height: 26px;
-      background: #0F172A;
-      border-radius: 20px;
-      z-index: 30;
-    }
-
-    .status-right-icons {
+      bottom: 12px;
+      left: 16px;
+      right: 16px;
+      height: 64px;
+      background: #FFFFFF;
+      border: 1px solid #E5E5EA;
+      border-radius: 32px;
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 11px;
+      justify-content: space-around;
+      padding: 0 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      z-index: 100;
     }
 
-    /* App UI Content Container (Strictly BELOW Status Bar) */
-    .app-screen-content {
+    .tab-item {
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
       align-items: center;
-      padding: 12px 24px 20px 24px;
-      background: #FFFFFF;
+      justify-content: center;
+      color: #8E8E93;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 10px;
+      font-weight: 600;
+      gap: 2px;
+      padding: 6px 0;
+      border-radius: 24px;
+      transition: all 0.2s ease;
     }
 
-    /* Bottom Home Bar */
-    .phone-home-bar {
-      height: 22px;
-      width: 100%;
+    .tab-item.active {
+      color: #007AFF;
+      background: #E5F1FF;
+      font-weight: 700;
+    }
+
+    /* App Views */
+    .view-page {
+      display: none;
+      padding: 16px;
+    }
+
+    .view-page.active {
+      display: block;
+    }
+
+    /* Top Bar */
+    .page-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #000000;
+      letter-spacing: -0.4px;
+    }
+
+    /* Sync Banner */
+    .sync-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      border: 1px solid #A3E9B8;
+      background: #E8F9ED;
+      color: #34C759;
+    }
+
+    .sync-banner.offline {
+      background: #FFF5E6;
+      border-color: #FFD699;
+      color: #FF9500;
+    }
+
+    /* 2x2 Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
       background: #FFFFFF;
+      border: 1px solid #E5E5EA;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .stat-number {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #8E8E93;
+    }
+
+    /* Quick Action Cards */
+    .quick-action-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #FFFFFF;
+      border: 1px solid #E5E5EA;
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .action-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #000000;
+    }
+
+    .action-sub {
+      font-size: 13px;
+      color: #8E8E93;
+    }
+
+    .action-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      background: #E5F1FF;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding-bottom: 6px;
+      color: #007AFF;
     }
 
-    .home-indicator-pill {
-      width: 120px;
-      height: 4px;
-      background: #0F172A;
-      border-radius: 2px;
+    /* Athlete List Row */
+    .athlete-row {
+      display: flex;
+      align-items: center;
+      background: #FFFFFF;
+      border: 1px solid #E5E5EA;
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
 
-    .top-progress-bar {
+    .avatar-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 22px;
+      background: #E5F1FF;
+      color: #007AFF;
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+    }
+
+    .athlete-info {
+      flex: 1;
+    }
+
+    .athlete-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 2px;
+    }
+
+    .athlete-sub {
+      font-size: 12px;
+      color: #8E8E93;
+    }
+
+    .athlete-right {
+      text-align: right;
+    }
+
+    .completion-fraction {
+      font-size: 12px;
+      font-weight: 600;
+      color: #8E8E93;
+      margin-bottom: 4px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .status-completed {
+      background: #E8F9ED;
+      color: #34C759;
+    }
+
+    .status-pending {
+      background: #FFF5E6;
+      color: #FF9500;
+    }
+
+    .status-inprogress {
+      background: #E5F1FF;
+      color: #007AFF;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background: #007AFF;
+      color: #FFFFFF;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .filter-chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      margin-bottom: 14px;
+      padding-bottom: 4px;
+    }
+
+    .chip {
+      padding: 6px 14px;
+      border-radius: 14px;
+      background: #F2F2F7;
+      font-size: 12px;
+      font-weight: 600;
+      color: #8E8E93;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      background: #007AFF;
+      color: #FFFFFF;
+    }
+
+    /* Progress Bar */
+    .progress-track {
       width: 100%;
-      height: 4px;
-      background: #E2E8F0;
-      border-radius: 2px;
+      height: 6px;
+      background: #F2F2F7;
+      border-radius: 3px;
       overflow: hidden;
-      margin-bottom: 12px;
     }
 
     .progress-fill {
       height: 100%;
-      border-radius: 2px;
-      transition: width 0.3s ease, background-color 0.3s ease;
-    }
-
-    .header-bar {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-
-    .badge {
-      background: #F1F5F9;
-      padding: 5px 12px;
-      border-radius: 14px;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 1.1px;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .step-label {
-      font-size: 11px;
-      font-weight: 800;
-      color: #94A3B8;
-      letter-spacing: 1px;
-    }
-
-    .illustration-wrapper {
-      width: clamp(190px, 45vw, 240px);
-      height: clamp(190px, 45vw, 240px);
-      border-radius: 50%;
-      border: 1px solid #E2E8F0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-      margin: 6px auto;
-      transition: background-color 0.3s ease;
-    }
-
-    .illustration-svg {
-      width: 100%;
-      height: 100%;
-    }
-
-    .floating-pill {
-      position: absolute;
-      bottom: 14px;
-      left: 14px;
-      background: #FFFFFF;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 10px;
-      font-weight: 800;
-      color: #0F172A;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      border: 1px solid #E2E8F0;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .dots-indicator {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin: 10px 0;
-    }
-
-    .dot {
-      height: 8px;
-      border-radius: 4px;
-      background: #CBD5E1;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      width: 8px;
-      cursor: pointer;
-    }
-
-    .dot.active {
-      width: 24px;
-    }
-
-    .text-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 0 4px;
-      max-width: 360px;
-    }
-
-    .slide-title {
-      font-size: clamp(20px, 4vw, 24px);
-      font-weight: 800;
-      color: #0F172A;
-      line-height: 1.3;
-      margin-bottom: 8px;
-      letter-spacing: -0.3px;
-    }
-
-    .slide-desc {
-      font-size: 14px;
-      font-weight: 400;
-      color: #64748B;
-      line-height: 1.5;
-      margin-bottom: 10px;
-    }
-
-    .sub-text-pill {
-      background: #F8FAFC;
-      border: 1px solid #E2E8F0;
-      padding: 6px 14px;
-      border-radius: 16px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #0F172A;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .stat-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .action-footer {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 8px;
-      max-width: 380px;
-    }
-
-    .btn-skip {
-      border: none;
-      background: transparent;
-      font-size: 13px;
-      font-weight: 800;
-      color: #64748B;
-      letter-spacing: 1px;
-      cursor: pointer;
-      padding: 12px 16px;
-      transition: color 0.2s;
-    }
-
-    .btn-skip:hover {
-      color: #0F172A;
-    }
-
-    .btn-next {
-      background: #0F172A;
-      color: #FFFFFF;
-      border: none;
-      padding: 14px 36px;
-      border-radius: 26px;
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: 1px;
-      cursor: pointer;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: transform 0.15s ease, background-color 0.15s ease;
-    }
-
-    .btn-next:hover {
-      background: #1E293B;
-      transform: translateY(-1px);
-    }
-
-    .btn-start {
-      width: 100%;
-      background: #0F172A;
-      color: #FFFFFF;
-      border: none;
-      padding: 16px;
-      border-radius: 28px;
-      font-size: 14px;
-      font-weight: 800;
-      letter-spacing: 1.2px;
-      cursor: pointer;
-      text-align: center;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: transform 0.15s ease, background-color 0.15s ease;
-    }
-
-    .btn-start:hover {
-      background: #1E293B;
-      transform: translateY(-1px);
-    }
-
-    .grid-view-container {
-      display: none;
-      gap: 28px;
-      align-items: stretch;
-      justify-content: center;
-      max-width: 1200px;
-      width: 100%;
-      padding: 10px 20px 40px 20px;
-      flex-wrap: wrap;
-    }
-
-    .grid-view-container.active {
-      display: flex;
-    }
-
-    .grid-screen-frame {
-      width: 320px;
-      height: 640px;
-      background: #FFFFFF;
-      border-radius: 36px;
-      border: 8px solid #1E293B;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
-    }
-
-    .grid-status-bar {
-      height: 36px;
-      padding: 0 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 11px;
-      font-weight: 800;
-      color: #0F172A;
-    }
-
-    .grid-app-content {
-      flex: 1;
-      padding: 12px 18px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
+      background: #007AFF;
     }
   </style>
 </head>
 <body>
-
-  <div class="top-navbar">
-    <div class="brand-title">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-      Sports App UI Flow
-    </div>
-    <div class="view-switcher">
-      <button class="view-btn active" id="btnSingle" onclick="switchToSingle()">Phone Simulator</button>
-      <button class="view-btn" id="btnTablet" onclick="toggleTabletMode()">Tablet View</button>
-      <button class="view-btn" id="btnGrid" onclick="switchToGrid()">All 3 Screens</button>
+  <div class="top-header">
+    <div class="app-title">
+      <i data-lucide="activity" style="color:#007AFF;"></i>
+      <span>AI Battery Fitness Coach</span>
     </div>
   </div>
 
-  <!-- REAL PHONE / TABLET FRAME SIMULATOR -->
-  <div class="device-mockup-frame" id="singleDeviceFrame">
-    <div class="dynamic-island"></div>
-
-    <div class="phone-status-bar">
+  <div class="device-container">
+    <!-- iOS Status Bar -->
+    <div class="status-bar">
       <span>9:41</span>
-      <div class="status-right-icons">
-        <span>5G</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18h.01M10 14h.01M14 10h.01M18 6h.01"/></svg>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <i data-lucide="wifi" size="14"></i>
+        <i data-lucide="battery" size="16"></i>
       </div>
     </div>
 
-    <div class="app-screen-content" id="singleAppContent">
-    </div>
-
-    <div class="phone-home-bar">
-      <div class="home-indicator-pill"></div>
-    </div>
-  </div>
-
-  <!-- GRID VIEW OF ALL 3 SCREENS -->
-  <div class="grid-view-container" id="gridView">
-    
-    <!-- Screen 1 Grid -->
-    <div class="grid-screen-frame">
-      <div class="grid-status-bar">
-        <span>9:41</span>
-        <span>5G</span>
-      </div>
-      <div class="grid-app-content">
-        <div class="header-bar">
-          <div class="badge" style="color: #F59E0B;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.5"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-            PERFORMANCE TRACKER
+    <!-- Main Content Views -->
+    <div class="app-content">
+      <!-- 1. HOME TAB PAGE -->
+      <div id="page-home" class="view-page active">
+        <div class="page-top-bar">
+          <div>
+            <div style="font-size:14px; color:#8E8E93; font-weight:400;">Good morning,</div>
+            <div style="font-size:22px; font-weight:800; color:#000; letter-spacing:-0.4px;">Coach Rajesh</div>
           </div>
-          <span class="step-label">1 OF 3</span>
-        </div>
-        <div class="illustration-wrapper" style="width: 170px; height: 170px; background: #FAF8F5;">
-          <svg class="illustration-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="100" cy="100" r="85" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="6 6"/>
-            <rect x="25" y="32" width="60" height="26" rx="8" fill="#1E293B"/>
-            <text x="35" y="49" fill="#38BDF8" font-size="11" font-weight="800">00:42.5</text>
-            <path d="M72 70 H128 V98 C128 114 115 126 100 126 C85 126 72 114 72 98 Z" fill="#F59E0B"/>
-            <rect x="92" y="126" width="16" height="16" fill="#D97706"/>
-            <rect x="74" y="142" width="52" height="12" rx="3" fill="#1E293B"/>
-            <circle cx="148" cy="148" r="20" fill="#EA580C"/>
-          </svg>
-        </div>
-
-        <div class="dots-indicator">
-          <span class="dot active" style="background: #F59E0B;"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-        </div>
-
-        <div class="text-content">
-          <h2 class="slide-title" style="font-size: 18px;">Track your sports<br>and get the result</h2>
-          <p class="slide-desc" style="font-size: 12px;">Keep precise track of your athletic accomplishments and stats.</p>
-        </div>
-
-        <div class="action-footer">
-          <button class="btn-skip" onclick="switchToSlide(2)">SKIP</button>
-          <button class="btn-next" onclick="switchToSlide(1)">
-            NEXT
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Screen 2 Grid -->
-    <div class="grid-screen-frame">
-      <div class="grid-status-bar">
-        <span>9:41</span>
-        <span>5G</span>
-      </div>
-      <div class="grid-app-content">
-        <div class="header-bar">
-          <div class="badge" style="color: #10B981;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            TEAM & STRATEGY
+          <div style="position:relative; cursor:pointer;" onclick="switchPage('notifications')">
+            <i data-lucide="bell" size="22"></i>
+            <span style="position:absolute; top:-4px; right:-4px; background:#FF3B30; color:#FFF; font-size:10px; font-weight:700; border-radius:10px; padding:2px 5px;">4</span>
           </div>
-          <span class="step-label">2 OF 3</span>
-        </div>
-        <div class="illustration-wrapper" style="width: 170px; height: 170px; background: #F4FBF7;">
-          <svg class="illustration-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="35" y="35" width="115" height="115" rx="16" fill="#10B981" stroke="#047857" stroke-width="3"/>
-            <line x1="35" y1="92" x2="150" y2="92" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
-            <circle cx="92.5" cy="92.5" r="18" stroke="rgba(255,255,255,0.6)" stroke-width="2" fill="none"/>
-            <circle cx="60" cy="60" r="10" fill="#EF4444"/>
-            <text x="56" y="64" fill="#FFF" font-size="11" font-weight="900">✕</text>
-            <circle cx="120" cy="120" r="10" fill="#EF4444"/>
-            <text x="116" y="124" fill="#FFF" font-size="11" font-weight="900">✕</text>
-            <circle cx="125" cy="65" r="10" fill="#3B82F6"/>
-            <text x="120" y="69" fill="#FFF" font-size="11" font-weight="900">◯</text>
-            <rect x="135" y="24" width="42" height="48" rx="8" fill="#0F172A" stroke="#38BDF8" stroke-width="2"/>
-            <text x="146" y="54" fill="#FBBF24" font-size="16" font-weight="900">10</text>
-          </svg>
         </div>
 
-        <div class="dots-indicator">
-          <span class="dot"></span>
-          <span class="dot active" style="background: #10B981;"></span>
-          <span class="dot"></span>
-        </div>
-
-        <div class="text-content">
-          <h2 class="slide-title" style="font-size: 18px;">Stay organized<br>with team</h2>
-          <p class="slide-desc" style="font-size: 12px;">Understand team strategies and coordinate match lineups seamlessly.</p>
-        </div>
-
-        <div class="action-footer">
-          <button class="btn-skip" onclick="switchToSlide(2)">SKIP</button>
-          <button class="btn-next" onclick="switchToSlide(2)">
-            NEXT
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Screen 3 Grid -->
-    <div class="grid-screen-frame">
-      <div class="grid-status-bar">
-        <span>9:41</span>
-        <span>5G</span>
-      </div>
-      <div class="grid-app-content">
-        <div class="header-bar">
-          <div class="badge" style="color: #EF4444;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            LIVE MATCH ALERTS
+        <!-- 2x2 Stats Grid (Equal Size with Distinct Colors & Icons) -->
+        <div class="stats-grid">
+          <div class="stat-card" style="background:#E5F1FF; border-color:#B3D7FF; min-height:100px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="stat-number" style="color:#007AFF;">250</div>
+              <div style="width:36px; height:36px; border-radius:18px; background:rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; color:#007AFF;"><i data-lucide="users" size="18"></i></div>
+            </div>
+            <div class="stat-label" style="color:#007AFF; font-weight:600;">Total Athletes</div>
           </div>
-          <span class="step-label">3 OF 3</span>
-        </div>
-        <div class="illustration-wrapper" style="width: 170px; height: 170px; background: #FEF2F2;">
-          <svg class="illustration-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="25" y="55" width="150" height="90" rx="16" fill="#0F172A" stroke="#1E293B" stroke-width="2"/>
-            <rect x="76" y="65" width="48" height="18" rx="8" fill="#EF4444"/>
-            <text x="91" y="77" fill="#FFF" font-size="9" font-weight="900">LIVE</text>
-            <text x="45" y="100" fill="#94A3B8" font-size="10" font-weight="700">FCB</text>
-            <text x="47" y="126" fill="#FFF" font-size="24" font-weight="900">2</text>
-            <text x="96" y="120" fill="#64748B" font-size="20" font-weight="700">-</text>
-            <text x="135" y="100" fill="#94A3B8" font-size="10" font-weight="700">RMA</text>
-            <text x="139" y="126" fill="#FFF" font-size="24" font-weight="900">1</text>
-          </svg>
+
+          <div class="stat-card" style="background:#F0F0FC; border-color:#C6C4F4; min-height:100px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="stat-number" style="color:#5856D6;">160</div>
+              <div style="width:36px; height:36px; border-radius:18px; background:rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; color:#5856D6;"><i data-lucide="activity" size="18"></i></div>
+            </div>
+            <div class="stat-label" style="color:#5856D6; font-weight:600;">Total Assessments</div>
+          </div>
+
+          <div class="stat-card" style="background:#FFF5E6; border-color:#FFD699; min-height:100px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="stat-number" style="color:#FF9500;">18</div>
+              <div style="width:36px; height:36px; border-radius:18px; background:rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; color:#FF9500;"><i data-lucide="clock" size="18"></i></div>
+            </div>
+            <div class="stat-label" style="color:#FF9500; font-weight:600;">Pending Assessments</div>
+          </div>
+
+          <div class="stat-card" style="background:#E8F9ED; border-color:#A3E9B8; min-height:100px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="stat-number" style="color:#34C759;">142</div>
+              <div style="width:36px; height:36px; border-radius:18px; background:rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; color:#34C759;"><i data-lucide="check-circle-2" size="18"></i></div>
+            </div>
+            <div class="stat-label" style="color:#34C759; font-weight:600;">Completed Assessments</div>
+          </div>
         </div>
 
-        <div class="dots-indicator">
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot active" style="background: #EF4444;"></span>
+        <!-- Quick Action Cards (Styled in App Brand Colors) -->
+        <div style="font-size:17px; font-weight:700; margin-bottom:12px;">Quick Actions</div>
+        <div class="quick-action-card" style="background:#FF9500; border:none; color:#FFF;" onclick="switchPage('add-athlete')">
+          <div>
+            <div class="action-title" style="color:#FFF;">Add Athlete</div>
+            <div class="action-sub" style="color:rgba(255,255,255,0.85);">Register a new athlete</div>
+          </div>
+          <div class="action-circle" style="background:#FFF; color:#FF9500;"><i data-lucide="plus" size="20"></i></div>
+        </div>
+        <div class="quick-action-card" style="background:#FFF5E6; border:1px solid #FFD699;" onclick="switchTab('Athletes')">
+          <div>
+            <div class="action-title" style="color:#FF9500;">View Athletes</div>
+            <div class="action-sub" style="color:#8E8E93;">Browse all athletes</div>
+          </div>
+          <div class="action-circle" style="background:#FFF; color:#FF9500;"><i data-lucide="users" size="20"></i></div>
         </div>
 
-        <div class="text-content">
-          <h2 class="slide-title" style="font-size: 18px;">Get notified when<br>games happen</h2>
-          <p class="slide-desc" style="font-size: 12px;">Take control of live match notifications and score alerts.</p>
+        <!-- Recent Sessions -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin: 20px 0 12px 0;">
+          <span style="font-size:17px; font-weight:700;">Recent Sessions</span>
+          <span style="font-size:13px; font-weight:600; color:#007AFF; cursor:pointer;" onclick="switchPage('session-history')">View All</span>
         </div>
 
-        <div class="action-footer">
-          <button class="btn-start" onclick="switchToSlide(0)">
-            START EXPERIENCE
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </button>
+        <div class="stat-card" style="margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <span style="font-size:12px; color:#8E8E93;">04 Aug 2026</span>
+            <span class="status-badge status-inprogress">In Progress</span>
+          </div>
+          <div style="font-size:16px; font-weight:700; margin-bottom:2px;">Morning Athletics Battery</div>
+          <div style="font-size:13px; color:#8E8E93; margin-bottom:10px;">Delhi Public School · Coach Rajesh Kumar</div>
+          <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+            <span style="font-weight:600;">32/40 Athletes Assessed</span>
+            <span style="color:#007AFF; font-weight:700;">80%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:80%;"></div></div>
+        </div>
+      </div>
+
+      <!-- 2. ATHLETES TAB PAGE -->
+      <div id="page-athletes" class="view-page">
+        <div class="page-top-bar">
+          <span class="page-title">Athletes</span>
+          <button class="btn-primary" onclick="switchPage('add-athlete')">+ Add</button>
+        </div>
+
+        <!-- Search & Filter Row -->
+        <div style="display:flex; gap:10px; margin-bottom:14px;">
+          <div style="flex:1; display:flex; align-items:center; background:#F2F2F7; border-radius:12px; padding:0 12px; height:42px;">
+            <i data-lucide="search" size="18" style="color:#8E8E93; margin-right:8px;"></i>
+            <input type="text" placeholder="Search athletes..." style="border:none; background:transparent; font-size:14px; outline:none; width:100%;" />
+          </div>
+          <div style="width:42px; height:42px; border-radius:12px; background:#E5F1FF; display:flex; align-items:center; justify-content:center; color:#007AFF; cursor:pointer;">
+            <i data-lucide="filter" size="18"></i>
+          </div>
+        </div>
+
+        <!-- Athlete Rows -->
+        <div class="athlete-row" onclick="switchPage('athlete-profile')">
+          <div class="avatar-circle">AS</div>
+          <div class="athlete-info">
+            <div class="athlete-name">Aarav Sharma</div>
+            <div class="athlete-sub">Delhi Public School · Age 16</div>
+          </div>
+          <div class="athlete-right">
+            <div class="completion-fraction">9/10 Tests Completed</div>
+            <span class="status-badge status-completed">Completed</span>
+          </div>
+        </div>
+
+        <div class="athlete-row" onclick="switchPage('athlete-profile')">
+          <div class="avatar-circle">PN</div>
+          <div class="athlete-info">
+            <div class="athlete-name">Priya Nambiar</div>
+            <div class="athlete-sub">St. Xavier High School · Age 15</div>
+          </div>
+          <div class="athlete-right">
+            <div class="completion-fraction">5/10 Tests Completed</div>
+            <span class="status-badge status-inprogress">In Progress</span>
+          </div>
+        </div>
+
+        <div class="athlete-row" onclick="switchPage('athlete-profile')">
+          <div class="avatar-circle">RM</div>
+          <div class="athlete-info">
+            <div class="athlete-name">Rohan Mehta</div>
+            <div class="athlete-sub">Modern School Vasant Vihar · Age 17</div>
+          </div>
+          <div class="athlete-right">
+            <div class="completion-fraction">0/10 Tests Completed</div>
+            <span class="status-badge status-pending">Pending</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. ASSESS TAB PAGE -->
+      <div id="page-assess" class="view-page">
+        <div class="page-top-bar">
+          <span class="page-title">Assessment</span>
+          <button class="btn-primary" onclick="switchPage('new-assessment')">+ New</button>
+        </div>
+
+        <div class="stat-card" style="background:#007AFF; color:#FFF; margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span style="background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:6px; font-size:10px; font-weight:700;">ACTIVE SESSION</span>
+            <button style="background:#FFF; color:#007AFF; border:none; padding:4px 12px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer;" onclick="switchPage('record-progress')">Resume</button>
+          </div>
+          <div style="font-size:18px; font-weight:700;">Morning Athletics Battery</div>
+          <div style="font-size:13px; opacity:0.8; margin-bottom:10px;">Delhi Public School · Batch A</div>
+          <div class="progress-track" style="background:rgba(255,255,255,0.3);"><div class="progress-fill" style="background:#FFF; width:80%;"></div></div>
+        </div>
+
+        <!-- Summary Cards (Completed Check & Pending Clock Icons) -->
+        <div style="display:flex; gap:12px; margin-bottom:16px;">
+          <div class="stat-card" style="flex:1; background:#E5F1FF; border:1px solid #B3D7FF; min-height:90px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer;" onclick="switchPage('completed-assessments')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="stat-number" style="color:#007AFF;">142</div>
+              <div style="width:32px; height:32px; border-radius:16px; background:rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; color:#007AFF;"><i data-lucide="check-circle-2" size="18"></i></div>
+            </div>
+            <div class="stat-label" style="color:#007AFF; font-weight:600;">Completed Assessments</div>
+          </div>
+          <div class="stat-card" style="flex:1; background:#F0F0FC; border:1px solid #C6C4F4; min-height:90px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer;" onclick="switchPage('pending-assessments')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="stat-number" style="color:#5856D6;">18</div>
+              <div style="width:32px; height:32px; border-radius:16px; background:rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; color:#5856D6;"><i data-lucide="clock" size="18"></i></div>
+            </div>
+            <div class="stat-label" style="color:#5856D6; font-weight:600;">Pending Assessments</div>
+          </div>
+        </div>
+
+        <div style="font-size:16px; font-weight:700; margin-bottom:10px;">10 Test Battery List</div>
+        <div class="stat-card" style="margin-bottom:8px; cursor:pointer;" onclick="switchPage('test-details')">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:15px; font-weight:700;">30m Sprint</div>
+              <div style="font-size:12px; color:#8E8E93;">Speed Battery · Unit (sec)</div>
+            </div>
+            <i data-lucide="chevron-right" size="18" style="color:#8E8E93;"></i>
+          </div>
+        </div>
+        <div class="stat-card" style="margin-bottom:8px; cursor:pointer;" onclick="switchPage('test-details')">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:15px; font-weight:700;">Vertical Jump</div>
+              <div style="font-size:12px; color:#8E8E93;">Explosive Power · Unit (cm)</div>
+            </div>
+            <i data-lucide="chevron-right" size="18" style="color:#8E8E93;"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. REPORTS TAB PAGE -->
+      <div id="page-reports" class="view-page">
+        <div class="page-top-bar">
+          <span class="page-title">Reports</span>
+        </div>
+
+        <div class="stat-card" style="margin-bottom:12px;">
+          <div style="font-size:16px; font-weight:700; margin-bottom:4px;">1. Athlete-wise Report</div>
+          <div style="font-size:12px; color:#8E8E93; margin-bottom:12px;">Individual athlete progress & AI recommendations</div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-primary" style="flex:1; font-size:12px; padding:8px;" onclick="switchPage('athlete-profile')">View</button>
+            <button class="btn-primary" style="flex:1; font-size:12px; padding:8px; background:#FFF5E6; color:#FF9500;" onclick="alert('Choose Format:\n1. PDF Document\n2. Excel Sheet (.xlsx)\n3. CSV File (.csv)')">Download</button>
+          </div>
+        </div>
+
+        <div class="stat-card" style="margin-bottom:12px;">
+          <div style="font-size:16px; font-weight:700; margin-bottom:4px;">2. Test-wise Report</div>
+          <div style="font-size:12px; color:#8E8E93; margin-bottom:12px;">Average score by test, pass %, top performers</div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-primary" style="flex:1; font-size:12px; padding:8px;" onclick="switchPage('test-details')">View</button>
+            <button class="btn-primary" style="flex:1; font-size:12px; padding:8px; background:#FFF5E6; color:#FF9500;" onclick="alert('Choose Format:\n1. PDF Document\n2. Excel Sheet (.xlsx)\n3. CSV File (.csv)')">Download</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. SETTINGS TAB PAGE -->
+      <div id="page-settings" class="view-page">
+        <div class="page-top-bar">
+          <span class="page-title">Settings</span>
+          <i data-lucide="edit-3" size="20" style="color:#007AFF;"></i>
+        </div>
+
+        <!-- Coach Profile Card -->
+        <div class="stat-card" style="text-align:center; margin-bottom:16px;">
+          <div class="avatar-circle" style="width:64px; height:64px; font-size:22px; margin:0 auto 10px auto;">RK</div>
+          <div style="font-size:18px; font-weight:700;">Rajesh Kumar</div>
+          <div style="font-size:13px; color:#007AFF; font-weight:600;">Senior Physical Education Coach</div>
+          <div style="font-size:13px; color:#8E8E93;">Delhi Public School, R.K. Puram</div>
+          <div style="font-size:12px; color:#8E8E93; margin-top:4px;">rajesh.kumar@dps.edu.in</div>
+        </div>
+
+        <div style="font-size:15px; font-weight:700; margin-bottom:8px;">General Settings</div>
+        <div class="stat-card" style="padding:0; overflow:hidden;">
+          <div style="display:flex; justify-content:space-between; padding:12px 16px; border-bottom:1px solid #E5E5EA;">
+            <span style="font-size:14px; font-weight:500;">Language</span>
+            <span style="font-size:13px; color:#8E8E93;">English</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:12px 16px; border-bottom:1px solid #E5E5EA;">
+            <span style="font-size:14px; font-weight:500;">Privacy & Consent</span>
+            <i data-lucide="chevron-right" size="16" style="color:#8E8E93;"></i>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:12px 16px;">
+            <span style="font-size:14px; font-weight:500;">Offline Sync</span>
+            <span style="font-size:13px; color:#34C759; font-weight:700;">Active (0 Pending)</span>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Fixed Bottom 5-Tab Bar -->
+    <div class="bottom-tab-bar">
+      <div id="tab-Home" class="tab-item active" onclick="switchTab('Home')">
+        <i data-lucide="home" size="20"></i>
+        <span>Home</span>
+      </div>
+      <div id="tab-Athletes" class="tab-item" onclick="switchTab('Athletes')">
+        <i data-lucide="users" size="20"></i>
+        <span>Athletes</span>
+      </div>
+      <div id="tab-Assess" class="tab-item" onclick="switchTab('Assess')">
+        <i data-lucide="clipboard-check" size="20"></i>
+        <span>Assess</span>
+      </div>
+      <div id="tab-Reports" class="tab-item" onclick="switchTab('Reports')">
+        <i data-lucide="bar-chart-3" size="20"></i>
+        <span>Reports</span>
+      </div>
+      <div id="tab-Settings" class="tab-item" onclick="switchTab('Settings')">
+        <i data-lucide="settings" size="20"></i>
+        <span>Settings</span>
+      </div>
+    </div>
   </div>
 
   <script>
-    /* SVG Lucide Icon Builders */
-    const LucideTrophy = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.5"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`;
-    const LucideShield = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
-    const LucideZap = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
-    const LucideFlame = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.5"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z"/></svg>`;
-    const LucideActivity = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5"><polyline points="22 12 18 12 14 20 10 4 6 12 2 12"/></svg>`;
-    const LucideClipboard = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>`;
-    const LucideBell = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
-    const LucideArrowRight = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+    lucide.createIcons();
 
-    const slidesData = [
-      {
-        badgeIcon: LucideTrophy,
-        badgeText: "PERFORMANCE TRACKER",
-        stepLabel: "STEP 1 OF 3",
-        accentColor: "#F59E0B",
-        bgColor: "#FAF8F5",
-        subTextHtml: `<div class="stat-item">${LucideFlame} 850 kcal</div> • <div class="stat-item">${LucideActivity} 5.2 km today</div>`,
-        pillTagHtml: `${LucideFlame} 850 kcal`,
-        svg: `<svg class="illustration-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="100" cy="100" r="85" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="6 6"/>
-          <rect x="25" y="32" width="60" height="26" rx="8" fill="#1E293B"/>
-          <text x="35" y="49" fill="#38BDF8" font-size="11" font-weight="800">00:42.5</text>
-          <path d="M72 70 H128 V98 C128 114 115 126 100 126 C85 126 72 114 72 98 Z" fill="#F59E0B"/>
-          <path d="M60 76 C52 76 52 98 72 98" stroke="#D97706" stroke-width="4" fill="none"/>
-          <path d="M140 76 C148 76 148 98 128 98" stroke="#D97706" stroke-width="4" fill="none"/>
-          <rect x="92" y="126" width="16" height="16" fill="#D97706"/>
-          <rect x="74" y="142" width="52" height="12" rx="3" fill="#1E293B"/>
-          <circle cx="148" cy="148" r="20" fill="#EA580C"/>
-          <path d="M128 148 H168" stroke="#431407" stroke-width="2"/>
-          <path d="M148 128 V168" stroke="#431407" stroke-width="2"/>
-        </svg>`,
-        activeDot: 0,
-        title: "Track your sports<br>and get the result",
-        desc: "Keep precise track of your athletic accomplishments, daily workouts, match statistics, and fitness progress.",
-        isLast: false
-      },
-      {
-        badgeIcon: LucideShield,
-        badgeText: "TEAM & STRATEGY",
-        stepLabel: "STEP 2 OF 3",
-        accentColor: "#10B981",
-        bgColor: "#F4FBF7",
-        subTextHtml: `<div class="stat-item">${LucideClipboard} 4-3-3 Lineup</div> • <div class="stat-item">${LucideShield} 11 Active Players</div>`,
-        pillTagHtml: `${LucideClipboard} 4-3-3`,
-        svg: `<svg class="illustration-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="35" y="35" width="115" height="115" rx="16" fill="#10B981" stroke="#047857" stroke-width="3"/>
-          <line x1="35" y1="92" x2="150" y2="92" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
-          <circle cx="92.5" cy="92.5" r="18" stroke="rgba(255,255,255,0.6)" stroke-width="2" fill="none"/>
-          <circle cx="60" cy="60" r="10" fill="#EF4444"/>
-          <text x="56" y="64" fill="#FFF" font-size="11" font-weight="900">✕</text>
-          <circle cx="120" cy="120" r="10" fill="#EF4444"/>
-          <text x="116" y="124" fill="#FFF" font-size="11" font-weight="900">✕</text>
-          <circle cx="125" cy="65" r="10" fill="#3B82F6"/>
-          <text x="120" y="69" fill="#FFF" font-size="11" font-weight="900">◯</text>
-          <line x1="68" y1="68" x2="110" y2="108" stroke="#FBBF24" stroke-width="3" stroke-dasharray="4 3"/>
-          <rect x="135" y="24" width="42" height="48" rx="8" fill="#0F172A" stroke="#38BDF8" stroke-width="2"/>
-          <text x="146" y="54" fill="#FBBF24" font-size="16" font-weight="900">10</text>
-          <rect x="24" y="136" width="34" height="22" rx="6" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2"/>
-          <rect x="16" y="142" width="10" height="10" rx="2" fill="#94A3B8"/>
-        </svg>`,
-        activeDot: 1,
-        title: "Stay organized<br>with team",
-        desc: "Understand team strategies, coordinate match lineups, analyze playbooks, and collaborate seamlessly with teammates.",
-        isLast: false
-      },
-      {
-        badgeIcon: LucideZap,
-        badgeText: "LIVE MATCH ALERTS",
-        stepLabel: "STEP 3 OF 3",
-        accentColor: "#EF4444",
-        bgColor: "#FEF2F2",
-        subTextHtml: `<div class="stat-item">${LucideBell} 3 Live Match Alerts Active</div>`,
-        pillTagHtml: `${LucideZap} Live Score Update`,
-        svg: `<svg class="illustration-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M30 10 L80 180 L10 180 Z" fill="rgba(251, 191, 36, 0.1)"/>
-          <path d="M170 10 L190 180 L120 180 Z" fill="rgba(56, 189, 248, 0.1)"/>
-          <rect x="25" y="55" width="150" height="90" rx="16" fill="#0F172A" stroke="#1E293B" stroke-width="2"/>
-          <rect x="76" y="65" width="48" height="18" rx="8" fill="#EF4444"/>
-          <circle cx="84" cy="74" r="3" fill="#FFF"/>
-          <text x="91" y="77" fill="#FFF" font-size="9" font-weight="900">LIVE</text>
-          <text x="45" y="100" fill="#94A3B8" font-size="10" font-weight="700">FCB</text>
-          <text x="47" y="126" fill="#FFF" font-size="24" font-weight="900">2</text>
-          <text x="96" y="120" fill="#64748B" font-size="20" font-weight="700">-</text>
-          <text x="135" y="100" fill="#94A3B8" font-size="10" font-weight="700">RMA</text>
-          <text x="139" y="126" fill="#FFF" font-size="24" font-weight="900">1</text>
-        </svg>`,
-        activeDot: 2,
-        title: "Get notified when<br>games happen",
-        desc: "Take control of live match notifications, stay updated with instant score alerts, and sync your team schedule.",
-        isLast: true
-      }
-    ];
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.view-page').forEach(el => el.classList.remove('active'));
 
-    let currentSlideIdx = 0;
+      const activeTab = document.getElementById('tab-' + tabName);
+      if (activeTab) activeTab.classList.add('active');
 
-    function renderSingleViewport(index) {
-      currentSlideIdx = index;
-      const slide = slidesData[index];
-      const appContent = document.getElementById('singleAppContent');
-      const progressPct = ((index + 1) / slidesData.length) * 100;
-
-      const footerHtml = slide.isLast 
-        ? `<div class="action-footer"><button class="btn-start" onclick="renderSingleViewport(0)">START EXPERIENCE ${LucideArrowRight}</button></div>`
-        : `<div class="action-footer">
-            <button class="btn-skip" onclick="renderSingleViewport(2)">SKIP</button>
-            <button class="btn-next" onclick="renderSingleViewport(${index + 1})">NEXT ${LucideArrowRight}</button>
-           </div>`;
-
-      appContent.innerHTML = `
-        <div class="top-progress-bar">
-          <div class="progress-fill" style="width: ${progressPct}%; background-color: ${slide.accentColor}"></div>
-        </div>
-
-        <div class="header-bar">
-          <div class="badge" style="color: ${slide.accentColor};">
-            ${slide.badgeIcon}
-            ${slide.badgeText}
-          </div>
-          <span class="step-label">${slide.stepLabel}</span>
-        </div>
-
-        <div class="illustration-wrapper" style="background-color: ${slide.bgColor};">
-          ${slide.svg}
-          <div class="floating-pill">${slide.pillTagHtml}</div>
-        </div>
-
-        <div class="dots-indicator">
-          <span class="dot ${slide.activeDot === 0 ? 'active' : ''}" style="${slide.activeDot === 0 ? 'background:'+slide.accentColor : ''}" onclick="renderSingleViewport(0)"></span>
-          <span class="dot ${slide.activeDot === 1 ? 'active' : ''}" style="${slide.activeDot === 1 ? 'background:'+slide.accentColor : ''}" onclick="renderSingleViewport(1)"></span>
-          <span class="dot ${slide.activeDot === 2 ? 'active' : ''}" style="${slide.activeDot === 2 ? 'background:'+slide.accentColor : ''}" onclick="renderSingleViewport(2)"></span>
-        </div>
-
-        <div class="text-content">
-          <h2 class="slide-title">${slide.title}</h2>
-          <p class="slide-desc">${slide.desc}</p>
-          <div class="sub-text-pill">${slide.subTextHtml}</div>
-        </div>
-
-        ${footerHtml}
-      `;
+      const activePage = document.getElementById('page-' + tabName.toLowerCase());
+      if (activePage) activePage.classList.add('active');
     }
 
-    function toggleTabletMode() {
-      const frame = document.getElementById('singleDeviceFrame');
-      const btn = document.getElementById('btnTablet');
-      frame.classList.toggle('tablet-mode');
-      btn.classList.toggle('active');
+    function switchPage(pageKey) {
+      // Handles sub-screen navigation within preview
+      if (pageKey === 'athlete-profile') switchTab('Athletes');
+      if (pageKey === 'add-athlete') switchTab('Athletes');
+      if (pageKey === 'record-progress') switchTab('Assess');
     }
-
-    function switchToSingle() {
-      document.getElementById('singleDeviceFrame').classList.remove('hidden');
-      document.getElementById('gridView').classList.remove('active');
-      document.getElementById('btnSingle').classList.add('active');
-      document.getElementById('btnGrid').classList.remove('active');
-      renderSingleViewport(currentSlideIdx);
-    }
-
-    function switchToGrid() {
-      document.getElementById('singleDeviceFrame').classList.add('hidden');
-      document.getElementById('gridView').classList.add('active');
-      document.getElementById('btnGrid').classList.add('active');
-      document.getElementById('btnSingle').classList.remove('active');
-    }
-
-    function switchToSlide(idx) {
-      switchToSingle();
-      renderSingleViewport(idx);
-    }
-
-    renderSingleViewport(0);
   </script>
 </body>
 </html>

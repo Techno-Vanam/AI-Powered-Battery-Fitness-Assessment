@@ -1,6 +1,7 @@
 import React from 'react';
 import { StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AppProvider } from './src/context/AppContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { createTables } from './src/db/schema';
 import { openDatabase } from './src/database/database';
@@ -58,10 +59,12 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
-      <View style={styles.container}>
-        <AppNavigator />
-      </View>
+      <AppProvider>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" translucent={false} />
+        <View style={styles.container}>
+          <AppNavigator />
+        </View>
+      </AppProvider>
     </SafeAreaProvider>
   );
 }

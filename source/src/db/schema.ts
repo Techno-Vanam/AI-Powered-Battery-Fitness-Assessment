@@ -74,6 +74,14 @@ export const createTables = (): void => {
     );
   `);
 
+  db.executeSync(`
+    CREATE TABLE IF NOT EXISTS dashboard_cache (
+      key TEXT PRIMARY KEY,
+      payload TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+  `);
+
   console.log('[DB] Tables created successfully');
 };
 

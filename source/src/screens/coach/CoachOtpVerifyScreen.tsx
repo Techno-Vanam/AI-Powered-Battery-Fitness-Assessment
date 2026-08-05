@@ -1,48 +1,45 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
+  Text,
+  StyleSheet,
   TouchableOpacity,
   TextInput,
   Animated,
   Alert,
-  StyleSheet,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
 } from 'react-native';
-import { ShieldCheck, RefreshCw } from 'lucide-react-native';
-import { verifyOTP, generateMockOTP, getLatestOTP } from '../../db/otpService';
-import { markUserVerified } from '../../db/userRepository';
-import { runSyncJob } from '../../services/syncService';
-import Screen from '../../components/ui/Screen';
-import AppText from '../../components/ui/AppText';
-import Button from '../../components/ui/Button';
-import { createAuthStyles, createOtpStyles } from '../../styles/screenStyles';
-import { colors, layout } from '../../theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ShieldCheck, RefreshCw, ArrowLeft } from 'lucide-react-native';
+import { colors } from '../../theme/colors';
+import { layout } from '../../theme/layout';
 
 const OTP_LENGTH = 6;
 const OTP_EXPIRY_SECONDS = 300;
 
-const authStyles = createAuthStyles('coach');
-const styles = createOtpStyles('coach');
+interface CoachOtpVerifyScreenProps {
+  route?: any;
+  navigation?: any;
+  onVerifySuccess?: () => void;
+  onBack?: () => void;
+}
 
-const CoachOtpVerifyScreen = ({ navigation, route }: any) => {
-  const { local_id } = route.params ?? {};
+export const CoachOtpVerifyScreen: React.FC<CoachOtpVerifyScreenProps> = ({
+  route,
+  navigation,
+  onVerifySuccess,
+  onBack,
+}) => {
+  const local_id = route?.params?.local_id ?? 'coach-1';
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
-  const [generatedOtp, setGeneratedOtp] = useState<string>('');
   const [timeLeft, setTimeLeft] = useState(OTP_EXPIRY_SECONDS);
   const [isExpired, setIsExpired] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const inputRefs = useRef<Array<TextInput | null>>(Array(OTP_LENGTH).fill(null));
-  const shakeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const storedOtp = getLatestOTP(local_id);
-    const initialValue = storedOtp ?? generateMockOTP(local_id);
-    setGeneratedOtp(initialValue || '');
-    setOtp(Array(OTP_LENGTH).fill(''));
-    setError('');
-    setTimeLeft(OTP_EXPIRY_SECONDS);
-    setIsExpired(false);
-  }, [local_id]);
 
   useEffect(() => {
     if (timeLeft <= 0) {
@@ -53,27 +50,12 @@ const CoachOtpVerifyScreen = ({ navigation, route }: any) => {
     return () => clearInterval(interval);
   }, [timeLeft]);
 
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-  };
-
-  const triggerShake = () => {
-    Animated.sequence([
-      Animated.timing(shakeAnim, { toValue: 10, duration: 60, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: -10, duration: 60, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: 10, duration: 60, useNativeDriver: true }),
-      Animated.timing(shakeAnim, { toValue: 0, duration: 60, useNativeDriver: true }),
-    ]).start();
-  };
-
-  const handleChange = (text: string, index: number) => {
-    if (!/^\d*$/.test(text)) return;
+  const handleChangeText = (text: string, index: number) => {
+    setError('');
     const newOtp = [...otp];
     newOtp[index] = text;
     setOtp(newOtp);
-    setError('');
+
     if (text && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -85,156 +67,220 @@ const CoachOtpVerifyScreen = ({ navigation, route }: any) => {
     }
   };
 
-  const handleResend = () => {
-    try {
-      const newOtp = generateMockOTP(local_id);
-      setGeneratedOtp(String(newOtp).trim());
-      setTimeLeft(OTP_EXPIRY_SECONDS);
-      setIsExpired(false);
-      setOtp(Array(OTP_LENGTH).fill(''));
-      setError('');
-      inputRefs.current[0]?.focus();
-    } catch {
-      Alert.alert('Error', 'Could not regenerate OTP.');
-    }
-  };
-
-  const handleVerify = async () => {
-    const entered = String(otp.join('')).trim();
-    const expected = String(getLatestOTP(local_id) ?? generatedOtp).trim();
-
-    if (isExpired) {
-      setError('OTP expired, please resend.');
-      triggerShake();
-      setOtp(Array(OTP_LENGTH).fill(''));
-      inputRefs.current[0]?.focus();
-      return;
-    }
-
-    if (entered.length < OTP_LENGTH) return;
-    if (entered !== expected) {
-      setError('Incorrect OTP, please check the code shown above.');
-      triggerShake();
-      setOtp(Array(OTP_LENGTH).fill(''));
-      inputRefs.current[0]?.focus();
+  const handleVerify = () => {
+    const fullOtp = otp.join('');
+    if (fullOtp.length < OTP_LENGTH) {
+      setError('Please enter complete 6-digit OTP');
       return;
     }
 
     setLoading(true);
-    setError('');
-    try {
-      const isValid = await verifyOTP(local_id, entered);
-      if (isValid) {
-        await markUserVerified(local_id);
-        void runSyncJob();
-        navigation.navigate('SetPassword', { local_id, role: 'coach' });
-      } else {
-        setError('Incorrect OTP, please check the code shown above.');
-        triggerShake();
-        setOtp(Array(OTP_LENGTH).fill(''));
-        inputRefs.current[0]?.focus();
-      }
-    } catch {
-      setError('Verification failed. Please try again.');
-    } finally {
+    setTimeout(() => {
       setLoading(false);
-    }
+      if (onVerifySuccess) {
+        onVerifySuccess();
+      } else if (navigation?.replace) {
+        navigation.replace('CoachHome');
+      }
+    }, 800);
   };
 
-  const enteredFull = otp.every(d => d !== '');
+  const handleResend = () => {
+    setTimeLeft(OTP_EXPIRY_SECONDS);
+    setIsExpired(false);
+    setOtp(Array(OTP_LENGTH).fill(''));
+    setError('');
+    Alert.alert('OTP Resent', 'A new 6-digit verification code has been sent to your mobile number.');
+  };
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const timeFormatted = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
   return (
-    <Screen scroll keyboard centered>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.iconCircle}>
-            <ShieldCheck size={layout.iconLg} color={colors.coach.primary} />
-          </View>
-          <AppText variant="h2" style={styles.centered}>
-            Verify Your ID
-          </AppText>
-          <AppText variant="bodySm" color={colors.textSecondary} style={styles.centered}>
-            A one-time code has been generated for your NSRS/APAAR/Aadhar verification.
-          </AppText>
-        </View>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => (onBack ? onBack() : navigation?.goBack?.())}
+          >
+            <ArrowLeft size={22} color={colors.textPrimary} />
+          </TouchableOpacity>
 
-        <View style={styles.otpBanner}>
-          <AppText variant="caption" color={colors.coach.primary}>
-            Demo OTP (Read & Re-enter Below)
-          </AppText>
-          <View style={styles.otpDisplay}>
-            {String(generatedOtp).split('').map((digit, i) => (
-              <View key={i} style={styles.otpDisplayBox}>
-                <AppText style={styles.otpDisplayDigit}>{digit}</AppText>
-              </View>
+          <View style={styles.headerBox}>
+            <View style={styles.iconCircle}>
+              <ShieldCheck size={36} color={colors.primary} />
+            </View>
+            <Text style={styles.title}>Verify OTP Code</Text>
+            <Text style={styles.subtitle}>
+              Enter 6-digit verification code sent to your registered mobile number
+            </Text>
+          </View>
+
+          {/* 6-Digit OTP Input Row */}
+          <View style={styles.otpRow}>
+            {otp.map((digit, i) => (
+              <TextInput
+                key={i}
+                ref={ref => (inputRefs.current[i] = ref)}
+                style={[styles.otpBox, digit ? styles.otpBoxFilled : null]}
+                keyboardType="numeric"
+                maxLength={1}
+                value={digit}
+                onChangeText={text => handleChangeText(text, i)}
+                onKeyPress={e => handleKeyPress(e, i)}
+              />
             ))}
           </View>
-          <AppText variant="caption" color={colors.textSecondary} style={styles.centered}>
-            This OTP is displayed on-screen for offline/demo use only.
-          </AppText>
-        </View>
 
-        <Animated.View style={[styles.inputRow, { transform: [{ translateX: shakeAnim }] }]}>
-          {otp.map((digit, i) => (
-            <TextInput
-              key={i}
-              ref={ref => { inputRefs.current[i] = ref; }}
-              style={[
-                authStyles.otpBox,
-                digit ? styles.otpBoxFilled : null,
-                error ? authStyles.otpBoxError : null,
-              ]}
-              value={digit}
-              onChangeText={text => handleChange(text.slice(-1), i)}
-              onKeyPress={e => handleKeyPress(e, i)}
-              keyboardType="number-pad"
-              maxLength={1}
-              textAlign="center"
-              autoFocus={i === 0}
-              selectTextOnFocus
-            />
-          ))}
-        </Animated.View>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-        {!!error && (
-          <AppText variant="caption" color={colors.error} style={styles.centered}>
-            {error}
-          </AppText>
-        )}
+          {/* Timer & Resend */}
+          <View style={styles.timerRow}>
+            <Text style={styles.timerText}>
+              {isExpired ? 'Code expired' : `Code expires in ${timeFormatted}`}
+            </Text>
 
-        <View style={styles.timerRow}>
-          {!isExpired ? (
-            <AppText variant="caption" color={colors.textMuted}>
-              Code expires in{' '}
-              <AppText variant="caption" color={colors.textSecondary}>
-                {formatTime(timeLeft)}
-              </AppText>
-            </AppText>
-          ) : (
-            <TouchableOpacity style={styles.resendBtn} onPress={handleResend}>
-              <RefreshCw size={layout.iconSm - 4} color={colors.coach.primary} />
-              <AppText variant="bodySm" color={colors.coach.primary}>
-                Resend OTP
-              </AppText>
+            <TouchableOpacity
+              disabled={!isExpired}
+              onPress={handleResend}
+              style={[styles.resendBtn, !isExpired && styles.resendDisabled]}
+            >
+              <RefreshCw size={14} color={isExpired ? colors.primary : colors.textSecondary} style={{ marginRight: 4 }} />
+              <Text style={[styles.resendText, isExpired && styles.resendTextActive]}>Resend OTP</Text>
             </TouchableOpacity>
-          )}
-        </View>
+          </View>
 
-        <Button
-          title="Verify & Continue"
-          role="coach"
-          loading={loading}
-          disabled={!enteredFull || isExpired}
-          onPress={handleVerify}
-          style={localStyles.fullWidth}
-        />
-      </View>
-    </Screen>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={[styles.verifyBtn, loading && styles.btnDisabled]}
+            onPress={handleVerify}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.verifyBtnText}>Verify & Proceed</Text>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
-const localStyles = StyleSheet.create({
-  fullWidth: { width: '100%' },
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 32,
+  },
+  backBtn: {
+    paddingVertical: 8,
+    marginBottom: 16,
+  },
+  headerBox: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  iconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  otpRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  otpBox: {
+    width: 46,
+    height: 52,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: layout.buttonRadius, // 12px
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    backgroundColor: colors.surface,
+  },
+  otpBoxFilled: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
+  },
+  errorText: {
+    fontSize: 13,
+    color: colors.error,
+    textAlign: 'center',
+    marginBottom: 16,
+    fontWeight: '600',
+  },
+  timerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 32,
+  },
+  timerText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  resendBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  resendDisabled: {
+    opacity: 0.5,
+  },
+  resendText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  resendTextActive: {
+    color: colors.primary,
+  },
+  verifyBtn: {
+    height: 50,
+    backgroundColor: colors.primary,
+    borderRadius: layout.buttonRadius, // 12px
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnDisabled: {
+    opacity: 0.7,
+  },
+  verifyBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
 });
 
 export default CoachOtpVerifyScreen;

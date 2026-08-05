@@ -11,6 +11,14 @@ export const API_BASE_URL = __DEV__
   : 'https://your-production-api.com/api';
 
 /**
+ * Report download base URL for QR codes on coach report cards.
+ * Override for ngrok/production as needed.
+ */
+export const REPORT_BASE_URL = __DEV__
+  ? `http://172.17.10.194:${3010}/api`
+  : 'https://your-production-api.com/api';
+
+/**
  * Robust fetch wrapper that attempts candidate host addresses in DEV mode
  * so both emulators and physical devices (USB ADB or Wi-Fi) connect cleanly.
  */
@@ -27,7 +35,7 @@ export async function fetchApi(endpoint: string, init?: RequestInit): Promise<Re
     `http://172.17.26.142:${DEV_PORT}/api${path}`,
   ];
 
-  let lastErr: any = null;
+  let lastErr: unknown = null;
   for (const url of candidateUrls) {
     try {
       const res = await fetch(url, init);
