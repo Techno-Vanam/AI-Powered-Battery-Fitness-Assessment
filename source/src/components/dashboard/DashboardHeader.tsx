@@ -1,8 +1,7 @@
 import React from 'react';
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
-import SFSymbol from '../ui/SFSymbol';
-import AppText from '../ui/AppText';
-import { colors } from '../../theme';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Bell, User } from 'lucide-react-native';
+import { colors } from '../../theme/colors';
 import type { AthleteProfile } from '../../types/athleteDashboard';
 
 type Props = {
@@ -12,77 +11,93 @@ type Props = {
 };
 
 export default function DashboardHeader({ profile, onProfilePress, onNotifications }: Props) {
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning 👋';
+    if (hour < 17) return 'Good Afternoon 👋';
+    return 'Good Evening 👋';
+  };
+
   return (
-    <View style={styles.row}>
+    <View style={styles.topBar}>
       <TouchableOpacity
-        style={styles.left}
+        style={styles.greetingCol}
         onPress={onProfilePress}
-        activeOpacity={0.8}
+        activeOpacity={0.85}
       >
         <View style={styles.avatar}>
           {profile.photoUrl ? (
             <Image source={{ uri: profile.photoUrl }} style={styles.photo} />
           ) : (
-            <SFSymbol name="person.crop.circle" size={24} color={colors.textPrimary} />
+            <User size={22} color={colors.primary} />
           )}
         </View>
-        <AppText variant="h3" numberOfLines={1} style={styles.name}>
-          {profile.name}
-        </AppText>
+        <View style={styles.nameBox}>
+          <Text style={styles.greetingText}>{getGreeting()}</Text>
+          <Text style={styles.nameText} numberOfLines={1}>
+            {profile.name}
+          </Text>
+        </View>
       </TouchableOpacity>
 
-      <View style={styles.actions}>
-        <TouchableOpacity style={styles.iconBtn} onPress={onNotifications} activeOpacity={0.8}>
-          <SFSymbol name="bell.fill" size={20} color={colors.textPrimary} />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity style={styles.bellBtn} onPress={onNotifications} activeOpacity={0.8}>
+        <Bell size={20} color={colors.textPrimary} />
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: {
+  topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
-    paddingVertical: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+    marginBottom: 8,
   },
-  left: {
+  greetingCol: {
     flex: 1,
     flexDirection: 'row',
-    gap: 12,
     alignItems: 'center',
+    gap: 12,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F1F5F9',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primaryLight,
     borderWidth: 1.5,
-    borderColor: '#CBD5E1',
+    borderColor: colors.primary + '30',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   photo: { width: '100%', height: '100%' },
-  name: {
+  nameBox: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  greetingText: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: colors.textSecondary,
+    marginBottom: 1,
+  },
+  nameText: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '800',
     color: colors.textPrimary,
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
-  actions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  iconBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
+  bellBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surfaceSecondary,
     alignItems: 'center',
     justifyContent: 'center',
   },

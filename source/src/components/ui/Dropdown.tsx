@@ -88,15 +88,25 @@ export default function Dropdown({
         animationType="fade"
         onRequestClose={() => setOpen(false)}
       >
-        <Pressable style={styles.overlay} onPress={() => setOpen(false)}>
-          <Pressable
-            style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}
-            onPress={e => e.stopPropagation()}
-          >
-            <View style={styles.handle} />
-            <AppText variant="h3" style={styles.sheetTitle}>
-              {title}
-            </AppText>
+        <View style={styles.overlay}>
+          <TouchableOpacity
+            style={styles.backdrop}
+            activeOpacity={1}
+            onPress={() => setOpen(false)}
+          />
+          <View style={styles.dialogBox}>
+            <View style={styles.dialogHeader}>
+              <AppText variant="h3" style={styles.dialogTitle}>
+                {title}
+              </AppText>
+              <TouchableOpacity
+                onPress={() => setOpen(false)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={styles.closeBtn}
+              >
+                <SFSymbol name="xmark" size={16} color={colors.textMuted} />
+              </TouchableOpacity>
+            </View>
 
             <ScrollView
               style={styles.list}
@@ -132,8 +142,8 @@ export default function Dropdown({
                 );
               })}
             </ScrollView>
-          </Pressable>
-        </Pressable>
+          </View>
+        </View>
       </Modal>
     </>
   );
@@ -170,41 +180,57 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: colors.overlay,
+    paddingHorizontal: 20,
   },
-  sheet: {
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  dialogBox: {
+    width: '90%',
+    maxWidth: 360,
     backgroundColor: colors.surface,
-    borderTopLeftRadius: layout.radiusSheet,
-    borderTopRightRadius: layout.radiusSheet,
-    paddingTop: 10,
-    maxHeight: '62%',
+    borderRadius: layout.radiusLg,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    maxHeight: '65%',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
   },
-  handle: {
-    alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.border,
-    marginBottom: 14,
+  dialogHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingHorizontal: 4,
   },
-  sheetTitle: {
-    paddingHorizontal: layout.horizontalPadding,
-    marginBottom: 8,
+  dialogTitle: {
+    fontSize: 16,
+    fontFamily: fontFamily('600'),
+    color: colors.textPrimary,
+  },
+  closeBtn: {
+    padding: 4,
+    borderRadius: 12,
+    backgroundColor: colors.background,
   },
   list: {
-    maxHeight: layout.screenHeight * 0.42,
+    maxHeight: 280,
   },
   listContent: {
-    paddingHorizontal: layout.horizontalPadding - 4,
-    paddingBottom: 8,
+    gap: 4,
   },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: layout.inputHeight - 2,
-    paddingHorizontal: layout.fieldGap + 6,
+    minHeight: 46,
+    paddingHorizontal: 12,
     borderRadius: layout.radiusMd,
   },
   optionTextActive: {

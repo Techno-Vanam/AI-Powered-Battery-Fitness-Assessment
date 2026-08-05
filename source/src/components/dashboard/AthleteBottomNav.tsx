@@ -1,7 +1,8 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import SFSymbol, { SFSymbolName } from '../ui/SFSymbol';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Home, ClipboardCheck, BarChart3, FileText } from 'lucide-react-native';
+import { colors } from '../../theme/colors';
 
 export type AthleteTab = 'home' | 'assessments' | 'results' | 'reports';
 
@@ -10,93 +11,102 @@ type Props = {
   onChange: (tab: AthleteTab) => void;
 };
 
-type TabItem = {
+interface TabConfig {
   key: AthleteTab;
-  symbol: SFSymbolName;
-  activeSymbol: SFSymbolName;
-};
+  label: string;
+  Icon: React.FC<{ color: string; size: number }>;
+}
 
-const TABS: TabItem[] = [
-  { key: 'home', symbol: 'house', activeSymbol: 'house.fill' },
-  { key: 'assessments', symbol: 'list.bullet.rectangle', activeSymbol: 'list.bullet.rectangle' },
-  { key: 'results', symbol: 'chart.bar', activeSymbol: 'chart.bar.fill' },
-  { key: 'reports', symbol: 'doc.text', activeSymbol: 'doc.text.fill' },
+const TABS: TabConfig[] = [
+  { key: 'home', label: 'Home', Icon: ({ color, size }) => <Home color={color} size={size} /> },
+  { key: 'assessments', label: 'Assess', Icon: ({ color, size }) => <ClipboardCheck color={color} size={size} /> },
+  { key: 'results', label: 'Results', Icon: ({ color, size }) => <BarChart3 color={color} size={size} /> },
+  { key: 'reports', label: 'Reports', Icon: ({ color, size }) => <FileText color={color} size={size} /> },
 ];
 
 export default function AthleteBottomNav({ active, onChange }: Props) {
   const insets = useSafeAreaInsets();
-
-  const renderTab = ({ key, symbol, activeSymbol }: TabItem) => {
-    const isActive = active === key;
-    return (
-      <TouchableOpacity
-        key={key}
-        style={styles.item}
-        onPress={() => onChange(key)}
-        activeOpacity={0.7}
-        accessibilityRole="button"
-      >
-        <SFSymbol
-          name={isActive ? activeSymbol : symbol}
-          size={24}
-          color={isActive ? '#FFFFFF' : 'rgba(255,255,255,0.42)'}
-          strokeWidth={isActive ? 2.2 : 1.75}
-        />
-        {isActive ? <View style={styles.dot} /> : <View style={styles.dotSpacer} />}
-      </TouchableOpacity>
-    );
-  };
+  const bottomPosition = Math.max(insets.bottom + 6, 12);
 
   return (
-    <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 12) }]} pointerEvents="box-none">
-      <View style={styles.dock}>
-        {TABS.map(renderTab)}
+    <View style={[styles.floatingWrapper, { bottom: bottomPosition }]} pointerEvents="box-none">
+      <View style={styles.container}>
+        {TABS.map(tab => {
+          const isSelected = active === tab.key;
+          const color = isSelected ? colors.primary : colors.textSecondary;
+
+          return (
+            <TouchableOpacity
+              key={tab.key}
+              activeOpacity={0.8}
+              style={[styles.tabItem, isSelected && styles.tabItemActive]}
+              onPress={() => onChange(tab.key)}
+            >
+              <View style={[styles.iconPill, isSelected && styles.iconPillActive]}>
+                {tab.Icon({ color, size: 20 })}
+              </View>
+              <Text style={[styles.tabLabel, { color }, isSelected && styles.tabLabelActive]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: {
+  floatingWrapper: {
     position: 'absolute',
-    left: 24,
-    right: 24,
-    bottom: 0,
+    left: 16,
+    right: 16,
     alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999,
+    elevation: 10,
   },
-  dock: {
+  container: {
     flexDirection: 'row',
+    width: '100%',
+    height: 62,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 31,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
     alignItems: 'center',
     justifyContent: 'space-around',
-    backgroundColor: '#0B0B0F',
-    borderRadius: 36,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    width: '100%',
-    maxWidth: 380,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.08)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.28,
-    shadowRadius: 22,
-    elevation: 16,
+    paddingHorizontal: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 10,
   },
-  item: {
+  tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 44,
-    gap: 5,
+    paddingVertical: 6,
+    borderRadius: 24,
   },
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#FFFFFF',
+  tabItemActive: {
+    backgroundColor: colors.primaryLight,
   },
-  dotSpacer: {
-    width: 4,
-    height: 4,
+  iconPill: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconPillActive: {
+    transform: [{ scale: 1.05 }],
+  },
+  tabLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  tabLabelActive: {
+    fontWeight: '700',
+    color: colors.primary,
   },
 });

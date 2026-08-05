@@ -83,10 +83,22 @@ import { colors } from '../theme/colors';
 
 type NavigationState =
   | 'Splash'
+  | 'RoleSelect'
   | 'Login'
+  | 'CoachLogin'
+  | 'AthleteLogin'
+  | 'CoachRegister'
+  | 'AthleteRegister'
   | 'OtpVerify'
+  | 'CoachOtpVerify'
+  | 'AthleteOtpVerify'
   | 'ForgotPassword'
+  | 'ResetPassword'
+  | 'SetPassword'
+  | 'TermsAndConditions'
   | 'Main'
+  | 'AthleteHome'
+  | 'AthleteSelfProfile'
   | 'Notifications'
   | 'SessionHistory'
   | 'AddAthlete'
@@ -116,11 +128,11 @@ interface NavEntry {
 function MainAppContainer() {
   const { selectedTab, setSelectedTab, athletes, settings, themeColors } = useApp();
   const isDark = settings.darkMode;
-  const [currentRoute, setCurrentRouteState] = useState<NavigationState>('Main');
+  const [currentRoute, setCurrentRouteState] = useState<NavigationState>('RoleSelect');
 
   // Chronological navigation stack
   const [navHistory, setNavHistory] = useState<NavEntry[]>([
-    { route: 'Main', tab: 'Home' },
+    { route: 'RoleSelect', tab: 'Home' },
   ]);
 
   // Active selections for sub-screens
@@ -169,7 +181,56 @@ function MainAppContainer() {
     return () => subscription.remove();
   }, [navHistory]);
 
-  const showTabBar = currentRoute !== 'Splash' && currentRoute !== 'Login' && currentRoute !== 'OtpVerify' && currentRoute !== 'ForgotPassword';
+  const fakeNav = {
+    navigate: (screen: string, params?: any) => {
+      if (screen === 'RoleSelect') navigateTo('RoleSelect');
+      else if (screen === 'AthleteLogin') navigateTo('AthleteHome');
+      else if (screen === 'CoachLogin' || screen === 'Login') navigateTo('CoachLogin');
+      else if (screen === 'AthleteRegister') navigateTo('AthleteRegister');
+      else if (screen === 'CoachRegister') navigateTo('CoachRegister');
+      else if (screen === 'AthleteOtpVerify') navigateTo('AthleteOtpVerify');
+      else if (screen === 'CoachOtpVerify' || screen === 'OtpVerify') navigateTo('CoachOtpVerify');
+      else if (screen === 'AthleteHome') navigateTo('AthleteHome');
+      else if (screen === 'CoachHome' || screen === 'Main') navigateTo('Main', 'Home');
+      else if (screen === 'ForgotPassword') navigateTo('ForgotPassword');
+      else if (screen === 'ResetPassword') navigateTo('ResetPassword');
+      else if (screen === 'SetPassword') navigateTo('SetPassword');
+      else if (screen === 'TermsAndConditions') navigateTo('TermsAndConditions');
+      else navigateTo(screen as NavigationState);
+    },
+    reset: ({ routes }: any) => {
+      const target = routes[0]?.name;
+      if (target === 'AthleteHome') navigateTo('AthleteHome');
+      else if (target === 'CoachHome' || target === 'Main') navigateTo('Main', 'Home');
+      else if (target === 'RoleSelect') navigateTo('RoleSelect');
+      else if (target) navigateTo(target as NavigationState);
+    },
+    goBack: () => goBackNav(),
+    replace: (screen: string) => {
+      if (screen === 'AthleteHome') navigateTo('AthleteHome');
+      else if (screen === 'CoachHome' || screen === 'Main') navigateTo('Main', 'Home');
+      else navigateTo(screen as NavigationState);
+    },
+    push: (screen: string) => navigateTo(screen as NavigationState),
+  };
+
+  const showTabBar =
+    currentRoute !== 'Splash' &&
+    currentRoute !== 'RoleSelect' &&
+    currentRoute !== 'Login' &&
+    currentRoute !== 'CoachLogin' &&
+    currentRoute !== 'AthleteLogin' &&
+    currentRoute !== 'CoachRegister' &&
+    currentRoute !== 'AthleteRegister' &&
+    currentRoute !== 'OtpVerify' &&
+    currentRoute !== 'CoachOtpVerify' &&
+    currentRoute !== 'AthleteOtpVerify' &&
+    currentRoute !== 'ForgotPassword' &&
+    currentRoute !== 'ResetPassword' &&
+    currentRoute !== 'SetPassword' &&
+    currentRoute !== 'TermsAndConditions' &&
+    currentRoute !== 'AthleteHome' &&
+    currentRoute !== 'AthleteSelfProfile';
 
   const navigateToAthleteProfile = (ath: Athlete) => {
     setSelectedAthlete(ath);
@@ -179,28 +240,81 @@ function MainAppContainer() {
   const renderActiveScreen = () => {
     switch (currentRoute) {
       case 'Splash':
-        return <SplashScreen onFinish={() => navigateTo('Login')} />;
+        return <SplashScreen onFinish={() => navigateTo('RoleSelect')} />;
+
+      case 'RoleSelect':
+        return <RoleSelectScreen navigation={fakeNav as any} route={{} as any} />;
 
       case 'Login':
+      case 'CoachLogin':
         return (
           <CoachLoginScreen
-            onLoginSuccess={() => navigateTo('OtpVerify')}
+            onLoginSuccess={() => navigateTo('CoachOtpVerify')}
             onForgotPassword={() => navigateTo('ForgotPassword')}
           />
         );
 
+      case 'AthleteLogin':
+        return <AthleteHomeScreen navigation={fakeNav as any} />;
+
+      case 'CoachRegister':
+        return <CoachRegisterScreen navigation={fakeNav as any} route={{} as any} />;
+
+      case 'AthleteRegister':
+        return <AthleteRegisterScreen navigation={fakeNav as any} route={{} as any} />;
+
       case 'OtpVerify':
+      case 'CoachOtpVerify':
         return (
           <CoachOtpVerifyScreen
             route={{ params: { local_id: 'coach-1', otp: '123456' } } as any}
-            navigation={{ replace: () => navigateTo('Main', 'Home') } as any}
+            navigation={fakeNav as any}
           />
         );
+
+      case 'AthleteOtpVerify':
+        return (
+          <AthleteOtpVerifyScreen
+            route={{ params: { local_id: 'ath-1', otp: '123456' } } as any}
+            navigation={fakeNav as any}
+          />
+        );
+
+      case 'AthleteHome':
+        return <AthleteHomeScreen navigation={fakeNav as any} />;
+
+      case 'AthleteSelfProfile':
+        return <AthleteSelfProfileScreen navigation={fakeNav as any} route={{} as any} />;
 
       case 'ForgotPassword':
         return (
           <ForgotPasswordScreen
-            navigation={{ goBack: () => goBackNav() } as any}
+            navigation={fakeNav as any}
+            route={{} as any}
+          />
+        );
+
+      case 'ResetPassword':
+        return (
+          <ResetPasswordScreen
+            navigation={fakeNav as any}
+            route={{ params: { local_id: 'user-1' } } as any}
+          />
+        );
+
+      case 'SetPassword':
+        return (
+          <SetPasswordScreen
+            navigation={fakeNav as any}
+            route={{ params: { local_id: 'user-1', role: 'athlete' } } as any}
+          />
+        );
+
+      case 'TermsAndConditions':
+        return (
+          <TermsAndConditionsScreen
+            navigation={fakeNav as any}
+            route={{ params: { onAccept: () => goBackNav() } } as any}
           />
         );
 
