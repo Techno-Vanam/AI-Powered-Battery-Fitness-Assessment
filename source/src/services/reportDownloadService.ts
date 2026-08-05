@@ -1,4 +1,5 @@
 import { Alert, NativeModules, PermissionsAndroid, Platform, Share } from 'react-native';
+// @ts-ignore
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib/dist/pdf-lib.min.js';
 import type { AthleteDashboardData } from '../types/athleteDashboard';
 

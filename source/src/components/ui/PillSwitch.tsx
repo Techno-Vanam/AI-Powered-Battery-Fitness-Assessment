@@ -25,7 +25,7 @@ export const PillSwitch: React.FC<PillSwitchProps> = ({
       duration: 200,
       useNativeDriver: false,
     }).start();
-  }, [value]);
+  }, [value, animValue]);
 
   const translateX = animValue.interpolate({
     inputRange: [0, 1],

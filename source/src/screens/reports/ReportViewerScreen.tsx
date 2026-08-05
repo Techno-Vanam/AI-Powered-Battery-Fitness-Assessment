@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ScrollView, Alert, Share } from 'react-native';
-import { ArrowLeft, Download, Share2, CheckCircle2, Award, ListFilter, BarChart2, Sparkles, X, User as UserIcon } from 'lucide-react-native';
-import Svg, { Circle as SvgCircle, Path as SvgPath, Polygon as SvgPolygon, Line as SvgLine, Text as SvgText, Rect as SvgRect, G as SvgG } from 'react-native-svg';
+import { Download, Share2, CheckCircle2, Award, ListFilter, BarChart2, Sparkles, X, User as UserIcon } from 'lucide-react-native';
+import Svg, { Circle as SvgCircle, Path as SvgPath, Polygon as SvgPolygon, Line as SvgLine, Text as SvgText, Rect as SvgRect } from 'react-native-svg';
 // @ts-ignore
 import qrcode from 'qrcode-generator';
 import { colors } from '../../theme/colors';

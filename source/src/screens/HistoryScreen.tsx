@@ -19,7 +19,7 @@ import {
   FilterChip,
   StatusBadge,
 } from '../components/FormComponents';
-import { DateFilterOption, SyncFilterOption, HeightTestWithAthlete } from '../domain/models/HeightTest';
+import { DateFilterOption, SyncFilterOption } from '../domain/models/HeightTest';
 import { AthleteUseCases } from '../domain/usecases/AthleteUseCases';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'History'>;

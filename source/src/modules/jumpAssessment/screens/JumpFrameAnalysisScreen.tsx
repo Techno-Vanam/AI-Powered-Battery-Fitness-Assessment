@@ -153,7 +153,7 @@ export const JumpFrameAnalysisScreen: React.FC<Props> = ({
         videoQuality: 'high',
         selectionLimit: 1,
       },
-      (response) => {
+      (response: any) => {
         if (response.didCancel || !response.assets?.length) return;
         const asset: Asset = response.assets[0];
         if (!asset.uri) return;
@@ -445,11 +445,11 @@ export const JumpFrameAnalysisScreen: React.FC<Props> = ({
             paused={!isPlaying}
             rate={playbackSpeed}
             resizeMode="contain"
-            onLoad={(data) => {
+            onLoad={(data: any) => {
               setIsLoadingVideo(false);
               setVideoDurationMs(data.duration * 1000);
             }}
-            onError={(e) => {
+            onError={(e: any) => {
               setIsLoadingVideo(false);
               console.error('[VideoPlayer Error]', e);
               Alert.alert(
@@ -457,13 +457,13 @@ export const JumpFrameAnalysisScreen: React.FC<Props> = ({
                 'Could not load the selected video file.',
               );
             }}
-            onProgress={(data) => {
+            onProgress={(data: any) => {
               if (isPlaying) {
                 setCurrentPositionMs(data.currentTime * 1000);
               }
             }}
             onEnd={() => setIsPlaying(false)}
-            onSeek={(data) => {
+            onSeek={(data: any) => {
               // Android can snap a seek to the nearest available decode point
               // rather than the exact requested time — trust the reported
               // position so markers always match what's on screen.

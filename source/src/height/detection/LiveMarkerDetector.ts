@@ -1,7 +1,6 @@
 import { Platform } from 'react-native';
 import type { IMarkerDetector } from '../interfaces/IMarkerDetector';
 import type { MarkerDetectionResult, Point2D, VideoFrameInput } from '../types/HeightTypes';
-import { DEFAULT_MARKER_SIZE_CM } from '../config/heightTestConfig';
 import { frameCaptureBuffer } from './FrameCaptureBuffer';
 
 /** QR payload pattern, e.g. "HEIGHT_MARKER_15CM" → 15 cm. */
@@ -53,7 +52,6 @@ export interface QrMarkerCaptureInput {
 
 /** Push a QR detection from VisionCamera codeScanner into the shared buffer. */
 export function captureQrMarker(input: QrMarkerCaptureInput): MarkerDetectionResult | null {
-  const physicalCm = parseMarkerSizeFromQrPayload(input.value) ?? DEFAULT_MARKER_SIZE_CM;
   const heightPx = averageEdgeLengthPx(input.corners);
   if (heightPx <= 0) return null;
 
@@ -81,6 +79,7 @@ interface NativeArucoResult {
   corners?: NativeArucoCorner[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare function detectAruco(frame: unknown): NativeArucoResult;
 
 /** Map native OpenCV ArUco plugin output to MarkerDetectionResult. */

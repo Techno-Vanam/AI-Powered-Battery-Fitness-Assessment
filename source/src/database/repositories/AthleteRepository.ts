@@ -129,7 +129,6 @@ export const AthleteRepository = {
   },
 
   async upsert(input: AthleteInput): Promise<Athlete> {
-    const db = getDatabase();
     const id = input.id ?? uuidv4();
     const exists = await this.existsById(id);
     if (exists) {

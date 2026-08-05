@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, FlatList, TextInput } from 'react-native';
 import { ArrowLeft, Search, ChevronRight, FileText } from 'lucide-react-native';
 import { useApp } from '../../context/AppContext';
-import { AthleteRow } from '../../components/ui/AthleteRow';
 import { colors } from '../../theme/colors';
 import { layout } from '../../theme/layout';
 

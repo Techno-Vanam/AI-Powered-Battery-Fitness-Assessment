@@ -8,7 +8,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { ArrowLeft, Save, CheckCircle2, Cpu } from 'lucide-react-native';
+import { ArrowLeft, Save, Cpu } from 'lucide-react-native';
 import { useApp } from '../../context/AppContext';
 import { Athlete } from '../../types/app';
 import { STANDARD_10_TESTS } from '../../data/mockData';

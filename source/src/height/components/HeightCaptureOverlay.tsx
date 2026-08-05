@@ -76,7 +76,7 @@ export const HeightCaptureOverlay = memo(function HeightCaptureOverlay({
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'space-between',
     padding: 16,
   },

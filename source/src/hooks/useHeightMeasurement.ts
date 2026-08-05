@@ -43,8 +43,6 @@ export function useHeightMeasurement(options: UseHeightMeasurementOptions = {}) 
     return () => clearInterval(id);
   }, [status, recordingStartedAt]);
 
-  const stopRecordingRef = useRef<() => Promise<HeightPipelineResult | null>>(async () => null);
-
   const startRecording = useCallback(() => {
     frameCaptureBuffer.reset();
     setStatus('recording');

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, FlatList } from 'react-native';
-import { ArrowLeft, Bell, Check, Wifi, AlertTriangle } from 'lucide-react-native';
+import { ArrowLeft, Bell, Wifi, AlertTriangle } from 'lucide-react-native';
 import { useApp } from '../../context/AppContext';
 import { colors } from '../../theme/colors';
 
@@ -30,8 +30,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => {
           let IconComponent = Bell;
-          let iconBg = colors.primaryLight;
-          let iconColor = colors.primary;
+          let iconBg: string = colors.primaryLight;
+          let iconColor: string = colors.primary;
 
           if (item.type === 'sync_complete' || item.type === 'connection_restored') {
             IconComponent = Wifi;

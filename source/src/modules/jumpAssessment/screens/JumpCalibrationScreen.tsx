@@ -3,11 +3,10 @@
  */
 
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { useJumpCalibration } from '../hooks/useJumpCalibration';
 import { CalibrationOverlay } from '../components/CalibrationOverlay';
 import { JumpCameraView } from '../components/JumpCameraView';
-import { CalibrationMethod } from '../types/calibration';
 
 interface Props {
   navigation: any;
@@ -16,7 +15,6 @@ interface Props {
 
 export const JumpCalibrationScreen: React.FC<Props> = ({ navigation, route }) => {
   const { testType } = route.params || { testType: 'vertical' };
-  const { width, height } = useWindowDimensions();
   const { isCalibrated, pixelsPerCm, method, setMethod, setCalibration } = useJumpCalibration();
 
   const handleSimulatedCalibration = () => {

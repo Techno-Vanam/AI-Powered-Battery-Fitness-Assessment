@@ -21,7 +21,7 @@ export default function SitAndReachHistoryScreen({ route, navigation }: Props) {
   const [pendingCount, setPendingCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const [data, pending] = await Promise.all([getAthleteHistory(athleteId), countPending()]);
@@ -32,9 +32,9 @@ export default function SitAndReachHistoryScreen({ route, navigation }: Props) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [athleteId]);
 
-  useFocusEffect(useCallback(() => { load(); }, [athleteId]));
+  useFocusEffect(useCallback(() => { load(); }, [load]));
 
   if (loading) return <ActivityIndicator style={{ flex: 1 }} size="large" />;
 

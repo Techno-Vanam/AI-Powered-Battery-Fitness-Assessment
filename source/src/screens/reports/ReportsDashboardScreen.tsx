@@ -1,7 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ScrollView, Alert } from 'react-native';
-import { User, BarChart2, PieChart, FileText } from 'lucide-react-native';
-import { useApp } from '../../context/AppContext';
+import { StyleSheet, Text, View, ScrollView, Alert } from 'react-native';
+import { User, BarChart2, PieChart } from 'lucide-react-native';
 import { ReportActionButtons } from '../../components/ui/ReportActionButtons';
 import { colors } from '../../theme/colors';
 import { layout } from '../../theme/layout';

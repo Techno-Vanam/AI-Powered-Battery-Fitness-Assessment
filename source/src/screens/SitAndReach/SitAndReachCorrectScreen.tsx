@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { submitCorrection } from '../../services/sitAndReachService';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -17,7 +17,7 @@ export default function SitAndReachCorrectScreen({ route, navigation }: Props) {
 
   const parsed = [trial1, trial2, trial3].map(v => parseFloat(v));
   const validTrials = parsed.every(v => !isNaN(v) && v >= -50 && v <= 100);
-  const maxScore = useMemo(() => (validTrials ? Math.max(...parsed).toFixed(1) : '--'), [trial1, trial2, trial3, validTrials, parsed]);
+  const maxScore = validTrials ? Math.max(...parsed).toFixed(1) : '--';
 
   const handleSubmit = async () => {
     if (!validTrials) {

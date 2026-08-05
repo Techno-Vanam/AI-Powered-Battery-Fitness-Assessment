@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList } from 'react-native';
-import { ArrowLeft, Search, Filter } from 'lucide-react-native';
+import { ArrowLeft, Search } from 'lucide-react-native';
 import { useApp } from '../../context/AppContext';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { StatusBadge } from '../../components/ui/StatusBadge';

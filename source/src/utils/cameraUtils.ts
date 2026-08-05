@@ -14,7 +14,7 @@ export function selectBestFormat(device: CameraDevice): CameraDeviceFormat | und
 
   // First try exact 720p @ 30fps
   const exact = formats.find(
-    f =>
+    (f: any) =>
       f.videoWidth === TARGET_WIDTH &&
       f.videoHeight === TARGET_HEIGHT &&
       f.maxFps >= TARGET_FPS,
@@ -23,13 +23,13 @@ export function selectBestFormat(device: CameraDevice): CameraDeviceFormat | und
 
   // Score each format by closeness to target resolution and fps
   const scored = formats
-    .filter(f => f.maxFps >= TARGET_FPS)
-    .map(f => {
+    .filter((f: any) => f.maxFps >= TARGET_FPS)
+    .map((f: any) => {
       const resDiff =
         Math.abs(f.videoWidth - TARGET_WIDTH) + Math.abs(f.videoHeight - TARGET_HEIGHT);
       return { format: f, score: resDiff };
     })
-    .sort((a, b) => a.score - b.score);
+    .sort((a: any, b: any) => a.score - b.score);
 
   return scored[0]?.format ?? formats[0];
 }

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { AthleteRegistrationForm } from '../domain/models/Athlete';
 import { AthleteUseCases } from '../domain/usecases/AthleteUseCases';
 import { Athlete } from '../database/repositories/AthleteRepository';
-import { v4 as uuidv4 } from 'uuid';
 
 const INITIAL_FORM: AthleteRegistrationForm = {
   id: '',

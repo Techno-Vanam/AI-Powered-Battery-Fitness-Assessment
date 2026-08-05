@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
   Modal,
-  Pressable,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -9,7 +8,6 @@ import {
   ViewStyle,
 } from 'react-native';
 import SFSymbol from './SFSymbol';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, layout, Role, roleColors } from '../../theme';
 import { fontFamily } from '../../theme/fonts';
 import AppText from './AppText';
@@ -45,7 +43,6 @@ export default function Dropdown({
   style,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const insets = useSafeAreaInsets();
   const accent = roleColors(role);
 
   const selected = useMemo(
@@ -186,7 +183,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   dialogBox: {
     width: '90%',

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import NetInfo from '@react-native-community/netinfo';
-import { Athlete, Session, NotificationItem, CoachProfile, AppSettings, TestResult } from '../types/app';
+import { Athlete, Session, NotificationItem, CoachProfile, AppSettings } from '../types/app';
 import { INITIAL_ATHLETES, INITIAL_SESSIONS, INITIAL_NOTIFICATIONS, INITIAL_COACH_PROFILE, INITIAL_SETTINGS } from '../data/mockData';
 
 import { getThemeColors } from '../theme/colors';
@@ -46,10 +46,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const [athletes, setAthletes] = useState<Athlete[]>(INITIAL_ATHLETES);
-  const [sessions, setSessions] = useState<Session[]>(INITIAL_SESSIONS);
+  const [sessions, _setSessions] = useState<Session[]>(INITIAL_SESSIONS);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [coachProfile, setCoachProfile] = useState<CoachProfile>(INITIAL_COACH_PROFILE);
   const [settings, setSettings] = useState<AppSettings>(INITIAL_SETTINGS);
+
+  const triggerSync = React.useCallback(() => {
+    if (pendingSyncCount === 0) return;
+    setIsSyncing(true);
+    const countToSync = pendingSyncCount;
+
+    setTimeout(() => {
+      setIsSyncing(false);
+      setPendingSyncCount(0);
+
+      // Add a system notification for sync completion
+      const newNotif: NotificationItem = {
+        id: `notif_${Date.now()}`,
+        title: 'Cloud Sync Successful',
+        body: `${countToSync} offline records uploaded to server.`,
+        timestamp: 'Just now',
+        type: 'sync_complete',
+        isRead: false,
+      };
+      setNotifications(prev => [newNotif, ...prev]);
+      setToastMessage('Data synced to cloud successfully!');
+      setTimeout(() => setToastMessage(null), 3000);
+    }, 1800);
+  }, [pendingSyncCount]);
 
   // Monitor net info for connection change
   useEffect(() => {
@@ -64,35 +88,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
     });
     return () => unsubscribe();
-  }, [pendingSyncCount]);
+  }, [pendingSyncCount, triggerSync]);
 
-  const triggerSync = () => {
-    if (pendingSyncCount === 0) return;
-    setIsSyncing(true);
-    const countToSync = pendingSyncCount;
 
-    setTimeout(() => {
-      setPendingSyncCount(0);
-      setIsSyncing(false);
-      const syncMsg = `Sync Complete — ${countToSync} Assessments uploaded successfully.`;
-      setToastMessage(syncMsg);
-
-      // Append sync notification per spec: "All pending athlete assessments have been synchronized successfully."
-      setNotifications(prev => [
-        {
-          id: `sync-${Date.now()}`,
-          title: 'Offline data synced successfully',
-          body: 'All pending athlete assessments have been synchronized successfully.',
-          timestamp: 'Just now',
-          isRead: false,
-          type: 'sync_complete',
-        },
-        ...prev,
-      ]);
-
-      setTimeout(() => setToastMessage(null), 4000);
-    }, 1200);
-  };
 
   const unreadNotifCount = notifications.filter(n => !n.isRead).length;
 

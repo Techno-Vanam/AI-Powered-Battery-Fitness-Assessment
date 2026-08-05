@@ -101,13 +101,14 @@ const AthleteHomeScreen = ({ navigation }: any) => {
         return;
       }
 
+      const currentTestId = data.currentTest?.testId;
       const target =
         test ??
-        data.tests.find(t => t.key === data.currentTest.testId || t.id === data.currentTest.testId) ??
+        (currentTestId ? data.tests.find(t => t.key === currentTestId || t.id === currentTestId) : null) ??
         null;
 
       if (!target) {
-        comingSoon(data.currentTest.name);
+        comingSoon(data.currentTest?.name || 'Test');
         return;
       }
 

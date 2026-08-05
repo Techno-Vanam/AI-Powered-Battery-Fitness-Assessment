@@ -18,12 +18,12 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({ onTabPress }) => {
   // Dynamically position tab bar above Android 3-button navigation or gesture bar
   const bottomPosition = Math.max(insets.bottom + 6, 12);
 
-  const tabs: { key: MainTabType; label: string; icon: React.FC<{ color: string; size: number }> }[] = [
-    { key: 'Home',     label: t('tab_home'),     icon: ({ color, size }) => <Home color={color} size={size} /> },
-    { key: 'Athletes', label: t('tab_athletes'), icon: ({ color, size }) => <Users color={color} size={size} /> },
-    { key: 'Assess',   label: t('tab_assess'),   icon: ({ color, size }) => <ClipboardCheck color={color} size={size} /> },
-    { key: 'Reports',  label: t('tab_reports'),  icon: ({ color, size }) => <BarChart3 color={color} size={size} /> },
-    { key: 'Settings', label: t('tab_settings'), icon: ({ color, size }) => <Settings color={color} size={size} /> },
+  const tabs: { key: MainTabType; label: string; icon: React.ComponentType<{ color: string; size: number }> }[] = [
+    { key: 'Home',     label: t('tab_home'),     icon: Home },
+    { key: 'Athletes', label: t('tab_athletes'), icon: Users },
+    { key: 'Assess',   label: t('tab_assess'),   icon: ClipboardCheck },
+    { key: 'Reports',  label: t('tab_reports'),  icon: BarChart3 },
+    { key: 'Settings', label: t('tab_settings'), icon: Settings },
   ];
 
   const handlePress = (key: MainTabType) => {
@@ -39,6 +39,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({ onTabPress }) => {
         {tabs.map(tab => {
           const isSelected = selectedTab === tab.key;
           const color = isSelected ? colors.primary : colors.textSecondary;
+          const IconComponent = tab.icon;
 
           return (
             <TouchableOpacity
@@ -48,7 +49,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({ onTabPress }) => {
               onPress={() => handlePress(tab.key)}
             >
               <View style={[styles.iconPill, isSelected && styles.iconPillActive]}>
-                {tab.icon({ color, size: 20 })}
+                <IconComponent color={color} size={20} />
               </View>
               <Text style={[styles.tabLabel, { color }, isSelected && styles.tabLabelActive]}>
                 {tab.label}

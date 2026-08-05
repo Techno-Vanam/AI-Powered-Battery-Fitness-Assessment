@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { TrendingUp, ArrowRight, Award, Activity } from 'lucide-react-native';
+import { TrendingUp, ArrowRight, Award } from 'lucide-react-native';
 import { AnalyticsPreview } from '../../services/dashboardService';
 
 interface AnalyticsSummaryCardProps {

@@ -8,8 +8,8 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
-  let badgeBg = colors.primaryLight;
-  let textColor = colors.primary;
+  let badgeBg: string = colors.primaryLight;
+  let textColor: string = colors.primary;
 
   if (status === 'Completed' || status === 'Assessed') {
     badgeBg = colors.successBg;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
-import { Plus, Play, ChevronRight, Upload, FileText, Layers, CheckCircle2, Clock } from 'lucide-react-native';
+import { Plus, Play, ChevronRight, CheckCircle2, Clock } from 'lucide-react-native';
 import { useApp } from '../../context/AppContext';
 import { StatCard } from '../../components/ui/StatCard';
 import { ProgressBar } from '../../components/ui/ProgressBar';

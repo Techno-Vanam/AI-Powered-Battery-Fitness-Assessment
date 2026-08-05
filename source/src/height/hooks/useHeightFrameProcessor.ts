@@ -70,18 +70,19 @@ export function useHeightFrameProcessor(options: UseHeightFrameProcessorOptions)
     [],
   );
 
+  const { onInferenceError } = options;
   const reportError = useRunOnJS(
     useCallback(
       (message: string) => {
-        options.onInferenceError?.(message);
+        onInferenceError?.(message);
       },
-      [options.onInferenceError],
+      [onInferenceError],
     ),
-    [options.onInferenceError],
+    [onInferenceError],
   );
 
   const frameProcessor = useFrameProcessor(
-    frame => {
+    (frame: any) => {
       'worklet';
 
       if (!isActive.value || boxedModel == null) return;
@@ -135,7 +136,7 @@ export function useHeightFrameProcessor(options: UseHeightFrameProcessorOptions)
         if (code.type !== 'qr' || !code.value) continue;
 
         const corners =
-          code.corners?.map(c => ({ x: c.x, y: c.y })) ??
+          code.corners?.map((c: any) => ({ x: c.x, y: c.y })) ??
           (code.frame
             ? [
                 { x: code.frame.x, y: code.frame.y },
@@ -162,7 +163,7 @@ export function useHeightFrameProcessor(options: UseHeightFrameProcessorOptions)
 
   const codeScanner = useCodeScanner({
     codeTypes: ['qr'],
-    onCodeScanned: codes => {
+    onCodeScanned: (codes: any) => {
       handleQrCodes(codes);
     },
   });

@@ -7,7 +7,7 @@ import {
   View,
   FlatList,
 } from 'react-native';
-import { ArrowLeft, Search, X, User, BarChart2, Calendar, Building } from 'lucide-react-native';
+import { ArrowLeft, Search, X, Calendar } from 'lucide-react-native';
 import { useApp } from '../../context/AppContext';
 import { AthleteRow } from '../../components/ui/AthleteRow';
 import { EmptyState } from '../../components/ui/EmptyState';

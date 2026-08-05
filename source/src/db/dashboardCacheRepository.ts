@@ -15,7 +15,7 @@ export const getCachedData = <T = any>(key: string): { data: T; updated_at: stri
     );
 
     if (result.rows && result.rows.length > 0) {
-      const row = result.rows.item(0);
+      const row = (result.rows as any).item ? (result.rows as any).item(0) : (result.rows as any)[0];
       const data = JSON.parse(row.payload as string) as T;
       return { data, updated_at: row.updated_at as string };
     }

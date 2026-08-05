@@ -116,7 +116,7 @@ export function CameraScreen({ navigation, route }: Props) {
           attemptCount: attempts.length,
           canRetry: pipelineResult.confidence < LOW_CONFIDENCE_THRESHOLD,
         });
-      } catch (e) {
+      } catch {
         isNavigatingRef.current = false;
         Alert.alert('Save Failed', 'Could not save measurement locally. Please try again.');
       } finally {
@@ -170,7 +170,8 @@ export function CameraScreen({ navigation, route }: Props) {
   if (!isCameraReady || isBlocked) {
     return (
       <PermissionGate
-        onRequest={requestPermissions}
+        isChecking={false}
+        onRetry={requestPermissions}
         onOpenSettings={openAppSettings}
         isBlocked={isBlocked}
       />

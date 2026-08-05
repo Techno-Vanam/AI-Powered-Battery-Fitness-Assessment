@@ -14,14 +14,14 @@ type Props = {
 interface TabConfig {
   key: AthleteTab;
   label: string;
-  Icon: React.FC<{ color: string; size: number }>;
+  Icon: React.ComponentType<{ color: string; size: number }>;
 }
 
 const TABS: TabConfig[] = [
-  { key: 'home', label: 'Home', Icon: ({ color, size }) => <Home color={color} size={size} /> },
-  { key: 'assessments', label: 'Assess', Icon: ({ color, size }) => <ClipboardCheck color={color} size={size} /> },
-  { key: 'results', label: 'Results', Icon: ({ color, size }) => <BarChart3 color={color} size={size} /> },
-  { key: 'reports', label: 'Reports', Icon: ({ color, size }) => <FileText color={color} size={size} /> },
+  { key: 'home', label: 'Home', Icon: Home },
+  { key: 'assessments', label: 'Assess', Icon: ClipboardCheck },
+  { key: 'results', label: 'Results', Icon: BarChart3 },
+  { key: 'reports', label: 'Reports', Icon: FileText },
 ];
 
 export default function AthleteBottomNav({ active, onChange }: Props) {
@@ -34,6 +34,7 @@ export default function AthleteBottomNav({ active, onChange }: Props) {
         {TABS.map(tab => {
           const isSelected = active === tab.key;
           const color = isSelected ? colors.primary : colors.textSecondary;
+          const IconComponent = tab.Icon;
 
           return (
             <TouchableOpacity
@@ -43,7 +44,7 @@ export default function AthleteBottomNav({ active, onChange }: Props) {
               onPress={() => onChange(tab.key)}
             >
               <View style={[styles.iconPill, isSelected && styles.iconPillActive]}>
-                {tab.Icon({ color, size: 20 })}
+                <IconComponent color={color} size={20} />
               </View>
               <Text style={[styles.tabLabel, { color }, isSelected && styles.tabLabelActive]}>
                 {tab.label}

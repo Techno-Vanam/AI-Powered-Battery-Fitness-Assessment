@@ -1,4 +1,4 @@
-import { HeightTest, SyncStatus } from '../../database/repositories/HeightRepository';
+import { HeightTest } from '../../database/repositories/HeightRepository';
 import { Athlete } from '../../database/repositories/AthleteRepository';
 
 export interface HeightTestWithAthlete {

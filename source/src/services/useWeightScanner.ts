@@ -107,13 +107,13 @@ export function useWeightScanner() {
       }
 
       if (!snapshot?.path) { scheduleNext(); return; }
-      imagePath = snapshot.path.startsWith('file://') ? snapshot.path : `file://${snapshot.path}`;
+      const finalImagePath = snapshot.path.startsWith('file://') ? snapshot.path : `file://${snapshot.path}`;
 
       // Step 2: Run full OCR pipeline (native 7-seg → ML Kit fallback)
-      const result = await OCRService.recognizeLCDWeight(imagePath, undefined, cropRect);
+      const result = await OCRService.recognizeLCDWeight(finalImagePath, undefined, cropRect);
 
       // Step 3: Delete the temp file immediately — user never sees it in gallery
-      await ImageProcessingService.deleteTempImage(imagePath);
+      await ImageProcessingService.deleteTempImage(finalImagePath);
       imagePath = null;
 
       // Step 4: Timestamped consensus check across 3s window (5 matching in 10)

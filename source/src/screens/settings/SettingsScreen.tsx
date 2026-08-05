@@ -25,7 +25,6 @@ import {
 } from 'lucide-react-native';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from '../../i18n';
-import { PillSwitch } from '../../components/ui/PillSwitch';
 import { colors } from '../../theme/colors';
 import { layout } from '../../theme/layout';
 
@@ -50,7 +49,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     settings,
     updateSettings,
     toggleNotificationPref,
-    themeColors,
   } = useApp();
   const t = useTranslation();
 

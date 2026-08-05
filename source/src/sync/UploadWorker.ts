@@ -53,7 +53,7 @@ export async function processQueueItem(item: SyncQueueItem): Promise<WorkerResul
         await SyncRepository.delete(item.id);
         return 'skip';
     }
-  } catch (err) {
+  } catch {
     await SyncRepository.incrementRetry(item.id);
     return 'retry';
   }

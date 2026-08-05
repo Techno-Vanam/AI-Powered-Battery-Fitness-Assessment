@@ -20,7 +20,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'AthleteList'>;
 
 export function AthleteListScreen({ navigation, route }: Props) {
   const isSelectForTest = route.params?.selectForTest ?? false;
-  const { athletes, query, setQuery, isLoading, refresh } = useAthleteListViewModel();
+  const { athletes, query, setQuery, isLoading } = useAthleteListViewModel();
 
   const handleSelectAthlete = (athlete: Athlete) => {
     navigation.navigate('HeightTestInstructions', { athlete });

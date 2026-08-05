@@ -99,9 +99,9 @@ export function navigateToDashboardTest(
   }
 
   if (target.params !== undefined) {
-    navigation.navigate(target.screen, target.params as never);
+    (navigation.navigate as any)(target.screen, target.params);
   } else {
-    navigation.navigate(target.screen);
+    (navigation.navigate as any)(target.screen);
   }
 
   return true;

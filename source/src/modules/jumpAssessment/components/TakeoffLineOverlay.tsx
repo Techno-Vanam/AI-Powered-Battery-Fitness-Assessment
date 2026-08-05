@@ -11,7 +11,7 @@ interface Props {
   width: number;
 }
 
-export const TakeoffLineOverlay: React.FC<Props> = ({ takeoffLineX, landingHeelX, width }) => {
+export const TakeoffLineOverlay: React.FC<Props> = ({ takeoffLineX, landingHeelX, width: _width }) => {
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       {takeoffLineX !== null ? (

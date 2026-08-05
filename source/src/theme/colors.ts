@@ -34,6 +34,8 @@ export const lightColors = {
   textPrimary: '#000000',
   textSecondary: '#3C3C4399', // ~60% opacity dark gray
   textTertiary: '#3C3C434D',  // ~30% opacity dark gray
+  textMuted: '#64748B',
+  textLabel: '#64748B',
   textInverse: '#FFFFFF',
   
   athlete: {
@@ -87,6 +89,8 @@ export const darkColors = {
   textPrimary: '#FFFFFF',
   textSecondary: '#8E8E93',
   textTertiary: '#636366',
+  textMuted: '#94A3B8',
+  textLabel: '#94A3B8',
   textInverse: '#000000',
   
   athlete: {

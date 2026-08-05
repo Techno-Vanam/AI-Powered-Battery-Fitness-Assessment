@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
-import { ArrowLeft, TrendingUp, Award, Building } from 'lucide-react-native';
+import { ArrowLeft, Award, Building } from 'lucide-react-native';
 import { StatCard } from '../../components/ui/StatCard';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { ReportActionButtons } from '../../components/ui/ReportActionButtons';

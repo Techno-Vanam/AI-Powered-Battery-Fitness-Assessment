@@ -96,7 +96,7 @@ async function fetchWithCache<T>(
     } else {
       clearTimeout(timer);
     }
-  } catch (err) {
+  } catch {
     // Network request failed or timed out — fall back to cache
   }
 
@@ -167,9 +167,9 @@ export const INITIAL_RECENT_ACTIVITIES: ActivityItem[] = [
 ];
 
 export const INITIAL_PENDING_TASKS: PendingTaskItem[] = [
-  { id: 'task_1', type: 'pending_sync', title: '12 Assessment Records Offline', subtitle: 'Tap to synchronize queued data with cloud server', action_type: 'sync_now' },
-  { id: 'task_2', type: 'incomplete_assessment', title: 'Finish 30m Sprint & Shuttle Run', subtitle: 'Class 10-A has 2 remaining tests pending', action_type: 'continue_assessment' },
-  { id: 'task_3', type: 'generate_report', title: 'Generate U-17 Performance Analytics', subtitle: 'Batch completed — ready for official scorecard export', action_type: 'generate_report' },
+  { id: 'task_1', type: 'pending_sync', title: '12 Assessment Records Offline', subtitle: 'Tap to synchronize queued data with cloud server', action_type: 'sync_now', created_at: new Date().toISOString() },
+  { id: 'task_2', type: 'incomplete_assessment', title: 'Finish 30m Sprint & Shuttle Run', subtitle: 'Class 10-A has 2 remaining tests pending', action_type: 'continue_assessment', created_at: new Date().toISOString() },
+  { id: 'task_3', type: 'generate_report', title: 'Generate U-17 Performance Analytics', subtitle: 'Batch completed — ready for official scorecard export', action_type: 'generate_report', created_at: new Date().toISOString() },
 ];
 
 export const INITIAL_ANALYTICS_PREVIEW: AnalyticsPreview = {

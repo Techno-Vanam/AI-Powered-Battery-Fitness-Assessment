@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
-import { ArrowLeft, Award, AlertCircle, TrendingUp } from 'lucide-react-native';
+import { ArrowLeft, Award, AlertCircle } from 'lucide-react-native';
 import { STANDARD_10_TESTS } from '../../data/mockData';
 import { StatCard } from '../../components/ui/StatCard';
 import { ProgressBar } from '../../components/ui/ProgressBar';
@@ -39,7 +39,6 @@ export const TestWiseReportScreen: React.FC<TestWiseReportScreenProps> = ({
         {/* Test Performance Breakdown */}
         {STANDARD_10_TESTS.map((t, idx) => {
           const passPct = 80 + (idx % 15);
-          const avgVal = idx % 2 === 0 ? '172 cm' : '4.32 sec';
 
           return (
             <View key={t.testId} style={[styles.card, layout.shadowSubtle]}>
