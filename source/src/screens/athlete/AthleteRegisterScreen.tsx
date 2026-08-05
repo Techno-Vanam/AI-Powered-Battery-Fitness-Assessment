@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
   User, Phone, CreditCard, Building2, CheckSquare, Square,
-  AlertCircle, Shield, ArrowRight, ArrowLeft, ChevronDown
+  AlertCircle, Shield, ArrowRight, ArrowLeft
 } from 'lucide-react-native';
 import { registerUser } from '../../services/authService';
 import { createRegisterStyles } from '../../styles/screenStyles';
@@ -30,10 +30,10 @@ const schema = yup.object({
     .matches(/^[A-Za-z.\s'-]+$/, 'Please enter a valid name')
     .min(2, 'Please enter a valid name')
     .max(50, 'Please enter a valid name'),
-  dobDay: yup.string().required('Please select a valid date of birth'),
-  dobMonth: yup.string().required('Please select a valid date of birth'),
-  dobYear: yup.string().required('Please select a valid date of birth'),
-  gender: yup.string().required('Please select a gender'),
+  dobDay: yup.string().required('Required'),
+  dobMonth: yup.string().required('Required'),
+  dobYear: yup.string().required('Required'),
+  gender: yup.string().oneOf(['M', 'F', 'O'], 'Please select a gender').required('Please select a gender'),
   phone: yup
     .string()
     .optional()
@@ -65,22 +65,6 @@ type FormData = yup.InferType<typeof schema>;
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-const DAYS = Array.from({ length: 31 }, (_, i) => {
-  const value = String(i + 1).padStart(2, '0');
-  return { label: value, value };
-});
-const MONTHS = [
-  { label: 'Jan', value: '01' }, { label: 'Feb', value: '02' }, { label: 'Mar', value: '03' },
-  { label: 'Apr', value: '04' }, { label: 'May', value: '05' }, { label: 'Jun', value: '06' },
-  { label: 'Jul', value: '07' }, { label: 'Aug', value: '08' }, { label: 'Sep', value: '09' },
-  { label: 'Oct', value: '10' }, { label: 'Nov', value: '11' }, { label: 'Dec', value: '12' },
-];
-const currentYear = new Date().getFullYear();
-const YEARS = Array.from({ length: 100 }, (_, i) => {
-  const value = String(currentYear - i);
-  return { label: value, value };
-});
-
 const ID_TYPES = [
   { label: 'NSRS', value: 'NSRS' },
   { label: 'APAAR (12-digit)', value: 'APAAR' },
@@ -114,14 +98,13 @@ const FieldError: React.FC<{ message?: string }> = ({ message }) =>
 const AthleteRegisterScreen = ({ navigation }: any) => {
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
-  const [_pickerVisible, setPickerVisible] = useState<'idType' | 'guardianRelation' | null>(null);
 
   const { control, handleSubmit, watch, setValue, trigger, formState: { errors } } = useForm<FormData>({
     mode: 'onChange',
     reValidateMode: 'onChange',
     resolver: yupResolver(schema) as any,
     defaultValues: {
-      fullName: '', dobDay: '', dobMonth: '', dobYear: '', gender: '',
+      fullName: '', dobDay: '', dobMonth: '', dobYear: '', gender: '' as any,
       phone: '', idType: 'NSRS', idNumber: '', school: '', consent: false,
       guardianName: '', guardianRelation: 'Father',
     },
@@ -131,7 +114,6 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
   const dobDay = watch('dobDay');
   const dobMonth = watch('dobMonth');
   const dobYear = watch('dobYear');
-  const idType = watch('idType');
   const consent = watch('consent');
   const gender = watch('gender');
   const guardianRelation = watch('guardianRelation');
@@ -217,98 +199,6 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
           <View style={styles.header}>
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Join as an athlete and track your journey.</Text>
-          </View>
-
-          <View style={styles.form}>
-            {/* Full Name */}
-            <View style={styles.group}>
-              <Text style={styles.label}>Full Name</Text>
-              <Controller
-                control={control}
-                name="fullName"
-                render={({ field: { onChange, value } }) => (
-                  <View style={[styles.inputRow, errors.fullName && styles.inputError]}>
-                    <User size={18} color="#94A3B8" />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="e.g. Arjun Sharma"
-                      placeholderTextColor="#94A3B8"
-                      value={value}
-                      onChangeText={text => {
-                        onChange(text);
-                        validateField('fullName', text);
-                      }}
-                      autoCapitalize="words"
-                    />
-                  </View>
-                )}
-              />
-              <FieldError message={errors.fullName?.message} />
-            </View>
-
-            {/* Date of Birth */}
-            <View style={styles.group}>
-              <Text style={styles.label}>Date of Birth</Text>
-              <View style={styles.dobRow}>
-                <Controller
-                  control={control}
-                  name="dobDay"
-                  render={({ field: { onChange, value } }) => (
-                    <Dropdown
-                      compact
-                      items={DAYS}
-                      value={value}
-                      title="Select Day"
-                      placeholder="DD"
-                      role="athlete"
-                      hasError={!!errors.dobDay}
-                      onChange={onChange}
-                      style={{ flex: 1 }}
-                    />
-                  )}
-                />
-                <Controller
-                  control={control}
-                  name="dobMonth"
-                  render={({ field: { onChange, value } }) => (
-                    <Dropdown
-                      compact
-                      items={MONTHS}
-                      value={value}
-                      title="Select Month"
-                      placeholder="MM"
-                      role="athlete"
-                      hasError={!!errors.dobMonth}
-                      onChange={onChange}
-                      style={{ flex: 1 }}
-                    />
-                  )}
-                />
-                <Controller
-                  control={control}
-                  name="dobYear"
-                  render={({ field: { onChange, value } }) => (
-                    <Dropdown
-                      compact
-                      items={YEARS}
-                      value={value}
-                      title="Select Year"
-                      placeholder="YYYY"
-                      role="athlete"
-                      hasError={!!errors.dobYear}
-                      onChange={onChange}
-                      style={{ flex: 1.3 }}
-                    />
-                  )}
-                />
-              </View>
-              {age !== null && (
-                <View style={styles.agePill}>
-                  <Text style={styles.ageText}>Age: {age} years {isMinor ? '(Minor)' : ''}</Text>
-                </View>
-              )}
-              <FieldError message={errors.dobDay?.message || errors.dobMonth?.message || errors.dobYear?.message} />
-            </View>
           </View>
 
           <View style={styles.form}>
@@ -413,7 +303,7 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
                         key={g.value}
                         style={[styles.segment, gender === g.value && styles.segmentActive]}
                         onPress={() => {
-                          setValue('gender', g.value, { shouldValidate: true, shouldDirty: true });
+                          setValue('gender', g.value as any, { shouldValidate: true, shouldDirty: true });
                           void trigger('gender');
                         }}
                       >
@@ -470,20 +360,6 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
                   <ArrowLeft size={16} color="#4F46E5" />
                   <Text style={styles.backText}>Back to Personal Details</Text>
                 </TouchableOpacity>
-
-                {/* ID Type */}
-                <View style={styles.group}>
-                  <Text style={styles.label}>ID Type</Text>
-                  <TouchableOpacity
-                    style={[styles.inputRow, errors.idType && styles.inputError]}
-                    onPress={() => setPickerVisible('idType')}
-                  >
-                    <CreditCard size={18} color="#94A3B8" />
-                    <Text style={[styles.input, { paddingVertical: 0, color: '#0F172A', fontWeight: '600' }]}>{idType}</Text>
-                    <ChevronDown size={18} color="#94A3B8" />
-                  </TouchableOpacity>
-                  <FieldError message={errors.idType?.message} />
-                </View>
 
             {/* ID Type */}
             <View style={styles.group}>
@@ -568,7 +444,7 @@ const AthleteRegisterScreen = ({ navigation }: any) => {
                 {/* Page 2 Action: Submit Button */}
                 <TouchableOpacity
                   style={[styles.button, (loading || !consent) && styles.buttonDisabled]}
-                  onPress={handleSubmit(onSubmit)}
+                  onPress={handleSubmit(onSubmit as any)}
                   disabled={loading || !consent}
                 >
                   {loading

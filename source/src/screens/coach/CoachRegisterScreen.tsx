@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
   User, Phone, CreditCard, CheckSquare, Square,
-  AlertCircle, Briefcase, ArrowRight, ChevronDown
+  AlertCircle, Briefcase, ArrowRight
 } from 'lucide-react-native';
 import { registerUser } from '../../services/authService';
 import { createRegisterStyles } from '../../styles/screenStyles';
@@ -89,17 +89,11 @@ const CoachRegisterScreen = ({ navigation }: any) => {
     },
   });
 
-  const [_pickerVisible, setPickerVisible] = useState<'designation' | 'idType' | null>(null);
-
-  const idType = watch('idType');
   const consent = watch('consent');
   const gender = watch('gender');
-  const designation = watch('designation');
   const dobDay = watch('dobDay');
   const dobMonth = watch('dobMonth');
   const dobYear = watch('dobYear');
-
-  const selectedDesignationLabel = DESIGNATIONS.find(d => d.value === designation)?.label || 'Select Designation';
 
   const validateField = (field: keyof FormData, value: string) => {
     const normalized = value.trim();
@@ -300,85 +294,55 @@ const CoachRegisterScreen = ({ navigation }: any) => {
             {step === 2 && (
               <>
                 {/* Designation */}
-            <View style={styles.group}>
-              <Text style={styles.label}>Designation</Text>
-              <Controller
-                control={control}
-                name="designation"
-                render={({ field: { onChange, value } }) => (
-                  <Dropdown
-                    items={DESIGNATIONS}
-                    value={value}
-                    title="Select Designation"
-                    placeholder="Select designation"
-                    role="coach"
-                    hasError={!!errors.designation}
-                    icon={<Briefcase size={18} color="#94A3B8" />}
-                    onChange={itemValue => {
-                      onChange(itemValue);
-                      void trigger('designation');
-                    }}
-                  />
-                )}
-              />
-              <FieldError message={errors.designation?.message} />
-            </View>
-
-                {/* Designation */}
                 <View style={styles.group}>
                   <Text style={styles.label}>Designation</Text>
-                  <TouchableOpacity
-                    style={[styles.inputRow, errors.designation && styles.inputError]}
-                    onPress={() => setPickerVisible('designation')}
-                  >
-                    <Briefcase size={18} color="#94A3B8" />
-                    <Text style={[styles.input, { paddingVertical: 0, color: '#0F172A', fontWeight: '600' }]}>
-                      {selectedDesignationLabel}
-                    </Text>
-                    <ChevronDown size={18} color="#94A3B8" />
-                  </TouchableOpacity>
+                  <Controller
+                    control={control}
+                    name="designation"
+                    render={({ field: { onChange, value } }) => (
+                      <Dropdown
+                        items={DESIGNATIONS}
+                        value={value}
+                        title="Select Designation"
+                        placeholder="Select designation"
+                        role="coach"
+                        hasError={!!errors.designation}
+                        icon={<Briefcase size={18} color="#94A3B8" />}
+                        onChange={itemValue => {
+                          onChange(itemValue);
+                          void trigger('designation');
+                        }}
+                      />
+                    )}
+                  />
                   <FieldError message={errors.designation?.message} />
                 </View>
 
                 {/* ID Type */}
                 <View style={styles.group}>
                   <Text style={styles.label}>ID Type</Text>
-                  <TouchableOpacity
-                    style={[styles.inputRow, errors.idType && styles.inputError]}
-                    onPress={() => setPickerVisible('idType')}
-                  >
-                    <CreditCard size={18} color="#94A3B8" />
-                    <Text style={[styles.input, { paddingVertical: 0, color: '#0F172A', fontWeight: '600' }]}>{idType}</Text>
-                    <ChevronDown size={18} color="#94A3B8" />
-                  </TouchableOpacity>
+                  <Controller
+                    control={control}
+                    name="idType"
+                    render={({ field: { onChange, value } }) => (
+                      <Dropdown
+                        items={ID_TYPES}
+                        value={value}
+                        title="Select ID Type"
+                        placeholder="Select ID type"
+                        role="coach"
+                        hasError={!!errors.idType}
+                        icon={<CreditCard size={18} color="#94A3B8" />}
+                        onChange={itemValue => {
+                          onChange(itemValue);
+                          setValue('idNumber', '');
+                          void trigger('idType');
+                        }}
+                      />
+                    )}
+                  />
                   <FieldError message={errors.idType?.message} />
                 </View>
-
-            {/* ID Type */}
-            <View style={styles.group}>
-              <Text style={styles.label}>ID Type</Text>
-              <Controller
-                control={control}
-                name="idType"
-                render={({ field: { onChange, value } }) => (
-                  <Dropdown
-                    items={ID_TYPES}
-                    value={value}
-                    title="Select ID Type"
-                    placeholder="Select ID type"
-                    role="coach"
-                    hasError={!!errors.idType}
-                    icon={<CreditCard size={18} color="#94A3B8" />}
-                    onChange={itemValue => {
-                      onChange(itemValue);
-                      setValue('idNumber', '');
-                      void trigger('idType');
-                    }}
-                  />
-                )}
-              />
-              <FieldError message={errors.idType?.message} />
-            </View>
 
                 {/* Consent */}
                 <View style={styles.group}>

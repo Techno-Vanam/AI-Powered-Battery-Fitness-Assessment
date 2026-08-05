@@ -46,7 +46,7 @@ const CoachLoginScreen = ({ navigation }: any) => {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
-  const [_loginError, setLoginError] = useState<string | null>(null);
+  const [_loginError, _setLoginError] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
