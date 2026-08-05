@@ -107,14 +107,13 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 type OnboardingProps = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 
-<<<<<<< HEAD
 function OnboardingScreen({ navigation }: OnboardingProps) {
   const goToRoleSelect = () => {
     navigation.replace('RoleSelect');
   };
 
   return <OnboardingFlow onComplete={goToRoleSelect} />;
-=======
+}
 // Assessment Stack Screens
 import { AssessmentsScreen } from '../screens/assessments/AssessmentsScreen';
 import { NewAssessmentScreen } from '../screens/assessments/NewAssessmentScreen';
@@ -626,7 +625,6 @@ function MainAppContainer() {
       )}
     </SafeAreaView>
   );
->>>>>>> feature/coach-dashboard
 }
 
 export function AppNavigator() {
