@@ -27,7 +27,7 @@ const idNumberSchema = (idType: string | undefined) => {
 
 const schema = yup.object({
   idType: yup.string().oneOf(['NSRS', 'APAAR', 'AADHAR']).required('Please select an ID type'),
-  idNumber: yup.string().when('idType', ([idType], s) => idNumberSchema(idType)),
+  idNumber: yup.string().when('idType', ([idType]) => idNumberSchema(idType)),
 });
 
 type FormData = yup.InferType<typeof schema>;

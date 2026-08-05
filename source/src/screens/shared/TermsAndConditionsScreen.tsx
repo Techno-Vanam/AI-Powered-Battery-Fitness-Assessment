@@ -55,15 +55,6 @@ For questions or concerns regarding these Terms, please contact: support@sportsa
 
 const TermsAndConditionsScreen = ({ navigation, route }: any) => {
   const { onAccept } = route.params ?? {};
-  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
-
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    const paddingToBottom = 30;
-    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
-      setHasScrolledToBottom(true);
-    }
-  };
 
   const handleAccept = () => {
     if (onAccept) onAccept();

@@ -1,5 +1,4 @@
 import { StyleSheet } from 'react-native';
-import { colors, layout } from '../../theme';
 
 /** Shared premium card look (fintech reference) */
 export const premium = StyleSheet.create({

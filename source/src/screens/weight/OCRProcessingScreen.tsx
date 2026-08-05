@@ -5,7 +5,7 @@ import Screen from '../../components/ui/Screen';
 import AppText from '../../components/ui/AppText';
 import { colors, layout, roleColors } from '../../theme';
 import { createScreenStyles } from '../../styles/screenStyles';
-import { ImageProcessingService, CropRect } from '../../services/ImageProcessingService';
+import { ImageProcessingService } from '../../services/ImageProcessingService';
 import { OCRService } from '../../services/OCRService';
 
 const screenStyles = createScreenStyles();
@@ -94,6 +94,7 @@ export const OCRProcessingScreen = ({ route, navigation }: any) => {
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

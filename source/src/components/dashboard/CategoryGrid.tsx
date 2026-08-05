@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Activity, Timer, Wind, Zap } from 'lucide-react-native';
 import AppText from '../ui/AppText';
-import { colors, layout } from '../../theme';
+import { layout } from '../../theme';
 import { fontFamily } from '../../theme/fonts';
 import type { AccuracyItem } from '../../types/athleteDashboard';
 

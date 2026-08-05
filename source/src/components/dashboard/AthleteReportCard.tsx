@@ -1,9 +1,8 @@
 import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Line, Path, Polygon, Rect, Text as SvgText } from 'react-native-svg';
 import AppText from '../ui/AppText';
 import SFSymbol from '../ui/SFSymbol';
-import { colors } from '../../theme';
 import type { AthleteDashboardData } from '../../types/athleteDashboard';
 
 type Props = {

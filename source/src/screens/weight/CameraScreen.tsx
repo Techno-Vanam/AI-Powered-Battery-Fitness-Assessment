@@ -14,7 +14,7 @@ import {
   ZapOff,
   Camera as CameraIcon,
 } from 'lucide-react-native';
-import { Camera, CameraType } from 'react-native-camera-kit';
+import { Camera, useCameraDevice } from 'react-native-vision-camera';
 import AppText from '../../components/ui/AppText';
 import { colors, layout, roleColors } from '../../theme';
 import { CameraService } from '../../services/CameraService';
@@ -24,6 +24,7 @@ const accent = roleColors('athlete');
 
 export const CameraScreen = ({ navigation }: any) => {
   const cameraRef = useRef<any>(null);
+  const device = useCameraDevice('back');
 
   const [hasPermission, setHasPermission] = useState<boolean>(false);
   const [flashOn, setFlashOn] = useState<boolean>(false);
@@ -91,7 +92,7 @@ export const CameraScreen = ({ navigation }: any) => {
       } else {
         Alert.alert('Capture Error', 'Could not retrieve captured frame.');
       }
-    } catch (err) {
+    } catch {
       setIsCapturing(false);
       Alert.alert('Capture Error', 'Failed to capture frame from in-app camera.');
     }
@@ -105,13 +106,13 @@ export const CameraScreen = ({ navigation }: any) => {
   return (
     <View style={styles.container}>
       {/* Full-Screen In-App Live Camera Viewfinder */}
-      {hasPermission ? (
+      {hasPermission && device ? (
         <Camera
           ref={cameraRef}
           style={StyleSheet.absoluteFill}
-          cameraType={CameraType.Back}
-          flashMode={flashOn ? 'on' : 'off'}
-          focusMode="on"
+          device={device}
+          isActive={true}
+          torch={flashOn ? 'on' : 'off'}
         />
       ) : (
         <View style={styles.noCameraFallback}>
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
   noCameraFallback: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: '#0F172A',
     justifyContent: 'center',
     alignItems: 'center',
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   viewfinderBackdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   overlayTop: {
     width: '100%',

@@ -61,7 +61,7 @@ export const OCRResultScreen = ({ route, navigation }: any) => {
           [{ text: 'OK', onPress: () => navigation.navigate('WeightMeasurementHome') }]
         );
       }
-    } catch (err) {
+    } catch {
       setIsSubmitting(false);
       Alert.alert('Error', 'Failed to save measurement.');
     }

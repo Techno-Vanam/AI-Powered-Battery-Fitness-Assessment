@@ -34,7 +34,7 @@ const idNumberSchema = (idType: string | undefined) => {
 
 const schema = yup.object({
   idType: yup.string().oneOf(['NSRS', 'APAAR', 'AADHAR']).required('Please select an ID type'),
-  idNumber: yup.string().when('idType', ([idType], s) => idNumberSchema(idType)),
+  idNumber: yup.string().when('idType', ([idType]) => idNumberSchema(idType)),
   password: yup.string().required('Password is required').min(1),
 });
 
@@ -69,13 +69,11 @@ const AthleteLoginScreen = ({ navigation }: any) => {
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
-    setLoginError(null);
     try {
       await loginUser(data.idType ?? 'NSRS', data.idNumber ?? '', data.password, 'athlete');
       navigation.reset({ index: 0, routes: [{ name: 'AthleteHome' }] });
     } catch (e: any) {
       const errMsg = e.message || 'Invalid ID or password.';
-      setLoginError(errMsg);
       Alert.alert('Login Failed', errMsg);
     } finally {
       setLoading(false);

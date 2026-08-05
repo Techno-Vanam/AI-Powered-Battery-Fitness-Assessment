@@ -1,4 +1,3 @@
-import NetInfo from '@react-native-community/netinfo';
 import { fetchApi } from '../config/api';
 import {
   getAllPendingSync,
@@ -7,7 +6,6 @@ import {
   clearLocalOtpAfterSync,
   markUserSynced,
   markUserConflict,
-  markUserSynced,
 } from '../db/syncQueueRepository';
 import { getUserByLocalId } from '../db/userRepository';
 import { NetworkService } from './NetworkService';
