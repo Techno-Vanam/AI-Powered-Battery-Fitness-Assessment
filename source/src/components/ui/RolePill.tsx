@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { colors, layout, roleColors, Role } from '../../theme';
+import { layout, roleColors, Role } from '../../theme';
 import AppText from './AppText';
 
 type Props = {

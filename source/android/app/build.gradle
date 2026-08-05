@@ -8,8 +8,8 @@ apply plugin: "com.facebook.react"
  */
 react {
     /* Variants */
-    // Do not skip JS bundling for debug build variant when installed as standalone APK
-    debuggableVariants = []
+    // Skip JS bundling for debug build variant when using Metro dev server
+    debuggableVariants = ["debug"]
 
     /* Autolinking */
     autolinkLibrariesWithApp()

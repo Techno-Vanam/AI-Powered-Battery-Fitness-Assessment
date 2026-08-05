@@ -95,7 +95,7 @@ export const ResizableROIOverlay: React.FC<ResizableROIOverlayProps> = ({
   ).current;
 
   // ── Corner Resize Responders ───────────────────────────────────────────────
-  const resizeStartPos = useRef({ x: 0, y: 0, ...initialRect });
+  const resizeStartPos = useRef({ touchX: 0, touchY: 0, x: initialRect.x, y: initialRect.y, width: initialRect.width, height: initialRect.height });
 
   const createCornerResponder = (corner: 'tl' | 'tr' | 'bl' | 'br') =>
     PanResponder.create({
@@ -103,14 +103,17 @@ export const ResizableROIOverlay: React.FC<ResizableROIOverlayProps> = ({
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: (evt) => {
         resizeStartPos.current = {
-          x: evt.nativeEvent.pageX,
-          y: evt.nativeEvent.pageY,
-          ...rectRef.current,
+          touchX: evt.nativeEvent.pageX,
+          touchY: evt.nativeEvent.pageY,
+          x: rectRef.current.x,
+          y: rectRef.current.y,
+          width: rectRef.current.width,
+          height: rectRef.current.height,
         };
       },
       onPanResponderMove: (evt) => {
-        const dx = evt.nativeEvent.pageX - resizeStartPos.current.x;
-        const dy = evt.nativeEvent.pageY - resizeStartPos.current.y;
+        const dx = evt.nativeEvent.pageX - resizeStartPos.current.touchX;
+        const dy = evt.nativeEvent.pageY - resizeStartPos.current.touchY;
         const start = resizeStartPos.current;
 
         let newX = start.x;
@@ -167,7 +170,7 @@ export const ResizableROIOverlay: React.FC<ResizableROIOverlayProps> = ({
     );
     loop.start();
     return () => loop.stop();
-  }, [isStable]);
+  }, [isStable, scanAnim]);
 
   const scanTranslateY = scanAnim.interpolate({
     inputRange: [0, 1],

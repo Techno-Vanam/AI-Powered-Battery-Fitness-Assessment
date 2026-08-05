@@ -42,7 +42,7 @@ export default function DonutChart({
   completed = 7,
   remaining = 3,
   inProgress = 0,
-  total = 10,
+  total: _total = 10,
   size = 96,
   strokeWidth = 14,
 }: Props) {

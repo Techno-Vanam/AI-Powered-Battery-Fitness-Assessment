@@ -7,21 +7,17 @@ import {
   Clock,
   ArrowRight,
   RefreshCw,
-  Camera as CameraIcon,
   ChevronLeft,
 } from 'lucide-react-native';
 import Screen from '../../components/ui/Screen';
 import AppText from '../../components/ui/AppText';
 import Button from '../../components/ui/Button';
 import { colors, layout, roleColors } from '../../theme';
-import { createScreenStyles } from '../../styles/screenStyles';
 import { NetworkService } from '../../services/NetworkService';
 import { SQLiteService } from '../../services/SQLiteService';
 import { SyncService } from '../../services/syncService';
 import { WeightAPIService } from '../../services/WeightAPIService';
 
-
-const screenStyles = createScreenStyles();
 const accent = roleColors('athlete');
 
 export const WeightMeasurementScreen = ({ navigation }: any) => {

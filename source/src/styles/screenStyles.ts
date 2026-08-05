@@ -515,6 +515,40 @@ export function createRegisterStyles(role: Role) {
         fontFamily: fontFamily('600'),
         color: colors.surface,
       },
+      stepIndicatorContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: layout.fieldGap,
+      },
+      stepBadge: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: layout.radiusSm,
+        backgroundColor: colors.borderLight,
+      },
+      stepBadgeActive: {
+        backgroundColor: accent.primary,
+      },
+      stepBadgeText: {
+        fontFamily: fontFamily('600'),
+        fontSize: moderateScale(13),
+        color: colors.textSecondary,
+      },
+      stepBadgeTextActive: {
+        color: colors.surface,
+      },
+      stepLine: {
+        flex: 1,
+        height: 2,
+        backgroundColor: colors.border,
+        marginHorizontal: 8,
+      },
+      btnRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: layout.fieldGap,
+      },
     }),
   };
 }

@@ -1,5 +1,4 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Dimensions } from 'react-native';
 import type { Camera } from 'react-native-vision-camera';
 import { OCRService } from './OCRService';
 import {
@@ -76,7 +75,7 @@ export function useWeightScanner() {
 
   // Internal refs
   const isActive = useRef(false);
-  const cameraRefRef = useRef<React.RefObject<Camera> | null>(null);
+  const cameraRefRef = useRef<React.RefObject<Camera | null> | null>(null);
   const cropRectRef = useRef<CropRect | null>(null);
   const frameHistoryRef = useRef<TimestampedReading[]>([]);
   const scanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -103,7 +102,7 @@ export function useWeightScanner() {
         } else {
           snapshot = await camera.takePhoto({ flash: 'off' });
         }
-      } catch (snapErr) {
+      } catch {
         snapshot = await camera.takePhoto({ flash: 'off' });
       }
 
@@ -167,6 +166,7 @@ export function useWeightScanner() {
     }
 
     scheduleNext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function scheduleNext() {
@@ -181,7 +181,7 @@ export function useWeightScanner() {
   }, []);
 
   const startScanning = useCallback(
-    (cameraRef: React.RefObject<Camera>, cropRect: CropRect) => {
+    (cameraRef: React.RefObject<Camera | null>, cropRect: CropRect) => {
       frameHistoryRef.current = [];
       cameraRefRef.current = cameraRef;
       cropRectRef.current = cropRect;
@@ -207,7 +207,7 @@ export function useWeightScanner() {
   }, []);
 
   const resetScanning = useCallback(
-    (cameraRef: React.RefObject<Camera>, cropRect: CropRect) => {
+    (cameraRef: React.RefObject<Camera | null>, cropRect: CropRect) => {
       stopScanning();
       setTimeout(() => startScanning(cameraRef, cropRect), 100);
     },

@@ -47,8 +47,6 @@ export function AuthHeader({
   subtitle: string;
   badge?: React.ReactNode;
 }) {
-  const accent = role ? roleColors(role) : null;
-
   return (
     <View style={styles.header}>
       {role && <RolePillInline role={role} />}

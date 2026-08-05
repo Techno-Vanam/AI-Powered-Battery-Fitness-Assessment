@@ -1,4 +1,3 @@
-import { validateWeight, ValidationResult } from './WeightValidationService';
 import { SegmentState, NativeSegmentResult } from './SevenSegmentNativeBridge';
 
 export type { SegmentState };
