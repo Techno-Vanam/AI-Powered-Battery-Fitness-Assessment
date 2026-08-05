@@ -71,8 +71,8 @@ android {
 
 dependencies {
     implementation("com.facebook.react:react-android")
-    // Local OpenCV AAR (avoids slow/hung Maven downloads on Windows)
-    implementation files('libs/opencv-4.10.0.aar')
+    // OpenCV from Maven Central via :opencv module (no local AAR in git)
+    implementation project(':opencv')
 
     // MediaPipe Tasks Vision ΓÇö fully offline, bundles its own inference runtime
     implementation 'com.google.mediapipe:tasks-vision:0.10.14'
