@@ -4,6 +4,8 @@
 
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { bottomInsetPadding } from '../../../theme';
 import { useJumpCalibration } from '../hooks/useJumpCalibration';
 import { CalibrationOverlay } from '../components/CalibrationOverlay';
 import { JumpCameraView } from '../components/JumpCameraView';
@@ -14,6 +16,7 @@ interface Props {
 }
 
 export const JumpCalibrationScreen: React.FC<Props> = ({ navigation, route }) => {
+  const insets = useSafeAreaInsets();
   const { testType } = route.params || { testType: 'vertical' };
   const { isCalibrated, pixelsPerCm, method, setMethod, setCalibration } = useJumpCalibration();
 
@@ -37,7 +40,7 @@ export const JumpCalibrationScreen: React.FC<Props> = ({ navigation, route }) =>
       <CalibrationOverlay method={method} isDetected={isCalibrated} />
 
       {/* Top Method Selector Toggle */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { top: insets.top + 8 }]}>
         <TouchableOpacity
           style={[styles.toggleBtn, method === 'aruco' && styles.activeToggle]}
           onPress={() => setMethod('aruco')}
@@ -54,7 +57,7 @@ export const JumpCalibrationScreen: React.FC<Props> = ({ navigation, route }) =>
       </View>
 
       {/* Bottom Action Bar */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { bottom: bottomInsetPadding(insets.bottom, 16) }]}>
         {!isCalibrated ? (
           <TouchableOpacity style={styles.calibrateBtn} onPress={handleSimulatedCalibration}>
             <Text style={styles.btnText}>Auto-Detect Calibration</Text>
@@ -76,7 +79,6 @@ const styles = StyleSheet.create({
   },
   topBar: {
     position: 'absolute',
-    top: 40,
     left: 20,
     right: 20,
     flexDirection: 'row',
@@ -101,7 +103,6 @@ const styles = StyleSheet.create({
   },
   bottomBar: {
     position: 'absolute',
-    bottom: 40,
     left: 20,
     right: 20,
     zIndex: 30,

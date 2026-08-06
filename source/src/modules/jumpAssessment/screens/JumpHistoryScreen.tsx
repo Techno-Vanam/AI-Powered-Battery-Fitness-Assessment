@@ -4,6 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { jumpHistoryRepo } from '../services/jumpHistoryRepository';
 import { JumpAttempt } from '../types/jump';
 
@@ -29,7 +30,7 @@ export const JumpHistoryScreen: React.FC<Props> = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
       <View style={styles.header}>
         <Text style={styles.title}>Assessment History</Text>
         {history.length > 0 ? (
@@ -69,7 +70,7 @@ export const JumpHistoryScreen: React.FC<Props> = () => {
           </View>
         )}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -1,105 +1,130 @@
-import React from 'react';
-import { View, Text, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
+import React, { useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  StatusBar,
+  ActivityIndicator,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Zap } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../types/camera';
+import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useSplashScreenViewModel } from '../hooks/useSplashScreenViewModel';
+import { colors } from '../theme/colors';
+import { layout } from '../theme/layout';
+import { fontFamily } from '../theme/fonts';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Splash'>;
 
 export function SplashScreen({ navigation }: Props) {
-  const { statusText } = useSplashScreenViewModel(() => {
-    navigation.replace('Home');
-  });
+  const handleReady = useCallback(() => {
+    navigation.replace('Onboarding');
+  }, [navigation]);
+
+  const { statusText } = useSplashScreenViewModel(handleReady);
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#090d16" />
+    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
-      <View style={styles.brandingContainer}>
-        <View style={styles.logoBadge}>
-          <Text style={styles.logoIcon}>⚡</Text>
+      <View style={styles.center}>
+        <View style={styles.iconShell}>
+          <View style={styles.iconInner}>
+            <Zap size={40} color={colors.primary} strokeWidth={2.4} fill={colors.primaryLight} />
+          </View>
         </View>
-        <Text style={styles.tagline}>TECHNO VANAM</Text>
-        <Text style={styles.title}>AI Battery Fitness</Text>
-        <Text style={styles.subtitle}>Precision Height & Pose Engine</Text>
+
+        <Text style={styles.appName}>Battery Fitness</Text>
+        <Text style={styles.tagline}>AI-Powered Assessment</Text>
+
+        <View style={styles.brandPill}>
+          <Text style={styles.brandText}>TECHNO VANAM</Text>
+        </View>
       </View>
 
-      <View style={styles.footerContainer}>
-        <ActivityIndicator size="small" color="#3b82f6" style={styles.spinner} />
+      <View style={styles.footer}>
+        <ActivityIndicator size="small" color={colors.primary} />
         <Text style={styles.statusText}>{statusText}</Text>
-        <Text style={styles.versionText}>v1.0.0 • Offline First Architecture</Text>
+        <Text style={styles.versionText}>Version 1.0.0</Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
+
+const ICON_SIZE = 96;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#090d16',
+    backgroundColor: colors.background,
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 24,
+    paddingHorizontal: layout.horizontalPadding,
+    paddingBottom: 28,
   },
-  brandingContainer: {
-    alignItems: 'center',
-    marginTop: 100,
-  },
-  logoBadge: {
-    width: 88,
-    height: 88,
-    borderRadius: 24,
-    backgroundColor: 'rgba(37, 99, 235, 0.15)',
-    borderWidth: 1.5,
-    borderColor: '#3b82f6',
+  center: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
-    shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 10,
+    paddingBottom: 48,
   },
-  logoIcon: {
-    fontSize: 44,
+  iconShell: {
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+    borderRadius: 22,
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: colors.warningBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 28,
+    ...layout.shadowSubtle,
   },
-  tagline: {
-    color: '#3b82f6',
-    fontSize: 13,
-    fontWeight: '800',
-    letterSpacing: 3,
-    marginBottom: 8,
+  iconInner: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  title: {
-    color: '#ffffff',
-    fontSize: 34,
-    fontWeight: '900',
-    letterSpacing: -0.5,
+  appName: {
+    fontFamily: fontFamily('800'),
+    fontSize: 32,
+    lineHeight: 38,
+    letterSpacing: -0.6,
+    color: colors.textPrimary,
     textAlign: 'center',
   },
-  subtitle: {
-    color: '#9ca3af',
-    fontSize: 15,
-    fontWeight: '500',
+  tagline: {
+    fontFamily: fontFamily('500'),
+    fontSize: 16,
+    lineHeight: 22,
+    color: colors.textSecondary,
     marginTop: 6,
+    textAlign: 'center',
   },
-  footerContainer: {
+  brandPill: {
+    marginTop: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: colors.surfaceSecondary,
+  },
+  brandText: {
+    fontFamily: fontFamily('700'),
+    fontSize: 11,
+    letterSpacing: 2.2,
+    color: colors.primary,
+  },
+  footer: {
     alignItems: 'center',
-  },
-  spinner: {
-    marginBottom: 12,
+    gap: 10,
   },
   statusText: {
-    color: '#d1d5db',
+    fontFamily: fontFamily('500'),
     fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
+    color: colors.textMuted,
   },
   versionText: {
-    color: '#4b5563',
+    fontFamily: fontFamily('400'),
     fontSize: 12,
-    fontWeight: '500',
+    color: colors.textTertiary,
   },
 });

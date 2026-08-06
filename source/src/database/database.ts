@@ -83,29 +83,38 @@ const DDL_INDICES = [
 
 // ─── Database singleton ───────────────────────────────────────────────────────
 let _db: SQLiteDatabase | null = null;
+let _opening: Promise<SQLiteDatabase> | null = null;
 
 export async function openDatabase(): Promise<SQLiteDatabase> {
   if (_db) return _db;
+  if (_opening) return _opening;
 
-  const dbInstance: SQLiteDatabase = await SQLite.openDatabase({
-    name:     DB_NAME,
-    key:      DB_KEY,       // SQLCipher encryption key
-    location: 'default',
-  });
+  _opening = (async () => {
+    const dbInstance: SQLiteDatabase = await SQLite.openDatabase({
+      name: DB_NAME,
+      key: DB_KEY,
+      location: 'default',
+    });
 
-  // Optimize SQLite PRAGMAs for low-end Android storage performance
+    try {
+      await dbInstance.executeSql('PRAGMA journal_mode = WAL;');
+      await dbInstance.executeSql('PRAGMA synchronous = NORMAL;');
+      await dbInstance.executeSql('PRAGMA cache_size = -2000;');
+      await dbInstance.executeSql('PRAGMA temp_store = MEMORY;');
+    } catch {
+      // Ignore if PRAGMA is restricted
+    }
+
+    await runMigrations(dbInstance);
+    _db = dbInstance;
+    return _db;
+  })();
+
   try {
-    await dbInstance.executeSql('PRAGMA journal_mode = WAL;');
-    await dbInstance.executeSql('PRAGMA synchronous = NORMAL;');
-    await dbInstance.executeSql('PRAGMA cache_size = -2000;'); // 2MB memory cache
-    await dbInstance.executeSql('PRAGMA temp_store = MEMORY;');
-  } catch {
-    // Ignore if PRAGMA is restricted
+    return await _opening;
+  } finally {
+    _opening = null;
   }
-
-  await runMigrations(dbInstance);
-  _db = dbInstance;
-  return _db;
 }
 
 export async function closeDatabase(): Promise<void> {
@@ -113,11 +122,43 @@ export async function closeDatabase(): Promise<void> {
     await _db.close();
     _db = null;
   }
+  _opening = null;
 }
 
 export function getDatabase(): SQLiteDatabase {
   if (!_db) throw new Error('Database not initialised. Call openDatabase() first.');
   return _db;
+}
+
+// ─── Migration helpers ────────────────────────────────────────────────────────
+async function getTableColumns(db: SQLiteDatabase, table: string): Promise<Set<string>> {
+  const [result] = await db.executeSql(`PRAGMA table_info(${table});`);
+  const columns = new Set<string>();
+  if (result?.rows) {
+    for (let i = 0; i < result.rows.length; i++) {
+      columns.add(result.rows.item(i).name);
+    }
+  }
+  return columns;
+}
+
+async function ensureColumn(
+  db: SQLiteDatabase,
+  table: string,
+  column: string,
+  definition: string,
+): Promise<void> {
+  const columns = await getTableColumns(db, table);
+  if (!columns.has(column)) {
+    await db.executeSql(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition};`);
+  }
+}
+
+async function markMigrationApplied(db: SQLiteDatabase, version: number): Promise<void> {
+  await db.executeSql(
+    'INSERT INTO schema_version (version, appliedAt) VALUES (?, ?);',
+    [version, Date.now()],
+  );
 }
 
 // ─── Migration runner ─────────────────────────────────────────────────────────
@@ -162,27 +203,19 @@ async function applyMigrationV1(db: SQLiteDatabase): Promise<void> {
 }
 
 async function applyMigrationV2(db: SQLiteDatabase): Promise<void> {
-  const cols = [
-    'ALTER TABLE athletes ADD COLUMN heightCategory TEXT;',
-    'ALTER TABLE athletes ADD COLUMN coachName TEXT;',
-    'ALTER TABLE athletes ADD COLUMN schoolAcademy TEXT;',
-    'ALTER TABLE athletes ADD COLUMN state TEXT;',
-    'ALTER TABLE athletes ADD COLUMN district TEXT;',
+  const athleteColumns: Array<[string, string]> = [
+    ['heightCategory', 'TEXT'],
+    ['coachName', 'TEXT'],
+    ['schoolAcademy', 'TEXT'],
+    ['state', 'TEXT'],
+    ['district', 'TEXT'],
   ];
 
-  await db.transaction((tx: any) => {
-    cols.forEach(sql => {
-      try {
-        tx.executeSql(sql);
-      } catch {
-        // ignore if column already exists
-      }
-    });
-    tx.executeSql(
-      'INSERT INTO schema_version (version, appliedAt) VALUES (2, ?);',
-      [Date.now()],
-    );
-  });
+  for (const [column, definition] of athleteColumns) {
+    await ensureColumn(db, 'athletes', column, definition);
+  }
+
+  await markMigrationApplied(db, 2);
 }
 
 async function applyMigrationV3(db: SQLiteDatabase): Promise<void> {

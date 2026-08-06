@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import PortalScreen from '../../components/ui/PortalScreen';
 import AppText from '../../components/ui/AppText';
 import Button from '../../components/ui/Button';
 import SFSymbol from '../../components/ui/SFSymbol';
@@ -34,7 +35,7 @@ import { downloadReportFile, shareReportPDF } from '../../services/reportDownloa
 import { MOCK_ATHLETE_DASHBOARD } from '../../data/mockAthleteDashboard';
 import type { AthleteDashboardData, DashboardTest, HistoryItem } from '../../types/athleteDashboard';
 import { navigateToDashboardTest } from '../../navigation/testRoutes';
-import { colors } from '../../theme';
+import { bottomInsetPadding, colors } from '../../theme';
 import { portalStyles } from '../../theme/portalStyles';
 import { t } from '../../utils/i18n';
 
@@ -124,7 +125,7 @@ const AthleteHomeScreen = ({ navigation }: any) => {
   const incomplete = Boolean(data && data.progress.remaining > 0);
 
   return (
-    <View style={portalStyles.screen}>
+    <PortalScreen>
       {showLoading ? (
         <View style={styles.center}>
           <ActivityIndicator color={colors.primary} size="large" />
@@ -154,7 +155,10 @@ const AthleteHomeScreen = ({ navigation }: any) => {
           <ScrollView
             style={styles.scroll}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={[
+              styles.scrollContent,
+              { paddingBottom: 100 + bottomInsetPadding(insets.bottom, 0) },
+            ]}
           >
             {activeTab === 'home' ? (
               <>
@@ -252,7 +256,7 @@ const AthleteHomeScreen = ({ navigation }: any) => {
         )}
 
         <AthleteBottomNav active={activeTab} onChange={onTabChange} />
-    </View>
+    </PortalScreen>
   );
 };
 
@@ -263,7 +267,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     ...portalStyles.scrollContent,
-    paddingBottom: 100,
   },
   center: {
     flex: 1,

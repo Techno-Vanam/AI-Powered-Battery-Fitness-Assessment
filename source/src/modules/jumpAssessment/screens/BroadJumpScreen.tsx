@@ -4,6 +4,8 @@
 
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { bottomInsetPadding } from '../../../theme';
 import { useBroadJump } from '../hooks/useBroadJump';
 import { usePoseProcessor } from '../hooks/usePoseProcessor';
 import { JumpCameraView } from '../components/JumpCameraView';
@@ -18,6 +20,7 @@ interface Props {
 }
 
 export const BroadJumpScreen: React.FC<Props> = ({ navigation, route }) => {
+  const insets = useSafeAreaInsets();
   const { pixelsPerCm = 10.0 } = route.params || {};
   const { width, height } = useWindowDimensions();
 
@@ -72,9 +75,10 @@ export const BroadJumpScreen: React.FC<Props> = ({ navigation, route }) => {
         countdownSeconds={countdownSeconds}
         broadJumpDistanceCm={broadJumpDistanceCm}
         warningMessage={warningMessage}
+        topInset={insets.top}
       />
 
-      <View style={styles.controlPanel}>
+      <View style={[styles.controlPanel, { bottom: bottomInsetPadding(insets.bottom, 16) + 74 }]}>
         {jumpState === 'IDLE' ? (
           <TouchableOpacity
             style={styles.actionBtn}
@@ -105,7 +109,6 @@ const styles = StyleSheet.create({
   },
   controlPanel: {
     position: 'absolute',
-    bottom: 90,
     left: 20,
     right: 20,
     zIndex: 30,

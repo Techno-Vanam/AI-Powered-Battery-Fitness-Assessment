@@ -2,13 +2,14 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
+  StyleSheet,
   StatusBar,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { bottomInsetPadding } from '../theme';
 import { Camera } from 'react-native-vision-camera';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCamera } from '@hooks/useCamera';
@@ -25,6 +26,7 @@ import { LOW_CONFIDENCE_THRESHOLD, MAX_VIDEO_DURATION_SEC } from '@height/config
 type Props = NativeStackScreenProps<RootStackParamList, 'Camera'>;
 
 export function CameraScreen({ navigation, route }: Props) {
+  const insets = useSafeAreaInsets();
   const athlete: Athlete | null =
     (route.params && 'athlete' in route.params ? route.params.athlete : null) ?? null;
 
@@ -179,8 +181,8 @@ export function CameraScreen({ navigation, route }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#000" translucent />
 
       {config.device && (
         <Camera
@@ -197,7 +199,7 @@ export function CameraScreen({ navigation, route }: Props) {
       )}
 
       {(isModelLoading || modelError) && (
-        <View style={styles.modelBanner}>
+        <View style={[styles.modelBanner, { top: insets.top + 8 }]}>
           <Text style={styles.modelBannerText}>
             {isModelLoading
               ? 'Loading pose model…'
@@ -217,7 +219,7 @@ export function CameraScreen({ navigation, route }: Props) {
         errorMessage={errorMessage}
       />
 
-      <View style={styles.controls}>
+      <View style={[styles.controls, { bottom: bottomInsetPadding(insets.bottom, 16) }]}>
         <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
@@ -246,7 +248,7 @@ export function CameraScreen({ navigation, route }: Props) {
           )}
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -255,7 +257,6 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' },
   controls: {
     position: 'absolute',
-    bottom: 24,
     left: 16,
     right: 16,
     gap: 10,
@@ -281,7 +282,6 @@ const styles = StyleSheet.create({
   recordText: { color: '#fff', fontSize: 17, fontWeight: '700' },
   modelBanner: {
     position: 'absolute',
-    top: 48,
     left: 16,
     right: 16,
     backgroundColor: 'rgba(0,0,0,0.65)',

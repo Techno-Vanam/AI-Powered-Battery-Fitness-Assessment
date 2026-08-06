@@ -17,6 +17,11 @@ export function moderateScale(size: number, factor = 0.5): number {
   return size + (scale(size) - size) * factor;
 }
 
+/** Minimum bottom padding above gesture nav / home indicator. */
+export function bottomInsetPadding(insetBottom: number, min = 8): number {
+  return Math.max(insetBottom, min);
+}
+
 export const layout = {
   screenWidth: SCREEN_WIDTH,
   screenHeight: SCREEN_HEIGHT,

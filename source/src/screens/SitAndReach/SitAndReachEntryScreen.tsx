@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { submitTest } from '../../services/sitAndReachService';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
@@ -50,7 +51,8 @@ export default function SitAndReachEntryScreen({ route, navigation }: Props) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>Sit & Reach Test</Text>
       <Text style={styles.athlete}>{athleteName}</Text>
 
@@ -83,10 +85,12 @@ export default function SitAndReachEntryScreen({ route, navigation }: Props) {
         {submitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitText}>Save Test Result</Text>}
       </TouchableOpacity>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#fff' },
   container: { padding: 20, flexGrow: 1, backgroundColor: '#fff' },
   title: { fontSize: 22, fontWeight: '700', marginBottom: 4 },
   athlete: { fontSize: 16, color: '#555', marginBottom: 20 },

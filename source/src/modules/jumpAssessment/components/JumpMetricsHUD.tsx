@@ -14,6 +14,7 @@ interface Props {
   highestReachCm?: number;
   broadJumpDistanceCm?: number;
   warningMessage?: string | null;
+  topInset?: number;
 }
 
 export const JumpMetricsHUD: React.FC<Props> = ({
@@ -23,9 +24,10 @@ export const JumpMetricsHUD: React.FC<Props> = ({
   highestReachCm,
   broadJumpDistanceCm,
   warningMessage,
+  topInset = 0,
 }) => {
   return (
-    <View style={styles.hudContainer} pointerEvents="none">
+    <View style={[styles.hudContainer, { paddingTop: topInset + 16 }]} pointerEvents="none">
       {/* Top Banner Status */}
       <View style={styles.statusBadge}>
         <Text style={styles.statusText}>State: {jumpState}</Text>

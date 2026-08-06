@@ -1,49 +1,81 @@
 import React from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { User, Users, ChevronRight } from 'lucide-react-native';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
-import { QuickActionCard } from '../../components/ui/QuickActionCard';
 import PortalHeader from '../../components/portal/PortalHeader';
 import AppText from '../../components/ui/AppText';
 import { colors, layout } from '../../theme';
-import { portalStyles } from '../../theme/portalStyles';
+import PortalScreen from '../../components/ui/PortalScreen';
+import { createScreenStyles } from '../../styles/screenStyles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RoleSelect'>;
 
+const screenStyles = createScreenStyles();
+
 const RoleSelectScreen: React.FC<Props> = ({ navigation }) => {
   return (
-    <View style={portalStyles.screen}>
-      <PortalHeader greeting="Welcome" title="Battery Fitness Assessment" />
+    <PortalScreen edges={['top', 'bottom', 'left', 'right']}>
+      <PortalHeader greeting="Welcome to" title="Battery Fitness" />
 
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.intro}>
+        <View style={styles.hero}>
           <AppText variant="h1" style={styles.title}>
             Choose Your Role
           </AppText>
-          <AppText variant="subtitle" color={colors.textSecondary}>
-            Select Athlete or Coach to continue
+          <AppText variant="subtitle" color={colors.textSecondary} style={styles.subtitle}>
+            Sign in or create an account to continue
           </AppText>
         </View>
 
-        <View style={styles.cards}>
-          <QuickActionCard
-            title="I am an Athlete"
-            subtitle="Track fitness assessments and view your progress."
-            type="view"
-            onPress={() => navigation.navigate('AthleteHome')}
-          />
-          <QuickActionCard
-            title="I am a Coach"
-            subtitle="Manage athletes and record assessments."
-            type="add"
-            onPress={() => navigation.navigate('CoachHome')}
-          />
+        <View style={styles.cardsStack}>
+          <TouchableOpacity
+            style={[screenStyles.roleCard, styles.roleCardAthlete]}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('AthleteLogin')}
+          >
+            <View style={[screenStyles.iconBox, styles.iconAthlete]}>
+              <User size={28} color={colors.primary} strokeWidth={2.2} />
+            </View>
+            <View style={styles.roleTextCol}>
+              <AppText variant="h3">Athlete</AppText>
+              <AppText variant="bodySm" color={colors.textSecondary}>
+                Track assessments, results, and progress
+              </AppText>
+            </View>
+            <ChevronRight size={22} color={colors.textMuted} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[screenStyles.roleCard, styles.roleCardCoach]}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('CoachLogin')}
+          >
+            <View style={[screenStyles.iconBox, styles.iconCoach]}>
+              <Users size={28} color="#FFFFFF" strokeWidth={2.2} />
+            </View>
+            <View style={styles.roleTextCol}>
+              <AppText variant="h3" color={colors.textInverse}>
+                Coach
+              </AppText>
+              <AppText variant="bodySm" color="rgba(255,255,255,0.85)">
+                Manage athletes and run fitness tests
+              </AppText>
+            </View>
+            <ChevronRight size={22} color="rgba(255,255,255,0.9)" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.footerLinks}>
+          <AppText variant="caption" color={colors.textMuted} style={styles.footerHint}>
+            New here? Choose a role above — you can register from the login screen.
+          </AppText>
         </View>
       </ScrollView>
-    </View>
+    </PortalScreen>
   );
 };
 
@@ -54,15 +86,44 @@ const styles = StyleSheet.create({
     paddingBottom: layout.sectionGap * 2,
     gap: layout.formGap,
   },
-  intro: {
+  hero: {
     gap: layout.fieldGap,
     marginBottom: 8,
   },
   title: {
     letterSpacing: -0.5,
   },
-  cards: {
+  subtitle: {
+    lineHeight: 22,
+  },
+  cardsStack: {
+    gap: 14,
+  },
+  roleCardAthlete: {
+    borderColor: colors.warningBorder,
+    backgroundColor: colors.surface,
+  },
+  roleCardCoach: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primaryDark,
+  },
+  iconAthlete: {
+    backgroundColor: colors.primaryLight,
+  },
+  iconCoach: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  roleTextCol: {
+    flex: 1,
     gap: 4,
+  },
+  footerLinks: {
+    marginTop: layout.sectionGap,
+    alignItems: 'center',
+  },
+  footerHint: {
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });
 

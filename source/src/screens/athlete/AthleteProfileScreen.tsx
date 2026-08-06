@@ -10,6 +10,7 @@ import {
 import SFSymbol from '../../components/ui/SFSymbol';
 import AppText from '../../components/ui/AppText';
 import { OfflineSyncCentre } from '../../components/dashboard';
+import PortalScreen from '../../components/ui/PortalScreen';
 import { colors } from '../../theme';
 import { portalStyles } from '../../theme/portalStyles';
 import type { AthleteProfile } from '../../types/athleteDashboard';
@@ -62,7 +63,7 @@ export default function AthleteProfileScreen({ navigation, route }: Props) {
   };
 
   return (
-    <View style={portalStyles.screen}>
+    <PortalScreen edges={['top', 'bottom', 'left', 'right']}>
       <View style={portalStyles.topBar}>
         <TouchableOpacity style={portalStyles.bellBtn} onPress={() => navigation.goBack()}>
           <SFSymbol name="arrow.left" size={22} color={colors.textPrimary} />
@@ -189,7 +190,7 @@ export default function AthleteProfileScreen({ navigation, route }: Props) {
           </AppText>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </PortalScreen>
   );
 }
 

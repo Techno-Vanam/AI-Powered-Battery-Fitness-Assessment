@@ -11,8 +11,8 @@ import {
   Animated,
   Dimensions,
   StatusBar,
-  Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Camera,
   useCameraDevice,
@@ -20,7 +20,7 @@ import {
 } from 'react-native-vision-camera';
 import { ChevronLeft, Zap, ZapOff, RotateCcw } from 'lucide-react-native';
 import AppText from '../../components/ui/AppText';
-import { colors, layout, roleColors } from '../../theme';
+import { bottomInsetPadding, colors, layout, roleColors } from '../../theme';
 import { useWeightScanner } from '../../services/useWeightScanner';
 
 import ResizableROIOverlay, { ROIRect } from '../../components/ui/ResizableROIOverlay';
@@ -47,6 +47,7 @@ const STATUS_COLORS = {
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 export const LiveWeightScannerScreen = ({ navigation }: any) => {
+  const insets = useSafeAreaInsets();
   const cameraRef = useRef<Camera>(null);
   const device = useCameraDevice('back');
   const { hasPermission, requestPermission } = useCameraPermission();
@@ -207,7 +208,7 @@ export const LiveWeightScannerScreen = ({ navigation }: any) => {
       />
 
       {/* ── Top bar ── */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { top: insets.top + 8 }]}>
         <TouchableOpacity style={styles.iconBtn} onPress={handleBack} activeOpacity={0.8}>
           <ChevronLeft size={24} color="#fff" />
         </TouchableOpacity>
@@ -229,7 +230,7 @@ export const LiveWeightScannerScreen = ({ navigation }: any) => {
       </View>
 
       {/* ── Bottom status panel ── */}
-      <View style={styles.bottomPanel}>
+      <View style={[styles.bottomPanel, { paddingBottom: bottomInsetPadding(insets.bottom, 24) }]}>
 
         {/* Status row */}
         <View style={[styles.statusRow, {
@@ -379,7 +380,6 @@ const styles = StyleSheet.create({
   // Top bar
   topBar: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44,
     left: 0, right: 0,
     flexDirection: 'row',
     alignItems: 'center',
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(8,8,16,0.92)',
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
     paddingHorizontal: layout.horizontalPadding + 4,
-    paddingTop: 20, paddingBottom: 32,
+    paddingTop: 20, paddingBottom: 16,
     borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)',
   },
 

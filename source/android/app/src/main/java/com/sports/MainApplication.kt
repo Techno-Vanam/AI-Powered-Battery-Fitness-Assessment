@@ -8,6 +8,7 @@ import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.sports.aruco.ArucoPackage
 import com.sports.pose.PosePackage
+import com.sports.jump.JumpNativePackage
 import com.sports.sync.SyncWorker
 import com.sports.SevenSegmentAnalyzerPackage
 
@@ -21,6 +22,7 @@ class MainApplication : Application(), ReactApplication {
           add(SevenSegmentAnalyzerPackage())
           add(ArucoPackage())
           add(PosePackage())
+          add(JumpNativePackage())
         },
     )
   }

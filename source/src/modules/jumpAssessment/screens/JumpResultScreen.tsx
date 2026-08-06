@@ -5,6 +5,7 @@
 
 import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { jumpHistoryRepo } from '../services/jumpHistoryRepository';
 
 interface Props {
@@ -29,6 +30,7 @@ export const JumpResultScreen: React.FC<Props> = ({ navigation, route }) => {
   }, [testType, metrics]);
 
   return (
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom', 'left', 'right']}>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.badge}>ASSESSMENT COMPLETED</Text>
       <Text style={styles.title}>
@@ -124,10 +126,15 @@ export const JumpResultScreen: React.FC<Props> = ({ navigation, route }) => {
         <Text style={styles.doneText}>Done & Return</Text>
       </TouchableOpacity>
     </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0F172A',
+  },
   container: {
     flex: 1,
     backgroundColor: '#0F172A',

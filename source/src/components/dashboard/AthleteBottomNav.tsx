@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, ClipboardCheck, BarChart3, FileText } from 'lucide-react-native';
+import { bottomInsetPadding } from '../../theme';
 import { portalStyles } from '../../theme/portalStyles';
 import { colors } from '../../theme/colors';
 
@@ -30,7 +31,7 @@ export default function AthleteBottomNav({ active, onChange }: Props) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[portalStyles.tabBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+    <View style={[portalStyles.tabBar, { paddingBottom: bottomInsetPadding(insets.bottom, 12) }]}>
       {TABS.map(tab => {
         const isActive = active === tab.key;
         const color = isActive ? colors.primary : colors.textMuted;

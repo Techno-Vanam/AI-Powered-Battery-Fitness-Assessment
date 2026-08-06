@@ -7,6 +7,7 @@ import { StatCard } from '../../components/ui/StatCard';
 import { QuickActionCard } from '../../components/ui/QuickActionCard';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { StatusBadge } from '../../components/ui/StatusBadge';
+import PortalScreen from '../../components/ui/PortalScreen';
 import { colors } from '../../theme/colors';
 import { layout } from '../../theme/layout';
 
@@ -43,7 +44,7 @@ export const CoachHomeScreen: React.FC<CoachHomeScreenProps> = ({
     : 'Coach Rajesh';
 
   return (
-    <View style={styles.container}>
+    <PortalScreen edges={['top', 'bottom', 'left', 'right']}>
       {/* Top Navigation Header with Time Greeting */}
       <View style={styles.topBar}>
         <View style={styles.greetingCol}>
@@ -155,7 +156,7 @@ export const CoachHomeScreen: React.FC<CoachHomeScreenProps> = ({
           ))}
         </View>
       </ScrollView>
-    </View>
+    </PortalScreen>
   );
 };
 

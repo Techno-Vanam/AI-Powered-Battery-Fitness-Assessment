@@ -4,6 +4,8 @@
 
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { bottomInsetPadding } from '../../../theme';
 import { useVerticalJump } from '../hooks/useVerticalJump';
 import { usePoseProcessor } from '../hooks/usePoseProcessor';
 import { JumpCameraView } from '../components/JumpCameraView';
@@ -17,6 +19,7 @@ interface Props {
 }
 
 export const VerticalJumpScreen: React.FC<Props> = ({ navigation, route }) => {
+  const insets = useSafeAreaInsets();
   const { pixelsPerCm = 10.0 } = route.params || {};
   const { width, height } = useWindowDimensions();
 
@@ -66,7 +69,7 @@ export const VerticalJumpScreen: React.FC<Props> = ({ navigation, route }) => {
 
   return (
     <View style={styles.container}>
-      <JumpCameraView onFrameProcessed={onFrameProcessed} testType="vertical" />
+      <JumpCameraView onFrameProcessed={onFrameProcessed} testType="vertical" jumpState={jumpState} />
       <LiveSkeletonOverlay pose={currentPose} width={width} height={height} />
 
       <JumpMetricsHUD
@@ -75,10 +78,11 @@ export const VerticalJumpScreen: React.FC<Props> = ({ navigation, route }) => {
         standingReachCm={standingReachCm}
         highestReachCm={highestReachCm}
         warningMessage={warningMessage}
+        topInset={insets.top}
       />
 
       {/* Action Floating Buttons */}
-      <View style={styles.controlPanel}>
+      <View style={[styles.controlPanel, { bottom: bottomInsetPadding(insets.bottom, 16) + 74 }]}>
         {jumpState === 'IDLE' ? (
           <TouchableOpacity
             style={styles.actionBtn}
@@ -109,7 +113,6 @@ const styles = StyleSheet.create({
   },
   controlPanel: {
     position: 'absolute',
-    bottom: 90,
     left: 20,
     right: 20,
     zIndex: 30,

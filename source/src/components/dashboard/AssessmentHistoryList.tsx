@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import SFSymbol from '../ui/SFSymbol';
-import { colors, layout } from '../../theme';
+import { colors } from '../../theme';
 import { portalStyles } from '../../theme/portalStyles';
 import { t } from '../../utils/i18n';
 import type { HistoryItem } from '../../types/athleteDashboard';
