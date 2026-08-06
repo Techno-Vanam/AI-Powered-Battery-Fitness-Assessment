@@ -28,7 +28,6 @@ import {
   Camera,
   useCameraDevice,
   useCameraPermission,
-  useVideoOutput,
 } from 'react-native-vision-camera';
 import { useIsFocused } from '@react-navigation/native';
 import { launchImageLibrary, type Asset } from 'react-native-image-picker';
@@ -60,7 +59,7 @@ export const JumpFrameAnalysisScreen: React.FC<Props> = ({
 
   // ── Recording state ──────────────────────────────────────────────────────────
   const [isRecording, setIsRecording] = useState(false);
-  const recorderRef = useRef<any>(null);
+  const cameraRef = useRef<Camera>(null);
 
   // ── Playback state ───────────────────────────────────────────────────────────
   const [videoDurationMs, setVideoDurationMs] = useState<number>(0);
@@ -95,7 +94,6 @@ export const JumpFrameAnalysisScreen: React.FC<Props> = ({
   const { hasPermission: hasCamPerm, requestPermission: requestCamPerm } =
     useCameraPermission();
   const device = useCameraDevice('back');
-  const videoOutput = useVideoOutput({ enableAudio: false });
   const [isCameraReady, setIsCameraReady] = useState(false);
 
   // Camera activation delay — avoids Camera2 session race on Android
@@ -186,21 +184,18 @@ export const JumpFrameAnalysisScreen: React.FC<Props> = ({
   }, [hasCamPerm, requestCamPerm]);
 
   // ── Start Recording ─────────────────────────────────────────────────────────
-  const handleStartRecording = useCallback(async () => {
-    if (!videoOutput || !device) return;
+  const handleStartRecording = useCallback(() => {
+    if (!cameraRef.current || !device) return;
     try {
-      const recorder = await videoOutput.createRecorder({});
-      recorderRef.current = recorder;
       setIsRecording(true);
-      await recorder.startRecording(
-        (filePath: string) => {
+      cameraRef.current.startRecording({
+        onRecordingFinished: (video) => {
           setIsRecording(false);
           setIsLoadingVideo(true);
 
-          // Clean up path formatting for Android
-          const cleanPath = filePath.startsWith('file://')
-            ? filePath
-            : `file://${filePath}`;
+          const cleanPath = video.path.startsWith('file://')
+            ? video.path
+            : `file://${video.path}`;
 
           // Give native camera daemon 350ms to release before mounting video player
           setTimeout(() => {
@@ -211,26 +206,24 @@ export const JumpFrameAnalysisScreen: React.FC<Props> = ({
             setScreen('analysis');
           }, 350);
         },
-        (error: Error) => {
+        onRecordingError: (error) => {
           setIsRecording(false);
           Alert.alert('Recording Error', error.message);
         },
-      );
+      });
     } catch (e: any) {
       setIsRecording(false);
       Alert.alert('Recording Error', e.message ?? String(e));
     }
-  }, [videoOutput, device]);
+  }, [device]);
 
   // ── Stop Recording ──────────────────────────────────────────────────────────
   const handleStopRecording = useCallback(async () => {
-    if (!recorderRef.current) return;
+    if (!cameraRef.current) return;
     try {
-      await recorderRef.current.stopRecording();
+      await cameraRef.current.stopRecording();
     } catch (e: any) {
       Alert.alert('Stop Error', e.message ?? String(e));
-    } finally {
-      recorderRef.current = null;
     }
   }, []);
 
@@ -350,10 +343,12 @@ export const JumpFrameAnalysisScreen: React.FC<Props> = ({
         <View style={styles.recorderPreviewBox}>
           {device && isCameraReady ? (
             <Camera
+              ref={cameraRef}
               style={StyleSheet.absoluteFill}
               device={device}
               isActive={isFocused && isCameraReady && screen === 'recording'}
-              outputs={[videoOutput]}
+              video
+              audio={false}
               resizeMode="cover"
             />
           ) : (
