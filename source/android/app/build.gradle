@@ -90,6 +90,9 @@ dependencies {
     // WorkManager ΓÇö background sync
     implementation 'androidx.work:work-runtime-ktx:2.9.1'
 
+    // Ensure Vision Camera's Java/Kotlin APIs are available to compile frame-processor
+    implementation project(':react-native-vision-camera')
+
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {
@@ -111,4 +114,88 @@ configurations.all {
         force "androidx.media3:media3-session:1.8.0"
         force "androidx.media3:media3-ui:1.8.0"
     }
+    // TensorFlow Lite for on-device inference (scoped minimal dependency)
+    implementation 'org.tensorflow:tensorflow-lite:2.11.0'
+    // CameraX dependencies for native analyzer view
+    def camerax_version = "1.2.3"
+    implementation "androidx.camera:camera-core:${camerax_version}"
+    implementation "androidx.camera:camera-camera2:${camerax_version}"
+    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
+    implementation "androidx.camera:camera-view:1.2.3"
+    // MediaPipe Tasks Vision for hand landmarking
+    implementation 'com.google.mediapipe:tasks-vision:0.10.14'
+    // BoofCV for reference marker (fiducial) detection - app-owned, NOT in node_modules
+    implementation 'org.boofcv:boofcv-android:1.2.2'
+    implementation 'org.boofcv:boofcv-recognition:1.2.2'
 }
+
+// Download the MoveNet TFLite model at build time if it's missing.
+// Model source: Google (MoveNet SinglePose Lightning)
+// URL used for download: https://storage.googleapis.com/download.tensorflow.org/models/tflite/movenet_singlepose_lightning.tflite
+import java.nio.file.Files
+import java.nio.file.Paths
+
+def downloadMoveNetModel = tasks.register('downloadMoveNetModel') {
+    doLast {
+        def modelDir = file("${projectDir}/src/main/assets/models")
+        if (!modelDir.exists()) modelDir.mkdirs()
+        def modelFile = new File(modelDir, 'movenet_singlepose_lightning.tflite')
+        if (modelFile.exists() && modelFile.length() > 0) {
+            println "MoveNet model already present: ${modelFile}"
+            return
+        }
+        if (modelFile.exists()) {
+            println "Removing invalid MoveNet model file: ${modelFile}"
+            modelFile.delete()
+        }
+        println "Downloading MoveNet model..."
+        try {
+            def url = 'https://storage.googleapis.com/download.tensorflow.org/models/tflite/movenet_singlepose_lightning.tflite'
+            modelFile.withOutputStream { out ->
+                out << new URL(url).openStream()
+            }
+            if (modelFile.length() == 0) {
+                throw new GradleException("Downloaded MoveNet model is empty")
+            }
+            println "Downloaded MoveNet model to ${modelFile}"
+        } catch (Exception ex) {
+            println "Warning: MoveNet model download failed: ${ex.message}"
+            println "You can manually place the model at ${modelDir}/movenet_singlepose_lightning.tflite"
+        }
+    }
+}
+
+def downloadHandLandmarkerModel = tasks.register('downloadHandLandmarkerModel') {
+    doLast {
+        def modelDir = file("${projectDir}/src/main/assets/models")
+        if (!modelDir.exists()) modelDir.mkdirs()
+        def modelFile = new File(modelDir, 'hand_landmarker.task')
+        if (modelFile.exists() && modelFile.length() > 0) {
+            println "Hand Landmarker model already present: ${modelFile}"
+            return
+        }
+        if (modelFile.exists()) {
+            println "Removing invalid Hand Landmarker model file: ${modelFile}"
+            modelFile.delete()
+        }
+        println "Downloading Hand Landmarker model..."
+        try {
+            def url = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task'
+            modelFile.withOutputStream { out ->
+                out << new URL(url).openStream()
+            }
+            if (modelFile.length() == 0) {
+                throw new GradleException("Downloaded Hand Landmarker model is empty")
+            }
+            println "Downloaded Hand Landmarker model to ${modelFile}"
+        } catch (Exception ex) {
+            println "Warning: Hand Landmarker model download failed: ${ex.message}"
+            println "You can manually place the model at ${modelDir}/hand_landmarker.task"
+        }
+    }
+}
+
+preBuild.dependsOn(downloadMoveNetModel)
+preBuild.dependsOn(downloadHandLandmarkerModel)
+
+

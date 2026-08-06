@@ -1,0 +1,63 @@
+diff --git a/android/src/main/java/com/margelo/nitro/camera/hybrids/outputs/HybridFrameOutput.kt b/android/src/main/java/com/margelo/nitro/camera/hybrids/outputs/HybridFrameOutput.kt
+index aaaaaaa..bbbbbbb 100644
+--- a/android/src/main/java/com/margelo/nitro/camera/hybrids/outputs/HybridFrameOutput.kt
++++ b/android/src/main/java/com/margelo/nitro/camera/hybrids/outputs/HybridFrameOutput.kt
+@@ -32,14 +32,8 @@ import java.nio.ByteBuffer
+ import java.nio.ByteOrder
+ import androidx.camera.core.ImageProxy
+ import com.facebook.react.bridge.WritableMap
+-// MediaPipe imports
+ import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
+ import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
+ import com.google.mediapipe.tasks.core.BaseOptions
+ import com.google.mediapipe.tasks.vision.core.RunningMode
+ import com.google.mediapipe.framework.image.BitmapImageBuilder
+ import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
+-// BoofCV and Georegression imports
+-import boofcv.abst.fiducial.FiducialDetector
+-import boofcv.factory.fiducial.FactoryFiducialDetector
+-import boofcv.factory.fiducial.ConfigFiducialBinary
+-import boofcv.factory.filter.binary.ConfigThreshold
+-import boofcv.factory.filter.binary.ThresholdType
+-import boofcv.struct.image.GrayU8
+-import boofcv.android.ConvertBitmap
+-import georegression.struct.point.Point2D_F64
++// App-owned calibration detector (BoofCV lives in com.sports, NOT here)
++import com.sports.MarkerCalibrationDetector
+ 
+ class HybridFrameOutput(
+   private val options: FrameOutputOptions,
+@@ -62,30 +56,6 @@ class HybridFrameOutput(
+   private var isHandModelInitialized = false
+   private var lastLogTime = 0L
+ 
+-  // Calibration Config & Variables
+-  object CalibrationConfig {
+-    const val MARKER_A_ID = 1
+-    const val MARKER_B_ID = 2
+-    const val MARKER_C_ID = 3
+-    const val MARKER_D_ID = 4
+-    
+-    const val BOARD_WIDTH_CM = 30.0
+-    const val BOARD_HEIGHT_CM = 15.0
+-  }
+-
+-  private var fiducialDetector: FiducialDetector<GrayU8>? = null
+-  private var isFiducialDetectorInitialized = false
+-
+-  private var stabilityCounter = 0
+-  private var isCalibrationValid = false
+-  private var lastCalibrationH: DoubleArray? = null
+-  
+-  private var lastMarkerA: Point2D_F64? = null
+-  private var lastMarkerB: Point2D_F64? = null
+-  private var lastMarkerC: Point2D_F64? = null
+-  private var lastMarkerD: Point2D_F64? = null
+-  
+-  private var lastCalibrationLogTime = 0L
+-
+-  private fun initFiducialDetector() { ... }
+-  private fun solveHomography(...): DoubleArray? { ... }
+-  private fun solveLinearSystem(...): DoubleArray? { ... }
+-
+   private fun initHandModel() {

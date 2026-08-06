@@ -1,4 +1,4 @@
-﻿package com.sports
+package com.sports
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -23,6 +23,7 @@ class MainApplication : Application(), ReactApplication {
           add(ArucoPackage())
           add(PosePackage())
           add(JumpNativePackage())
+          add(SitReachPackage())
         },
     )
   }
